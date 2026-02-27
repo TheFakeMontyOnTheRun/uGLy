@@ -16,6 +16,17 @@
 
 #define USE_FIXED_POINT 1
 
+#define kIntegerPart 16
+
+#define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
+
+#define intToFix(v)  ((int32_t)((v) << kIntegerPart))
+
+#define Mul(v1, v2) ((GLfixed)((((v1) >> 6) * ((v2) >> 6)) >> 4))
+
+#define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
+
+#define fixToFloat(fp) (fixToInt(Mul((fp), intToFix(16))) / 16.0f)
 
 #include <assert.h>
 #include <math.h>
@@ -25,9 +36,7 @@
 void initWindow(void);
 void swapBuffers(void);
 
-#define FLOAT_TO_FIXED(X)   ((X) * 65535.0)
-
-static GLfloat view_rotx = 0.0, view_roty = 0.0, view_rotz = 0.0;
+static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
 static void
 draw(void)
@@ -63,7 +72,7 @@ draw(void)
       glDrawArrays(GL_TRIANGLES, 0, 3);
 
       /* draw some points */
-      glPointSizex(FLOAT_TO_FIXED(15.5));
+      glPointSizex(Div(intToFix(31), intToFix(2)));
       glDrawArrays(GL_POINTS, 0, 3);
 
       glDisableClientState(GL_VERTEX_ARRAY);
@@ -79,17 +88,17 @@ draw(void)
 static void
 reshape(int width, int height)
 {
-   GLfloat ar = (GLfloat) width / (GLfloat) height;
+   GLfixed ar = Div( intToFix(width), intToFix(height));
 
    glViewport(0, 0, (GLint) width, (GLint) height);
 
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
-   glFrustumx(-ar, ar, -1, 1, 5.0, 60.0);
+   glFrustumx(-ar, ar, -1, 1, intToFix(5), intToFix(60));
 
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
-   glTranslatef(0.0, 0.0, -10.0);
+   glTranslatex(0, 0, -intToFix(10));
 
    swapBuffers();
 }
@@ -98,7 +107,9 @@ reshape(int width, int height)
 static void
 init(void)
 {
-   glClearColor(0.4, 0.4, 0.4, 0.0);
+   GLfixed grey = Div(intToFix(4), intToFix(10));
+   GLfixed fullAlpha = intToFix(1);
+   glClearColorx(grey, grey, grey, fullAlpha);
 }
 
 // static void
