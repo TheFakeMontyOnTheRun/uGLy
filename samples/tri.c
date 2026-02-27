@@ -14,6 +14,7 @@
  * 5 June 2008
  */
 
+#include <stdint.h>
 #define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
