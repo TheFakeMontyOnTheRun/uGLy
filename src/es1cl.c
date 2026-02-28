@@ -46,7 +46,12 @@ uint8_t colorArrayEnabled = GL_TRUE;
 
 GLfixed pointSize = intToFix(1);
 
+uint8_t clearDepth = 0;
+uint8_t clearStencil = 0;
+
 extern uint32_t framebuffer[320 * 240];
+extern uint8_t zBuffer[320 * 240];
+extern uint8_t stencilBuffer[320 * 240];
 
 void invalidFunctionInvoked(char *funcName)
 {
@@ -90,10 +95,30 @@ GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor)
 GLAPI void APIENTRY glClear(GLbitfield mask)
 {
     int c;
-    for (c = 0; c < (xres * yres); ++c)
+    if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT)
     {
-        framebuffer[c] = clearColor;
+        for (c = 0; c < (xres * yres); ++c)
+        {
+            framebuffer[c] = clearColor;
+        }
     }
+
+    if ((mask &  GL_DEPTH_BUFFER_BIT ) ==  GL_DEPTH_BUFFER_BIT )
+    {
+        for (c = 0; c < (xres * yres); ++c)
+        {
+            zBuffer[c] = clearDepth;
+        }
+    }
+
+    if ((mask & GL_STENCIL_BUFFER_BIT) == GL_STENCIL_BUFFER_BIT)
+    {
+        for (c = 0; c < (xres * yres); ++c)
+        {
+            stencilBuffer[c] = clearStencil;
+        }
+    }
+    ///TODO: check for error conditions
 }
 
 GLAPI void APIENTRY glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
@@ -155,6 +180,7 @@ GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, cons
     if (stride < 0 ) {
         currentError = GL_INVALID_VALUE;
     }
+    ///TODO: handle errors on type
 }
 
 GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
@@ -227,10 +253,12 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
         vertexArrayEnabled = GL_FALSE;
         break;
     }
+    ///TODO: handle other client states
 }
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    notImplementedYet(__func__);
     switch (mode)
     {
     case GL_POINTS:
@@ -271,6 +299,7 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
         vertexArrayEnabled = GL_TRUE;
         break;
     }
+    ///TODO: handle other client states
 }
 
 GLAPI void APIENTRY glFinish(void)
@@ -496,6 +525,10 @@ GLAPI void APIENTRY glPointSize(GLfloat size)
 GLAPI void APIENTRY glPointSizex(GLfixed size)
 {
     pointSize = size;
+    if (size <= 0)
+    {
+        currentError = GL_INVALID_VALUE;
+    }
 }
 
 GLAPI void APIENTRY glPolygonOffset(GLfloat factor, GLfloat units)
@@ -658,6 +691,7 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
     if (stride < 0 ) {
         currentError = GL_INVALID_VALUE;
     }
+    ///TODO: handle type errors
 }
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)

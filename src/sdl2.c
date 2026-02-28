@@ -10,6 +10,8 @@ SDL_Renderer *renderer;
 SDL_Texture *videoTexture;
 
 uint32_t framebuffer[320 * 240];
+uint8_t zBuffer[320 * 240];
+uint8_t stencilBuffer[320 * 240];
 
 void initWindow(void)
 {
