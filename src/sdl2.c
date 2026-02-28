@@ -25,7 +25,7 @@ void initWindow(void)
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     videoTexture = SDL_CreateTexture(renderer,
-                                     SDL_PIXELFORMAT_ABGR8888,
+                                     SDL_PIXELFORMAT_RGBA8888,
                                      SDL_TEXTUREACCESS_STREAMING,
                                      320, 240
     );
@@ -33,6 +33,10 @@ void initWindow(void)
 
 void swapBuffers(void)
 {
+
+    void *pixels;
+    int pitch;
+    int c;
     SDL_Event event;
 
     while (SDL_PollEvent(&event))
@@ -41,6 +45,17 @@ void swapBuffers(void)
             return;
         }
     }
+
+    SDL_LockTexture(videoTexture, NULL, &pixels, &pitch);
+
+    uint32_t* dst = (uint32_t*)pixels;
+
+    memcpy(dst, framebuffer, sizeof(uint32_t) * 320 * 240);
+
+    SDL_UnlockTexture(videoTexture);
+
+    SDL_RenderCopy(renderer, videoTexture, NULL, NULL);
+    SDL_RenderPresent(renderer);
 }
 
 
@@ -48,20 +63,4 @@ void graphicsShutdown(void) {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-}
-
-void flipRenderer(void) {
-    void *pixels;
-    int pitch;
-
-
-    SDL_LockTexture(videoTexture, NULL, &pixels, &pitch);
-
-    uint32_t* dst = (uint32_t*)pixels;
-    memcpy(dst, framebuffer, sizeof(uint32_t) * 320 * 240);
-
-    SDL_UnlockTexture(videoTexture);
-
-    SDL_RenderCopy(renderer, videoTexture, NULL, NULL);
-    SDL_RenderPresent(renderer);
 }

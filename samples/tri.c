@@ -56,9 +56,9 @@ draw(void)
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glPushMatrix();
-   glRotatef(view_rotx, 1, 0, 0);
-   glRotatef(view_roty, 0, 1, 0);
-   glRotatef(view_rotz, 0, 0, 1);
+   // glRotatex(view_rotx, 1, 0, 0);
+   // glRotatex(view_roty, 0, 1, 0);
+   // glRotatex(view_rotz, 0, 0, 1);
 
    {
 
@@ -140,6 +140,7 @@ void mainLoop(void)
    while (1)
    {
       draw();
+      swapBuffers();
    }
 }
 

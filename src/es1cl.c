@@ -3,7 +3,9 @@
 //
 
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <GLES/gl.h>
 
 
@@ -19,6 +21,32 @@
 
 #define fixToFloat(fp) (fixToInt(Mul((fp), intToFix(16))) / 16.0f)
 
+#define MATRIX_STACK_CAPACITY 16
+
+GLenum currentError = GL_NO_ERROR;
+
+uint32_t clearColor;
+
+uint16_t xres = 320;
+uint16_t yres = 240;
+
+uint8_t matrixStackTop = 0;
+
+GLsizei vertexStride = 0;
+GLenum vertexType = 0;
+GLint vertexSize = 0;
+const GLvoid* vertexPointer = NULL;
+uint8_t vertexArrayEnabled = GL_FALSE;
+
+GLsizei colorStride = 0;
+GLenum colorType = 0;
+GLint colorSize = 0;
+const GLvoid* colorPointer = NULL;
+uint8_t colorArrayEnabled = GL_TRUE;
+
+GLfixed pointSize = intToFix(1);
+
+extern uint32_t framebuffer[320 * 240];
 
 void invalidFunctionInvoked(char *funcName)
 {
@@ -61,7 +89,11 @@ GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor)
 
 GLAPI void APIENTRY glClear(GLbitfield mask)
 {
-    notImplementedYet(__func__);
+    int c;
+    for (c = 0; c < (xres * yres); ++c)
+    {
+        framebuffer[c] = clearColor;
+    }
 }
 
 GLAPI void APIENTRY glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
@@ -71,7 +103,7 @@ GLAPI void APIENTRY glClearColor(GLclampf red, GLclampf green, GLclampf blue, GL
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
-    notImplementedYet(__func__);
+    clearColor = red << 24 | green << 16 | blue << 8 | alpha;
 }
 
 GLAPI void APIENTRY glClearDepthf(GLclampf depth)
@@ -111,7 +143,18 @@ GLAPI void APIENTRY glColorMask(GLboolean red, GLboolean green, GLboolean blue, 
 
 GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    notImplementedYet(__func__);
+    colorStride = stride;
+    colorType = type;
+    colorSize = size;
+    colorPointer = pointer;
+
+    if (size != 2 && size != 3 && size != 4) {
+        currentError = GL_INVALID_VALUE;
+    }
+
+    if (stride < 0 ) {
+        currentError = GL_INVALID_VALUE;
+    }
 }
 
 GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
@@ -175,12 +218,36 @@ GLAPI void APIENTRY glDisable(GLenum cap)
 
 GLAPI void APIENTRY glDisableClientState(GLenum array)
 {
-    notImplementedYet(__func__);
+    switch (array)
+    {
+    case GL_COLOR_ARRAY:
+        colorArrayEnabled = GL_FALSE;
+        break;
+    case GL_VERTEX_ARRAY:
+        vertexArrayEnabled = GL_FALSE;
+        break;
+    }
 }
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
-    notImplementedYet(__func__);
+    switch (mode)
+    {
+    case GL_POINTS:
+        break;
+    case GL_LINE_STRIP:
+        break;
+    case GL_LINE_LOOP:
+        break;
+    case GL_LINES:
+        break;
+    case GL_TRIANGLE_STRIP:
+        break;
+    case GL_TRIANGLE_FAN:
+        break;
+    case GL_TRIANGLES:
+        break;
+    }
 }
 
 GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices)
@@ -195,7 +262,15 @@ GLAPI void APIENTRY glEnable(GLenum cap)
 
 GLAPI void APIENTRY glEnableClientState(GLenum array)
 {
-    notImplementedYet(__func__);
+    switch (array)
+    {
+    case GL_COLOR_ARRAY:
+        colorArrayEnabled = GL_TRUE;
+        break;
+    case GL_VERTEX_ARRAY:
+        vertexArrayEnabled = GL_TRUE;
+        break;
+    }
 }
 
 GLAPI void APIENTRY glFinish(void)
@@ -420,7 +495,7 @@ GLAPI void APIENTRY glPointSize(GLfloat size)
 
 GLAPI void APIENTRY glPointSizex(GLfixed size)
 {
-    notImplementedYet(__func__);
+    pointSize = size;
 }
 
 GLAPI void APIENTRY glPolygonOffset(GLfloat factor, GLfloat units)
@@ -435,12 +510,20 @@ GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
 
 GLAPI void APIENTRY glPopMatrix(void)
 {
-    notImplementedYet(__func__);
+    --matrixStackTop;
+    if (matrixStackTop < 0)
+    {
+        currentError = GL_STACK_UNDERFLOW;
+    }
 }
 
 GLAPI void APIENTRY glPushMatrix(void)
 {
-    notImplementedYet(__func__);
+    ++matrixStackTop;
+    if (matrixStackTop >= MATRIX_STACK_CAPACITY)
+    {
+        currentError = GL_STACK_OVERFLOW;
+    }
 }
 
 GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
@@ -563,7 +646,18 @@ GLAPI void APIENTRY glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 
 GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    notImplementedYet(__func__);
+    vertexStride = stride;
+    vertexType = type;
+    vertexSize = size;
+    vertexPointer = pointer;
+
+    if (size != 2 && size != 3 && size != 4) {
+        currentError = GL_INVALID_VALUE;
+    }
+
+    if (stride < 0 ) {
+        currentError = GL_INVALID_VALUE;
+    }
 }
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
