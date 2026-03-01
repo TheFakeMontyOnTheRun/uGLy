@@ -70,7 +70,7 @@ draw(void)
       glEnableClientState(GL_COLOR_ARRAY);
 
       /* draw triangle */
-      // glDrawArrays(GL_TRIANGLES, 0, 3);
+      glDrawArrays(GL_TRIANGLES, 0, 3);
 
       /* draw some points */
       // glPointSizex(Div(intToFix(31), intToFix(2)));

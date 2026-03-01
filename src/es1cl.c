@@ -5,9 +5,11 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <GLES/gl.h>
 
+typedef uint32_t FramebufferPixelFormat;
 
 #define kIntegerPart 16
 
@@ -23,12 +25,15 @@
 
 #define MATRIX_STACK_CAPACITY 16
 
+#define MIN(v1, v2) (( (v1) < (v2) ) ? (v1) : (v2) )
+#define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
+
+#define YRES_FRAMEBUFFER 300
+#define XRES_FRAMEBUFFER 300
+
 GLenum currentError = GL_NO_ERROR;
 
 uint32_t clearColor;
-
-uint16_t xres = 320;
-uint16_t yres = 240;
 
 uint8_t matrixStackTop = 0;
 
@@ -49,9 +54,9 @@ GLfixed pointSize = intToFix(1);
 uint8_t clearDepth = 0;
 uint8_t clearStencil = 0;
 
-extern uint32_t framebuffer[320 * 240];
-extern uint8_t zBuffer[320 * 240];
-extern uint8_t stencilBuffer[320 * 240];
+extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 void invalidFunctionInvoked(char *funcName)
 {
@@ -65,6 +70,169 @@ void notImplementedYet(char *funcName)
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
     assert(0);
+}
+
+static void fillBottomFlat(const int *coords, FramebufferPixelFormat *colour) {
+	int y = coords[1];
+	GLfixed dXDy2;
+	GLfixed dXDy1;
+	GLfixed fX0;
+	GLfixed fX1;
+	GLfixed dX1X0;
+	GLfixed dX0X2;
+	GLfixed dY1Y0;
+	GLfixed dY2Y0;
+	int yFinal = MIN(coords[3], coords[5]);
+
+	GLfixed x0 = intToFix(coords[0]);
+	GLfixed y0 = intToFix(coords[1]);
+	GLfixed x1 = intToFix(coords[2]);
+	GLfixed y1 = intToFix(coords[3]);
+	GLfixed x2 = intToFix(coords[4]);
+	GLfixed y2 = intToFix(coords[5]);
+
+
+	dX1X0 = (x1 - x0);
+	dX0X2 = (x0 - x2);
+	dY1Y0 = (y1 - y0);
+	dY2Y0 = (y2 - y0);
+
+	if (dY2Y0 == 0 || dY1Y0 == 0) {
+		return;
+	}
+
+	dXDy2 = Div(dX0X2, dY2Y0);
+	dXDy1 = Div(dX1X0, dY1Y0);
+	fX0 = x0;
+	fX1 = x0;
+
+	for (; y < yFinal; ++y) {
+		if (y >= YRES_FRAMEBUFFER) {
+			return;
+		} else if (y >= 0) {
+			int iFX1 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX1)), 0);
+			int iFX0 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX0)), 0);
+			FramebufferPixelFormat *destination = &framebuffer[
+					(XRES_FRAMEBUFFER * y) + MIN(iFX0, iFX1)];
+
+			unsigned int px;
+			size_t length = abs(iFX1 - iFX0);
+			FramebufferPixelFormat* ptr = destination;
+			for (px = 0; px < length; ++px) {
+				*ptr = *colour;
+				ptr++;
+			}
+		}
+		fX0 -= dXDy2;
+		fX1 += dXDy1;
+
+
+	}
+}
+
+
+static void fillTopFlat(int *coords, FramebufferPixelFormat *colour) {
+	int y = coords[1];
+	int yFinal = MAX(coords[3], coords[5]);
+
+	GLfixed x0 = intToFix(coords[0]);
+	GLfixed y0 = intToFix(coords[1]);
+	GLfixed x1 = intToFix(coords[2]);
+	GLfixed y1 = intToFix(coords[3]);
+	GLfixed x2 = intToFix(coords[4]);
+	GLfixed y2 = intToFix(coords[5]);
+
+	GLfixed dXDy1;
+	GLfixed dXDy2;
+	GLfixed fX0;
+	GLfixed fX1;
+
+
+	GLfixed dX1X0 = (x1 - x0);
+	GLfixed dX2X0 = (x2 - x0);
+	GLfixed dY0Y1 = (y0 - y1);
+	GLfixed dY0Y2 = (y0 - y2);
+
+	if (dY0Y1 == 0 || dY0Y2 == 0) {
+		return;
+	}
+
+	dXDy1 = Div(dX1X0, dY0Y1);
+	dXDy2 = Div(dX2X0, dY0Y2);
+	fX0 = x0; /* p1 */
+	fX1 = x0; /* p2 */
+
+	for (; y >= yFinal; --y) {
+		if (y < 0) {
+			return;
+		} else if (y < YRES_FRAMEBUFFER) {
+			int iFX1 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX1)), 0);
+			int iFX0 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX0)), 0);
+			FramebufferPixelFormat *destination = &framebuffer[
+					(XRES_FRAMEBUFFER * y) + MIN(iFX0, iFX1)];
+
+			unsigned int px;
+			size_t length = abs(iFX1 - iFX0);
+			FramebufferPixelFormat* ptr = destination;
+			for (px = 0; px < length; ++px) {
+				*ptr = *colour;
+				ptr++;
+			}
+		}
+
+		fX0 += dXDy1;
+		fX1 += dXDy2;
+	}
+}
+
+static void fillTriangle(int *coords, FramebufferPixelFormat *colour) {
+    int newCoors[6];
+    int newCoors2[6];
+
+    int upper = -1;
+    int lower = -1;
+    int other = 0;
+    int c;
+
+    for (c = 0; c < 3; ++c) {
+        if (upper == -1 || coords[(2 * c) + 1] < coords[(2 * upper) + 1]) {
+            upper = c;
+        }
+
+        if (lower == -1 || coords[(2 * c) + 1] > coords[(2 * lower) + 1]) {
+            lower = c;
+        }
+    }
+
+    if (lower == 0 || upper == 0) {
+        other = 1;
+    }
+
+    if ((lower == 1 || upper == 1) && (other == 1)) {
+        other = 2;
+    }
+
+    if ((lower == 2 || upper == 2) && (other == 2)) {
+        other = 0;
+    }
+
+    newCoors[0] = coords[2 * upper];
+    newCoors[1] = coords[(2 * upper) + 1];
+    newCoors[2] = coords[2 * lower];
+    newCoors[3] = coords[(2 * lower) + 1];
+    newCoors[4] = coords[2 * other];
+    newCoors[5] = coords[(2 * other) + 1];
+
+    newCoors2[0] = coords[2 * lower];
+    newCoors2[1] = coords[(2 * lower) + 1];
+    newCoors2[2] = coords[2 * other];
+    newCoors2[3] = coords[(2 * other) + 1];
+    newCoors2[4] = coords[2 * upper];
+    newCoors2[5] = coords[(2 * upper) + 1];
+
+
+    fillBottomFlat(&newCoors[0], colour);
+    fillTopFlat(&newCoors2[0], colour);
 }
 
 GLAPI void APIENTRY glActiveTexture(GLenum texture)
@@ -97,7 +265,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
     int c;
     if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT)
     {
-        for (c = 0; c < (xres * yres); ++c)
+        for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             framebuffer[c] = clearColor;
         }
@@ -105,7 +273,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
     if ((mask &  GL_DEPTH_BUFFER_BIT ) ==  GL_DEPTH_BUFFER_BIT )
     {
-        for (c = 0; c < (xres * yres); ++c)
+        for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             zBuffer[c] = clearDepth;
         }
@@ -113,7 +281,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
     if ((mask & GL_STENCIL_BUFFER_BIT) == GL_STENCIL_BUFFER_BIT)
     {
-        for (c = 0; c < (xres * yres); ++c)
+        for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             stencilBuffer[c] = clearStencil;
         }
@@ -258,23 +426,42 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
-    notImplementedYet(__func__);
     switch (mode)
     {
-    case GL_POINTS:
-        break;
-    case GL_LINE_STRIP:
-        break;
-    case GL_LINE_LOOP:
-        break;
-    case GL_LINES:
-        break;
-    case GL_TRIANGLE_STRIP:
-        break;
-    case GL_TRIANGLE_FAN:
-        break;
     case GL_TRIANGLES:
+        {
+            int c;
+            int finalCount = count / 3;
+            for (c = first; c < finalCount; ++c)
+            {
+                GLfixed vertex[6] = {
+                    *((GLfixed*)vertexPointer + 0), *((GLfixed*)vertexPointer + 1),
+                    *((GLfixed*)vertexPointer + 2), *((GLfixed*)vertexPointer + 3),
+                    *((GLfixed*)vertexPointer + 4), *((GLfixed*)vertexPointer + 5)
+                };
+
+
+
+                int coords[6] = {
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
+                };
+
+                uint32_t colours[3] = { 0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
+
+                fillTriangle(&coords[0], &colours[0]);
+            }
+        }
         break;
+    case GL_POINTS:
+    case GL_LINE_STRIP:
+    case GL_LINE_LOOP:
+    case GL_LINES:
+    case GL_TRIANGLE_STRIP:
+    case GL_TRIANGLE_FAN:
+    default:
+        notImplementedYet(__func__);
     }
 }
 

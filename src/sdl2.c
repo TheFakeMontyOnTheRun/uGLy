@@ -9,9 +9,12 @@ SDL_Window *window;
 SDL_Renderer *renderer;
 SDL_Texture *videoTexture;
 
-uint32_t framebuffer[320 * 240];
-uint8_t zBuffer[320 * 240];
-uint8_t stencilBuffer[320 * 240];
+#define YRES_FRAMEBUFFER 300
+#define XRES_FRAMEBUFFER 300
+
+uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 void initWindow(void)
 {
@@ -22,14 +25,14 @@ void initWindow(void)
     window =
             SDL_CreateWindow("OpenGL ES 1.0 Common Lite example",
                              SDL_WINDOWPOS_CENTERED,
-                             SDL_WINDOWPOS_CENTERED, 320, 240,
+                             SDL_WINDOWPOS_CENTERED, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER,
                              SDL_WINDOW_SHOWN);
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     videoTexture = SDL_CreateTexture(renderer,
                                      SDL_PIXELFORMAT_RGBA8888,
                                      SDL_TEXTUREACCESS_STREAMING,
-                                     320, 240
+                                     XRES_FRAMEBUFFER, YRES_FRAMEBUFFER
     );
 }
 
@@ -52,7 +55,7 @@ void swapBuffers(void)
 
     uint32_t* dst = (uint32_t*)pixels;
 
-    memcpy(dst, framebuffer, sizeof(uint32_t) * 320 * 240);
+    memcpy(dst, framebuffer, sizeof(uint32_t) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
 
     SDL_UnlockTexture(videoTexture);
 
