@@ -11,12 +11,14 @@ include_directories(
 
 include_directories(include)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H")
 
 find_package(SDL2 REQUIRED)
 
 add_executable(tri
         src/es1cl.c
+        src/matricesFP.c
+        src/raster.c
         src/sdl2.c
         samples/tri.c
 )

@@ -138,6 +138,7 @@ init(void)
 
 void mainLoop(void)
 {
+   // reshape(300, 300);
    while (1)
    {
       draw();
