@@ -36,6 +36,12 @@ void initWindow(void)
     );
 }
 
+void graphicsShutdown(void) {
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
 void swapBuffers(void)
 {
 
@@ -47,6 +53,8 @@ void swapBuffers(void)
     while (SDL_PollEvent(&event))
     {
         if (event.type == SDL_QUIT) {
+            graphicsShutdown();
+            exit(0);
             return;
         }
     }
@@ -61,11 +69,4 @@ void swapBuffers(void)
 
     SDL_RenderCopy(renderer, videoTexture, NULL, NULL);
     SDL_RenderPresent(renderer);
-}
-
-
-void graphicsShutdown(void) {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 }
