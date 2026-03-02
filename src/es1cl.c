@@ -49,6 +49,11 @@ GLint vertexSize = 0;
 const GLvoid* vertexPointer = NULL;
 uint8_t vertexArrayEnabled = GL_FALSE;
 
+uint16_t viewportX;
+uint16_t viewportY;
+uint16_t viewportWidth;
+uint16_t viewportHeight;
+
 GLenum matrixMode;
 
 GLfixed projectionMatrix[16];
@@ -758,5 +763,8 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    notImplementedYet(__func__);
+    viewportX = x;
+    viewportY = y;
+    viewportWidth = width;
+    viewportHeight = height;
 }
