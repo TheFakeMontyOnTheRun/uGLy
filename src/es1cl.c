@@ -330,9 +330,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 };
 
                 int coords[6] = {
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 4), vertex[0])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 4), vertex[1])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 4), vertex[2])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 4), vertex[3])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 4), vertex[4])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 4), vertex[5]))
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
                 };
 
                 uint32_t colours[3] = { 0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
