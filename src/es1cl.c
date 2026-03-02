@@ -284,6 +284,10 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    ///TODO: better place the mvp matrix computation
+    GLfixed mvp[16];
+    mat4x4_mul(&projectionMatrix[0], &modelViewMatrix[0], &mvp[0]);
+
     switch (mode)
     {
     case GL_TRIANGLES:
@@ -292,16 +296,42 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             int finalCount = count / 3;
             for (c = first; c < finalCount; ++c)
             {
+                GLfixed vecs[16];
+                GLfixed transformed[16];
+
+                vecs[0] = *((GLfixed*)vertexPointer + 0);
+                vecs[1] = *((GLfixed*)vertexPointer + 1);
+                vecs[2] = *((GLfixed*)vertexPointer + 2);
+                vecs[3] = intToFix(1);
+
+                vecs[4] = *((GLfixed*)vertexPointer + 3);
+                vecs[5] = *((GLfixed*)vertexPointer + 4);
+                vecs[6] = *((GLfixed*)vertexPointer + 5);
+                vecs[7] = intToFix(1);
+
+                vecs[8] = *((GLfixed*)vertexPointer + 6);
+                vecs[9] = *((GLfixed*)vertexPointer + 7);
+                vecs[10] = *((GLfixed*)vertexPointer + 8);
+                vecs[14] = intToFix(1);
+
+                mat4x4_transformVec( &transformed[0], &mvp[0], &vecs[0]);
+                mat4x4_transformVec( &transformed[4], &mvp[0], &vecs[4]);
+                mat4x4_transformVec( &transformed[8], &mvp[0], &vecs[8]);
+
+                GLfixed oneOverW0= Div(intToFix(1), transformed[3]);
+                GLfixed oneOverW1= Div(intToFix(1), transformed[7]);
+                GLfixed oneOverW2= Div(intToFix(1), transformed[11]);
+
                 GLfixed vertex[6] = {
-                    *((GLfixed*)vertexPointer + 0), *((GLfixed*)vertexPointer + 1),
-                    *((GLfixed*)vertexPointer + 2), *((GLfixed*)vertexPointer + 3),
-                    *((GLfixed*)vertexPointer + 4), *((GLfixed*)vertexPointer + 5)
+                    Mul(oneOverW0,transformed[0]), Mul(oneOverW0,transformed[1]),
+                    Mul(oneOverW1,transformed[4]), Mul(oneOverW1,transformed[5]),
+                    Mul(oneOverW2,transformed[8]), Mul(oneOverW2,transformed[9]),
                 };
 
                 int coords[6] = {
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 4), vertex[0])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 4), vertex[1])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 4), vertex[2])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 4), vertex[3])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 4), vertex[4])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 4), vertex[5]))
                 };
 
                 uint32_t colours[3] = { 0xFF0000FF, 0x00FF00FF, 0x0000FFFF};

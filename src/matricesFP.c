@@ -72,7 +72,7 @@ mat4x4_ortho(t_mat4x4 out, GLfixed left, GLfixed right, GLfixed bottom, GLfixed 
 void mat4x4_perspective(t_mat4x4 out, GLfixed fov, GLfixed ratio, GLfixed znear,
 						GLfixed zfar) {
 	GLfixed rad = floatToFix(M_PI / 180.0f);
-	GLfixed oneOverTanFovDiv2 = Div( intToFix(1), floatToFix(tan(fov * rad / 2.0f)));
+	GLfixed oneOverTanFovDiv2 = Div( intToFix(1), floatToFix(tan(fixToFloat(fov) * rad / 2.0f)));
 
 	out[0] = Div(oneOverTanFovDiv2, ratio);
 	out[1] = 0;
@@ -108,9 +108,10 @@ void mat4x4_perspective(t_mat4x4 out, GLfixed fov, GLfixed ratio, GLfixed znear,
  * @param uy
  * @param uz
  */
-void mat4x4_view(t_mat4x4 out, GLfixed cx, GLfixed cy, GLfixed cz, GLfixed tx, GLfixed ty,
-				 GLfixed tz, GLfixed ux,
-				 GLfixed uy, GLfixed uz) {
+void mat4x4_view(t_mat4x4 out,
+				 GLfixed cx, GLfixed cy, GLfixed cz,
+				 GLfixed tx, GLfixed ty, GLfixed tz,
+				 GLfixed ux, GLfixed uy, GLfixed uz) {
 	out[0] = intToFix(1);
 	out[1] = 0;
 	out[2] = 0;
@@ -140,8 +141,9 @@ void mat4x4_view(t_mat4x4 out, GLfixed cx, GLfixed cy, GLfixed cz, GLfixed tx, G
  * @param sz
  */
 void
-mat4x4_transform(t_mat4x4 out, GLfixed ox, GLfixed oy, GLfixed oz, GLfixed sx, GLfixed sy,
-				 GLfixed sz) {
+mat4x4_transform(t_mat4x4 out,
+				 GLfixed ox, GLfixed oy, GLfixed oz,
+				 GLfixed sx, GLfixed sy, GLfixed sz) {
 	out[0] = sx;
 	out[1] = 0;
 	out[2] = 0;
@@ -160,6 +162,40 @@ mat4x4_transform(t_mat4x4 out, GLfixed ox, GLfixed oy, GLfixed oz, GLfixed sx, G
 	out[15] = intToFix(1);
 }
 
+void
+mat4x4_transformVec(t_vec4 out,
+				    t_mat4x4 m,
+				    t_vec4 v) {
+	GLfixed x =
+		Mul(m[0],  v[0]) +
+		Mul(m[4],  v[1]) +
+		Mul(m[8],  v[2]) +
+		Mul(m[12], v[3]);
+
+	GLfixed y =
+		Mul(m[1],  v[0]) +
+		Mul(m[5],  v[1]) +
+		Mul(m[9],  v[2]) +
+		Mul(m[13], v[3]);
+
+	GLfixed z =
+		Mul(m[2],  v[0]) +
+		Mul(m[6],  v[1]) +
+		Mul(m[10], v[2]) +
+		Mul(m[14], v[3]);
+
+	GLfixed w =
+		Mul(m[3],  v[0]) +
+		Mul(m[7],  v[1]) +
+		Mul(m[11], v[2]) +
+		Mul(m[15], v[3]);
+
+	out[0] = x;
+	out[1] = y;
+	out[2] = z;
+	out[3] = w;
+}
+
 /**
  *
  * @param out
@@ -167,8 +203,8 @@ mat4x4_transform(t_mat4x4 out, GLfixed ox, GLfixed oy, GLfixed oz, GLfixed sx, G
  */
 void mat4x4_rotateX(t_mat4x4 out, GLfixed deg) {
 
-	GLfixed ca = floatToFix(cosf(deg * M_PI / 180.0f));
-	GLfixed sa = floatToFix(sinf(deg * M_PI / 180.0f));
+	GLfixed ca = floatToFix(cosf(fixToFloat(deg) * M_PI / 180.0f));
+	GLfixed sa = floatToFix(sinf(fixToFloat(deg) * M_PI / 180.0f));
 
 	out[0] = intToFix(1);
 	out[1] = 0;
@@ -195,8 +231,8 @@ void mat4x4_rotateX(t_mat4x4 out, GLfixed deg) {
  */
 void mat4x4_rotateY(t_mat4x4 out, GLfixed deg) {
 
-	GLfixed ca = floatToFix(cosf(deg * M_PI / 180.0f));
-	GLfixed sa = floatToFix(sinf(deg * M_PI / 180.0f));
+	GLfixed ca = floatToFix(cosf(fixToFloat(deg) * M_PI / 180.0f));
+	GLfixed sa = floatToFix(sinf(fixToFloat(deg) * M_PI / 180.0f));
 
 	out[0] = ca;
 	out[1] = 0;
@@ -223,8 +259,8 @@ void mat4x4_rotateY(t_mat4x4 out, GLfixed deg) {
  */
 void mat4x4_rotateZ(t_mat4x4 out, GLfixed deg) {
 
-	GLfixed ca = cosf(deg * M_PI / 180.0f);
-	GLfixed sa = sinf(deg * M_PI / 180.0f);
+	GLfixed ca = floatToFix(cosf(fixToFloat(deg) * M_PI / 180.0f));
+	GLfixed sa = floatToFix(sinf(fixToFloat(deg) * M_PI / 180.0f));
 	out[0] = ca;
 	out[1] = -sa;
 	out[2] = 0;

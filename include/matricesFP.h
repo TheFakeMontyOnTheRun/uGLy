@@ -2,6 +2,12 @@
 #define MATRICES_H
 
 typedef GLfixed t_mat4x4[16];
+typedef GLfixed t_vec4[4];
+
+void
+mat4x4_transformVec(t_vec4 out,
+                 t_mat4x4 m, t_vec4 v);
+
 
 void mat4x4_ortho(t_mat4x4 out, GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed znear,
                   GLfixed zfar);
