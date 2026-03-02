@@ -43,6 +43,10 @@ GLint vertexSize = 0;
 const GLvoid* vertexPointer = NULL;
 uint8_t vertexArrayEnabled = GL_FALSE;
 
+
+GLfixed projectionMatrixStack[16][16];
+GLfixed modelViewMatrixStack[16][16];
+
 GLsizei colorStride = 0;
 GLenum colorType = 0;
 GLint colorSize = 0;
@@ -568,6 +572,10 @@ GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
 GLAPI void APIENTRY glPopMatrix(void)
 {
     --matrixStackTop;
+
+    memcpy(&projectionMatrix[0], &projectionMatrixStack[matrixStackTop][0], sizeof(GLfixed) * 16);
+    memcpy(&modelViewMatrix[0], &modelViewMatrixStack[matrixStackTop][0], sizeof(GLfixed) * 16);
+
     if (matrixStackTop < 0)
     {
         currentError = GL_STACK_UNDERFLOW;
@@ -576,7 +584,11 @@ GLAPI void APIENTRY glPopMatrix(void)
 
 GLAPI void APIENTRY glPushMatrix(void)
 {
+    memcpy(&projectionMatrixStack[matrixStackTop][0], &projectionMatrix[0], sizeof(GLfixed) * 16);
+    memcpy(&modelViewMatrixStack[matrixStackTop][0], &modelViewMatrix[0], sizeof(GLfixed) * 16);
+
     ++matrixStackTop;
+
     if (matrixStackTop >= MATRIX_STACK_CAPACITY)
     {
         currentError = GL_STACK_OVERFLOW;
