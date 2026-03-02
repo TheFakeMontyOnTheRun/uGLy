@@ -3,11 +3,15 @@
 //
 
 #include <assert.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <GLES/gl.h>
+
+#include "internal.h"
+#include "matricesFP.h"
 
 typedef uint32_t FramebufferPixelFormat;
 
@@ -22,6 +26,8 @@ typedef uint32_t FramebufferPixelFormat;
 #define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
 
 #define fixToFloat(fp) (fixToInt(Mul((fp), intToFix(16))) / 16.0f)
+
+#define floatToFix(f) ((GLfixed)(65536.0f * (f)))
 
 #define MATRIX_STACK_CAPACITY 16
 
@@ -43,6 +49,10 @@ GLint vertexSize = 0;
 const GLvoid* vertexPointer = NULL;
 uint8_t vertexArrayEnabled = GL_FALSE;
 
+GLenum matrixMode;
+
+GLfixed projectionMatrix[16];
+GLfixed modelViewMatrix[16];
 
 GLfixed projectionMatrixStack[16][16];
 GLfixed modelViewMatrixStack[16][16];
@@ -460,7 +470,15 @@ GLAPI void APIENTRY glLineWidthx(GLfixed width)
 
 GLAPI void APIENTRY glLoadIdentity(void)
 {
-    notImplementedYet(__func__);
+    switch (matrixMode)
+    {
+    case GL_PROJECTION:
+        mat4x4_identity(projectionMatrix);
+        break;
+    case GL_MODELVIEW:
+        mat4x4_identity(modelViewMatrix);
+        break;
+    }
 }
 
 GLAPI void APIENTRY glLoadMatrixf(const GLfloat* m)
@@ -500,7 +518,7 @@ GLAPI void APIENTRY glMaterialxv(GLenum face, GLenum pname, const GLfixed* param
 
 GLAPI void APIENTRY glMatrixMode(GLenum mode)
 {
-    notImplementedYet(__func__);
+    matrixMode = mode;
 }
 
 GLAPI void APIENTRY glMultMatrixf(const GLfloat* m)
