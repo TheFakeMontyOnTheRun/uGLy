@@ -372,7 +372,15 @@ GLAPI void APIENTRY glFrustumf(GLfloat left, GLfloat right, GLfloat bottom, GLfl
 
 GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
 {
-    notImplementedYet(__func__);
+    memset(&projectionMatrix[0], 0, sizeof(GLfixed) * 16);
+    GLfixed twoTimesN= Mul(intToFix(2), zNear);
+    projectionMatrix[0] = Div(twoTimesN, (right - left ));
+    projectionMatrix[5] = Div(twoTimesN, (top - bottom));
+    projectionMatrix[8] = Div((right + left),  (right - left));
+    projectionMatrix[9] = Div((top + bottom),  (top - bottom));
+    projectionMatrix[10] = -Div((zFar + zNear), ( zFar - zNear ));
+    projectionMatrix[11] = -intToFix(1);
+    projectionMatrix[14] = - Div(Mul( twoTimesN, zFar), (zFar - zNear));
 }
 
 GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* textures)
