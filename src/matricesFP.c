@@ -18,7 +18,7 @@
 
 #define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
 
-#define fixToFloat(fp) (fixToInt(Mul((fp), intToFix(16))) / 16.0f)
+#define fixToFloat(fp) ((fp) / 65536.0f)
 
 #define floatToFix(f) (65536.0f * (f))
 
