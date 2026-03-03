@@ -617,7 +617,11 @@ GLAPI void APIENTRY glSampleCoveragex(GLclampx value, GLboolean invert)
 
 GLAPI void APIENTRY glScalex(GLfixed x, GLfixed y, GLfixed z)
 {
-    notImplementedYet(__func__);
+    GLfixed mat[16];
+    GLfixed tmp[16];
+    mat4x4_transform(&mat[0], intToFix(1), intToFix(1), intToFix(1), x, y, z );
+    mat4x4_mul(&modelViewMatrix[0], &mat[0], &tmp[0]);
+    memcpy(&modelViewMatrix[0], &tmp[0], sizeof(GLfixed) * 16);
 }
 
 GLAPI void APIENTRY glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
