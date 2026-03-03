@@ -8,7 +8,7 @@
 #include <GLES/gl.h>
 
 
-static void invalidFunctionInvoked(char *funcName)
+static void invalidFunctionInvoked(char* funcName)
 {
     puts("Only OpenGL ES 1.0 Common Lite is supported");
     printf("Function called: %s\n", funcName);

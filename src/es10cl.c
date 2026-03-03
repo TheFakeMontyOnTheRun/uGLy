@@ -78,9 +78,9 @@ extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
-void fillTriangle(int *coords, FramebufferPixelFormat *colour);
+void fillTriangle(int* coords, FramebufferPixelFormat* colour);
 
-static void notImplementedYet(char *funcName)
+static void notImplementedYet(char* funcName)
 {
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
@@ -118,7 +118,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
         }
     }
 
-    if ((mask &  GL_DEPTH_BUFFER_BIT ) ==  GL_DEPTH_BUFFER_BIT )
+    if ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT)
     {
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
@@ -173,11 +173,13 @@ GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, cons
     colorSize = size;
     colorPointer = pointer;
 
-    if (size != 2 && size != 3 && size != 4) {
+    if (size != 2 && size != 3 && size != 4)
+    {
         currentError = GL_INVALID_VALUE;
     }
 
-    if (stride < 0 ) {
+    if (stride < 0)
+    {
         currentError = GL_INVALID_VALUE;
     }
     ///TODO: handle errors on type
@@ -375,14 +377,14 @@ GLAPI void APIENTRY glFrontFace(GLenum mode)
 GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
 {
     memset(&projectionMatrix[0], 0, sizeof(GLfixed) * 16);
-    GLfixed twoTimesN= Mul(intToFix(2), zNear);
+    GLfixed twoTimesN = Mul(intToFix(2), zNear);
     projectionMatrix[0] = Div(twoTimesN, (right - left ));
     projectionMatrix[5] = Div(twoTimesN, (top - bottom));
-    projectionMatrix[8] = Div((right + left),  (right - left));
-    projectionMatrix[9] = Div((top + bottom),  (top - bottom));
+    projectionMatrix[8] = Div((right + left), (right - left));
+    projectionMatrix[9] = Div((top + bottom), (top - bottom));
     projectionMatrix[10] = -Div((zFar + zNear), ( zFar - zNear ));
     projectionMatrix[11] = -intToFix(1);
-    projectionMatrix[14] = - Div(Mul( twoTimesN, zFar), (zFar - zNear));
+    projectionMatrix[14] = -Div(Mul( twoTimesN, zFar), (zFar - zNear));
 }
 
 GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* textures)
@@ -681,7 +683,7 @@ GLAPI void APIENTRY glTranslatex(GLfixed x, GLfixed y, GLfixed z)
     GLfixed tmp[16];
     mat4x4_transform(&mat[0], x, y, z, intToFix(1), intToFix(1), intToFix(1));
     mat4x4_mul(&modelViewMatrix[0], &mat[0], &tmp[0]);
-    memcpy( &modelViewMatrix[0], &tmp[0], sizeof(GLfixed) * 16 );
+    memcpy(&modelViewMatrix[0], &tmp[0], sizeof(GLfixed) * 16);
 }
 
 GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
@@ -691,11 +693,13 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
     vertexSize = size;
     vertexPointer = pointer;
 
-    if (size != 2 && size != 3 && size != 4) {
+    if (size != 2 && size != 3 && size != 4)
+    {
         currentError = GL_INVALID_VALUE;
     }
 
-    if (stride < 0 ) {
+    if (stride < 0)
+    {
         currentError = GL_INVALID_VALUE;
     }
     ///TODO: handle type errors

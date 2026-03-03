@@ -5,9 +5,9 @@
 
 #include "SDL.h"
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Texture *videoTexture;
+SDL_Window* window;
+SDL_Renderer* renderer;
+SDL_Texture* videoTexture;
 
 #define YRES_FRAMEBUFFER 300
 #define XRES_FRAMEBUFFER 300
@@ -18,15 +18,14 @@ uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 void initWindow(void)
 {
-
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
     window =
-            SDL_CreateWindow("OpenGL ES 1.0 Common Lite example",
-                             SDL_WINDOWPOS_CENTERED,
-                             SDL_WINDOWPOS_CENTERED, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER,
-                             SDL_WINDOW_SHOWN);
+        SDL_CreateWindow("OpenGL ES 1.0 Common Lite example",
+                         SDL_WINDOWPOS_CENTERED,
+                         SDL_WINDOWPOS_CENTERED, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER,
+                         SDL_WINDOW_SHOWN);
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     videoTexture = SDL_CreateTexture(renderer,
@@ -36,7 +35,8 @@ void initWindow(void)
     );
 }
 
-void graphicsShutdown(void) {
+void graphicsShutdown(void)
+{
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
@@ -44,18 +44,16 @@ void graphicsShutdown(void) {
 
 void swapBuffers(void)
 {
-
-    void *pixels;
+    void* pixels;
     int pitch;
-    int c;
     SDL_Event event;
 
     while (SDL_PollEvent(&event))
     {
-        if (event.type == SDL_QUIT) {
+        if (event.type == SDL_QUIT)
+        {
             graphicsShutdown();
             exit(0);
-            return;
         }
     }
 
