@@ -16,7 +16,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -
 find_package(SDL2 REQUIRED)
 
 add_executable(tri
-        src/es1cl.c
+        src/es10cl.c
+        src/es11.c
         src/matricesFP.c
         src/raster.c
         src/sdl2.c

@@ -80,14 +80,7 @@ extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 void fillTriangle(int *coords, FramebufferPixelFormat *colour);
 
-void invalidFunctionInvoked(char *funcName)
-{
-    puts("Only OpenGL ES 1.0 Common Lite is supported");
-    printf("Function called: %s\n", funcName);
-    assert(0);
-}
-
-void notImplementedYet(char *funcName)
+static void notImplementedYet(char *funcName)
 {
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
@@ -97,11 +90,6 @@ void notImplementedYet(char *funcName)
 GLAPI void APIENTRY glActiveTexture(GLenum texture)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glAlphaFunc(GLenum func, GLclampf ref)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glAlphaFuncx(GLenum func, GLclampx ref)
@@ -148,19 +136,9 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
     ///TODO: check for error conditions
 }
 
-GLAPI void APIENTRY glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
     clearColor = red << 24 | green << 16 | blue << 8 | alpha;
-}
-
-GLAPI void APIENTRY glClearDepthf(GLclampf depth)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glClearDepthx(GLclampx depth)
@@ -176,11 +154,6 @@ GLAPI void APIENTRY glClearStencil(GLint s)
 GLAPI void APIENTRY glClientActiveTexture(GLenum texture)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glColor4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glColor4x(GLfixed red, GLfixed green, GLfixed blue, GLfixed alpha)
@@ -254,11 +227,6 @@ GLAPI void APIENTRY glDepthMask(GLboolean flag)
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glDepthRangef(GLclampf zNear, GLclampf zFar)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glDepthRangex(GLclampx zNear, GLclampx zFar)
 {
     notImplementedYet(__func__);
@@ -329,9 +297,6 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
                 };
 
-                GLfixed z = Mul(oneOverW0, transformed[2]);
-                float fz = fixToFloat(z);
-
                 int coords[6] = {
                     (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])),
                     (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
@@ -392,16 +357,6 @@ GLAPI void APIENTRY glFlush(void)
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glFogf(GLenum pname, GLfloat param)
-{
-    invalidFunctionInvoked(__func__);
-}
-
-GLAPI void APIENTRY glFogfv(GLenum pname, const GLfloat* params)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glFogx(GLenum pname, GLfixed param)
 {
     notImplementedYet(__func__);
@@ -415,11 +370,6 @@ GLAPI void APIENTRY glFogxv(GLenum pname, const GLfixed* params)
 GLAPI void APIENTRY glFrontFace(GLenum mode)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glFrustumf(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
@@ -460,16 +410,6 @@ GLAPI void APIENTRY glHint(GLenum target, GLenum mode)
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glLightModelf(GLenum pname, GLfloat param)
-{
-    invalidFunctionInvoked(__func__);
-}
-
-GLAPI void APIENTRY glLightModelfv(GLenum pname, const GLfloat* params)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glLightModelx(GLenum pname, GLfixed param)
 {
     notImplementedYet(__func__);
@@ -480,16 +420,6 @@ GLAPI void APIENTRY glLightModelxv(GLenum pname, const GLfixed* params)
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glLightf(GLenum light, GLenum pname, GLfloat param)
-{
-    invalidFunctionInvoked(__func__);
-}
-
-GLAPI void APIENTRY glLightfv(GLenum light, GLenum pname, const GLfloat* params)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
 {
     notImplementedYet(__func__);
@@ -498,11 +428,6 @@ GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
 GLAPI void APIENTRY glLightxv(GLenum light, GLenum pname, const GLfixed* params)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glLineWidth(GLfloat width)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glLineWidthx(GLfixed width)
@@ -523,11 +448,6 @@ GLAPI void APIENTRY glLoadIdentity(void)
     }
 }
 
-GLAPI void APIENTRY glLoadMatrixf(const GLfloat* m)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glLoadMatrixx(const GLfixed* m)
 {
     notImplementedYet(__func__);
@@ -536,16 +456,6 @@ GLAPI void APIENTRY glLoadMatrixx(const GLfixed* m)
 GLAPI void APIENTRY glLogicOp(GLenum opcode)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glMaterialf(GLenum face, GLenum pname, GLfloat param)
-{
-    invalidFunctionInvoked(__func__);
-}
-
-GLAPI void APIENTRY glMaterialfv(GLenum face, GLenum pname, const GLfloat* params)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glMaterialx(GLenum face, GLenum pname, GLfixed param)
@@ -563,29 +473,14 @@ GLAPI void APIENTRY glMatrixMode(GLenum mode)
     matrixMode = mode;
 }
 
-GLAPI void APIENTRY glMultMatrixf(const GLfloat* m)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
 {
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glMultiTexCoord4f(GLenum target, GLfloat s, GLfloat t, GLfloat r, GLfloat q)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glNormal3x(GLfixed nx, GLfixed ny, GLfixed nz)
@@ -596,11 +491,6 @@ GLAPI void APIENTRY glNormal3x(GLfixed nx, GLfixed ny, GLfixed nz)
 GLAPI void APIENTRY glNormalPointer(GLenum type, GLsizei stride, const GLvoid* pointer)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glOrthof(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glOrthox(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
@@ -625,11 +515,6 @@ GLAPI void APIENTRY glPointSizex(GLfixed size)
     {
         currentError = GL_INVALID_VALUE;
     }
-}
-
-GLAPI void APIENTRY glPolygonOffset(GLfloat factor, GLfloat units)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
@@ -669,29 +554,63 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glRotatef(GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
 {
-    notImplementedYet(__func__);
-}
+    /* Convert angle (degrees) to radians */
+    float rad = fixToFloat(angle) * (float)M_PI / 180.0f;
 
-GLAPI void APIENTRY glSampleCoverage(GLclampf value, GLboolean invert)
-{
-    invalidFunctionInvoked(__func__);
+    float fx = fixToFloat(x);
+    float fy = fixToFloat(y);
+    float fz = fixToFloat(z);
+
+    /* Normalize axis */
+    float len = sqrtf(fx * fx + fy * fy + fz * fz);
+    if (len == 0.0f)
+        return;
+
+    fx /= len;
+    fy /= len;
+    fz /= len;
+
+    float c = cosf(rad);
+    float s = sinf(rad);
+    float t = 1.0f - c;
+
+    GLfixed R[16];
+
+    /* First column */
+    R[0] = floatToFix(t*fx*fx + c);
+    R[1] = floatToFix(t*fx*fy + s*fz);
+    R[2] = floatToFix(t*fx*fz - s*fy);
+    R[3] = 0;
+
+    /* Second column */
+    R[4] = floatToFix(t*fx*fy - s*fz);
+    R[5] = floatToFix(t*fy*fy + c);
+    R[6] = floatToFix(t*fy*fz + s*fx);
+    R[7] = 0;
+
+    /* Third column */
+    R[8] = floatToFix(t*fx*fz + s*fy);
+    R[9] = floatToFix(t*fy*fz - s*fx);
+    R[10] = floatToFix(t*fz*fz + c);
+    R[11] = 0;
+
+    /* Fourth column */
+    R[12] = 0;
+    R[13] = 0;
+    R[14] = 0;
+    R[15] = intToFix(1);
+
+    /* Post-multiply current matrix */
+    GLfixed result[16];
+    mat4x4_mul(R, modelViewMatrix, result);
+    memcpy(modelViewMatrix, result, sizeof(result));
 }
 
 GLAPI void APIENTRY glSampleCoveragex(GLclampx value, GLboolean invert)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glScalef(GLfloat x, GLfloat y, GLfloat z)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glScalex(GLfixed x, GLfixed y, GLfixed z)
@@ -729,16 +648,6 @@ GLAPI void APIENTRY glTexCoordPointer(GLint size, GLenum type, GLsizei stride, c
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glTexEnvf(GLenum target, GLenum pname, GLfloat param)
-{
-    invalidFunctionInvoked(__func__);
-}
-
-GLAPI void APIENTRY glTexEnvfv(GLenum target, GLenum pname, const GLfloat* params)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glTexEnvx(GLenum target, GLenum pname, GLfixed param)
 {
     notImplementedYet(__func__);
@@ -755,11 +664,6 @@ GLAPI void APIENTRY glTexImage2D(GLenum target, GLint level, GLint internalforma
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glTexParameterf(GLenum target, GLenum pname, GLfloat param)
-{
-    invalidFunctionInvoked(__func__);
-}
-
 GLAPI void APIENTRY glTexParameterx(GLenum target, GLenum pname, GLfixed param)
 {
     notImplementedYet(__func__);
@@ -769,11 +673,6 @@ GLAPI void APIENTRY glTexSubImage2D(GLenum target, GLint level, GLint xoffset, G
                                     GLsizei height, GLenum format, GLenum type, const GLvoid* pixels)
 {
     notImplementedYet(__func__);
-}
-
-GLAPI void APIENTRY glTranslatef(GLfloat x, GLfloat y, GLfloat z)
-{
-    invalidFunctionInvoked(__func__);
 }
 
 GLAPI void APIENTRY glTranslatex(GLfixed x, GLfixed y, GLfixed z)
