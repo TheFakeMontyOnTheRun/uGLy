@@ -45,9 +45,9 @@ draw(void)
 {
 
    static const GLfixed verts[3][3] = {
-      { -intToFix(1), -intToFix(1),  -intToFix(7) },
-      {  intToFix(1), -intToFix(1),  -intToFix(5) },
-      {      0,        intToFix(1),  -intToFix(6) }
+      { -intToFix(1), -intToFix(1),  intToFix(0) },
+      {  intToFix(1), -intToFix(1),  intToFix(0) },
+      {      0,        intToFix(1),  intToFix(0) }
    };
    static const GLfixed colors[3][4] = {
       { 65536,     0,     0,    65536 },
@@ -58,12 +58,11 @@ draw(void)
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
    glPushMatrix();
-   // glRotatex(view_rotx, 1, 0, 0);
-     // glRotatex(view_roty, 0, 1, 0);
-   // glRotatex(view_rotz, 0, 0, 1);
+   glRotatex(view_rotx, 1, 0, 0);
+   glRotatex(view_roty, 0, 1, 0);
+   glRotatex(view_rotz, 0, 0, 1);
 
    {
-
       glVertexPointer(3, GL_FIXED, 0, verts);
       glColorPointer(4, GL_FIXED, 0, colors);
 
@@ -100,7 +99,7 @@ reshape(int width, int height)
 
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
-   // glTranslatex(0, 0, -intToFix(10));
+   glTranslatex(0, 0, -intToFix(10));
 }
 
 
@@ -142,8 +141,6 @@ void mainLoop(void)
    {
       draw();
       swapBuffers();
-      view_rotz += Div(intToFix(1), intToFix(10));
-      view_rotz = view_rotz% (intToFix(360));
    }
 }
 

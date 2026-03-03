@@ -287,7 +287,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
     ///TODO: better place the mvp matrix computation
     GLfixed mvp[16];
-    mat4x4_mul(&projectionMatrix[0], &modelViewMatrix[0], &mvp[0]);
+    mat4x4_mul(&modelViewMatrix[0], &projectionMatrix[0], &mvp[0]);
 
     switch (mode)
     {
@@ -313,29 +313,35 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 vecs[8] = *((GLfixed*)vertexPointer + 6);
                 vecs[9] = *((GLfixed*)vertexPointer + 7);
                 vecs[10] = *((GLfixed*)vertexPointer + 8);
-                vecs[14] = intToFix(1);
+                vecs[11] = intToFix(1);
 
-                mat4x4_transformVec( &transformed[0], &mvp[0], &vecs[0]);
-                mat4x4_transformVec( &transformed[4], &mvp[0], &vecs[4]);
-                mat4x4_transformVec( &transformed[8], &mvp[0], &vecs[8]);
+                mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
+                mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
+                mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
 
-                GLfixed oneOverW0= Div(intToFix(1), transformed[3]);
-                GLfixed oneOverW1= Div(intToFix(1), transformed[7]);
-                GLfixed oneOverW2= Div(intToFix(1), transformed[11]);
+                GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
+                GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
+                GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
 
                 GLfixed vertex[6] = {
-                    Mul(oneOverW0,transformed[0]), Mul(oneOverW0,transformed[1]),
-                    Mul(oneOverW1,transformed[4]), Mul(oneOverW1,transformed[5]),
-                    Mul(oneOverW2,transformed[8]), Mul(oneOverW2,transformed[9]),
+                    Mul(oneOverW0, transformed[0]), Mul(oneOverW0, transformed[1]),
+                    Mul(oneOverW1, transformed[4]), Mul(oneOverW1, transformed[5]),
+                    Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
                 };
+
+                GLfixed z = Mul(oneOverW0, transformed[2]);
+                float fz = fixToFloat(z);
 
                 int coords[6] = {
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt( Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])), (YRES_FRAMEBUFFER / 2) - fixToInt( Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
+                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])),
+                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])),
+                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
+                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])),
+                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
                 };
 
-                uint32_t colours[3] = { 0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
+                uint32_t colours[3] = {0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
 
                 fillTriangle(&coords[0], &colours[0]);
             }
@@ -772,7 +778,11 @@ GLAPI void APIENTRY glTranslatef(GLfloat x, GLfloat y, GLfloat z)
 
 GLAPI void APIENTRY glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 {
-    notImplementedYet(__func__);
+    GLfixed mat[16];
+    GLfixed tmp[16];
+    mat4x4_transform(&mat[0], x, y, z, intToFix(1), intToFix(1), intToFix(1));
+    mat4x4_mul(&modelViewMatrix[0], &mat[0], &tmp[0]);
+    memcpy( &modelViewMatrix[0], &tmp[0], sizeof(GLfixed) * 16 );
 }
 
 GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
