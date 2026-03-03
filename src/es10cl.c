@@ -505,11 +505,6 @@ GLAPI void APIENTRY glPixelStorei(GLenum pname, GLint param)
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glPointSize(GLfloat size)
-{
-    notImplementedYet(__func__);
-}
-
 GLAPI void APIENTRY glPointSizex(GLfixed size)
 {
     pointSize = size;

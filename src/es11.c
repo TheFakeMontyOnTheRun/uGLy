@@ -110,6 +110,11 @@ GLAPI void APIENTRY glNormal3f(GLfloat nx, GLfloat ny, GLfloat nz)
     invalidFunctionInvoked(__func__);
 }
 
+GLAPI void APIENTRY glPointSize(GLfloat size)
+{
+    invalidFunctionInvoked(__func__);
+}
+
 GLAPI void APIENTRY glOrthof(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar)
 {
     invalidFunctionInvoked(__func__);
