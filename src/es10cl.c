@@ -38,6 +38,126 @@ typedef uint32_t FramebufferPixelFormat;
 #define YRES_FRAMEBUFFER 300
 #define XRES_FRAMEBUFFER 300
 
+GLfixed sinfp[91] =
+{
+    0,
+    1143,
+    2287,
+    3429,
+    4571,
+    5711,
+    6850,
+    7986,
+    9120,
+    10252,
+    11380,
+    12504,
+    13625,
+    14742,
+    15854,
+    16961,
+    18064,
+    19160,
+    20251,
+    21336,
+    22414,
+    23486,
+    24550,
+    25606,
+    26655,
+    27696,
+    28729,
+    29752,
+    30767,
+    31772,
+    32768,
+    33753,
+    34728,
+    35693,
+    36647,
+    37589,
+    38521,
+    39440,
+    40347,
+    41243,
+    42125,
+    42995,
+    43852,
+    44695,
+    45525,
+    46340,
+    47142,
+    47929,
+    48702,
+    49460,
+    50203,
+    50931,
+    51643,
+    52339,
+    53019,
+    53683,
+    54331,
+    54963,
+    55577,
+    56175,
+    56755,
+    57319,
+    57864,
+    58393,
+    58903,
+    59395,
+    59870,
+    60326,
+    60763,
+    61183,
+    61583,
+    61965,
+    62328,
+    62672,
+    62997,
+    63302,
+    63589,
+    63856,
+    64103,
+    64331,
+    64540,
+    64729,
+    64898,
+    65047,
+    65176,
+    65286,
+    65376,
+    65446,
+    65496,
+    65526,
+    65536,
+};
+
+GLfixed sinfpx(GLfixed angle)
+{
+    angle %= intToFix(360);
+    if (angle < 0)
+        angle += intToFix(360);
+
+    int deg = fixToInt(angle);   /* 0..359 */
+
+    if (deg <= 90)
+        return sinfp[deg];
+
+    if (deg <= 180)
+        return sinfp[180 - deg];
+
+    if (deg <= 270)
+        return -sinfp[deg - 180];
+
+    return -sinfp[360 - deg];
+}
+
+GLfixed cosfpx(GLfixed angle)
+{
+    return sinfpx(angle + intToFix(90));
+}
+
 GLenum currentError = GL_NO_ERROR;
 
 uint32_t clearColor;
@@ -553,9 +673,7 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
 
 GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
 {
-    /* Convert angle (degrees) to radians */
-    float rad = fixToFloat(angle) * (float)M_PI / 180.0f;
-
+    ///TODO: get rid of the sqrt call - 
     float fx = fixToFloat(x);
     float fy = fixToFloat(y);
     float fz = fixToFloat(z);
@@ -569,8 +687,8 @@ GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
     fy /= len;
     fz /= len;
 
-    float c = cosf(rad);
-    float s = sinf(rad);
+    float c = fixToFloat(cosfpx(angle));
+    float s = fixToFloat(sinfpx(angle));
     float t = 1.0f - c;
 
     GLfixed R[16];
