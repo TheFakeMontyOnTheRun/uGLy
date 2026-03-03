@@ -35,7 +35,9 @@
 #include <stdio.h>
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
 
-void initWindow(void);
+#include "internal.h"
+
+void initWindow( KeyCallback callback);
 void swapBuffers(void);
 
 static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
@@ -111,27 +113,33 @@ init(void)
     glClearColorx(grey, grey, grey, fullAlpha);
 }
 
-// static void
-// special_key(int special)
-// {
-//    switch (special) {
-//    case EGLUT_KEY_LEFT:
-//       view_roty += 5.0;
-//       break;
-//    case EGLUT_KEY_RIGHT:
-//       view_roty -= 5.0;
-//       break;
-//    case EGLUT_KEY_UP:
-//       view_rotx += 5.0;
-//       break;
-//    case EGLUT_KEY_DOWN:
-//       view_rotx -= 5.0;
-//       break;
-//    default:
-//       break;
-//    }
-//    eglutPostRedisplay();
-// }
+static void
+special_key(int special)
+{
+   switch (special) {
+   case 'a':
+      view_roty += intToFix(5);
+      break;
+   case 'd':
+      view_roty -= intToFix(5);
+      break;
+   case 'w':
+      view_rotx += intToFix(5);
+      break;
+   case 's':
+      view_rotx -= intToFix(5);
+      break;
+   case 'z':
+       view_rotz -= intToFix(5);
+       break;
+   case 'x':
+       view_rotz -= intToFix(5);
+       break;
+
+   default:
+      break;
+   }
+}
 
 
 void mainLoop(void)
@@ -148,7 +156,7 @@ void mainLoop(void)
 int
 main(int argc, char* argv[])
 {
-    initWindow();
+    initWindow(special_key);
 
     init();
 

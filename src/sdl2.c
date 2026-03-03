@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "SDL.h"
+#include "internal.h"
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -16,8 +17,11 @@ uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
-void initWindow(void)
+KeyCallback keyCallback;
+
+void initWindow( KeyCallback callback)
 {
+    keyCallback = callback;
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
 
@@ -54,6 +58,11 @@ void swapBuffers(void)
         {
             graphicsShutdown();
             exit(0);
+        }
+
+        if (event.type == SDL_KEYDOWN)
+        {
+            keyCallback(event.key.keysym.sym);
         }
     }
 

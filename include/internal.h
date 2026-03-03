@@ -4,5 +4,5 @@
 
 #ifndef INTERNAL_H
 #define INTERNAL_H
-
+typedef void ( *KeyCallback )(char charkey);
 #endif // INTERNAL_H
