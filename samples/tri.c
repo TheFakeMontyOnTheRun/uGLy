@@ -133,7 +133,7 @@ special_key(int special)
        view_rotz -= intToFix(5);
        break;
    case 'x':
-       view_rotz -= intToFix(5);
+       view_rotz += intToFix(5);
        break;
 
    default:
