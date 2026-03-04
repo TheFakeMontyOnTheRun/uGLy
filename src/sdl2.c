@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "SDL.h"
+#include "SDL_image.h"
 #include "internal.h"
 
 SDL_Window* window;
@@ -44,6 +45,45 @@ void graphicsShutdown(void)
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+struct Bitmap* loadBitmap(const char *filename)
+{
+    struct Bitmap* toReturn;
+
+    toReturn = calloc(1, sizeof( struct Bitmap));
+
+    SDL_Surface *image = IMG_Load(filename);
+
+    toReturn->width = image->w;
+    toReturn->height = image->h;
+    toReturn->texels = calloc( sizeof(uint32_t), 128 * 128);
+
+    int pitch = image->pitch;
+    int bpp = image->format->BytesPerPixel;
+
+    if (SDL_MUSTLOCK(image)) {
+        SDL_LockSurface(image);
+    }
+
+    for (int y = 0; y < image->h; y++) {
+        for (int x = 0; x < image->w; x++) {
+            uint8_t *pixel_ptr = image->pixels + y * pitch + x * bpp;
+
+            uint8_t r, g, b, a;
+            SDL_GetRGBA(*(uint32_t *)pixel_ptr, image->format, &r, &g, &b, &a);
+
+            toReturn->texels[toReturn->width * y + x] = r << 24 | g << 16 | b << 8 | a;
+        }
+    }
+
+    if (SDL_MUSTLOCK(image)) {
+        SDL_UnlockSurface(image);
+    }
+
+    SDL_FreeSurface(image);
+
+    return toReturn;
 }
 
 void swapBuffers(void)

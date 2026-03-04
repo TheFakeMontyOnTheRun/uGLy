@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake-sd
 
 include_directories(
         ${SDL2_INCLUDE_DIR}
+        ${SDL2_IMAGE_INCLUDE_DIRS}
 )
 
 include_directories(include)
@@ -14,6 +15,7 @@ include_directories(include)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H")
 
 find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
 
 add_executable(tri
         src/es10cl.c
@@ -27,6 +29,6 @@ add_executable(tri
 
 include(FindPkgConfig)
 
-target_include_directories(tri PUBLIC ${SDL2_INCLUDE_DIR})
-target_link_libraries(tri LINK_PUBLIC ${SDL2_LIBRARY} m)
+target_include_directories(tri PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(tri LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
 

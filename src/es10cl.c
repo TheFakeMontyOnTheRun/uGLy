@@ -13,8 +13,6 @@
 #include "internal.h"
 #include "matricesFP.h"
 
-typedef uint32_t FramebufferPixelFormat;
-
 #define kIntegerPart 16
 
 #define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
@@ -158,6 +156,14 @@ GLfixed cosfpx(GLfixed angle)
     return sinfpx(angle + intToFix(90));
 }
 
+GLuint currentlyAvailableTexture = 0;
+
+GLuint currentTexture = 0;
+
+struct Texture textures[8];
+
+uint8_t textureMapping2DEnabled = 0;
+
 GLenum currentError = GL_NO_ERROR;
 
 uint32_t clearColor;
@@ -169,6 +175,13 @@ GLenum vertexType = 0;
 GLint vertexSize = 0;
 const GLvoid* vertexPointer = NULL;
 uint8_t vertexArrayEnabled = GL_FALSE;
+
+GLsizei textureCoordStride = 0;
+GLenum textureCoordType = 0;
+GLint textureCoordSize = 0;
+const GLvoid* textureCoordPointer = NULL;
+uint8_t textureCoordsEnabled = GL_FALSE;
+
 
 uint16_t viewportX;
 uint16_t viewportY;
@@ -198,8 +211,6 @@ extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
-void fillTriangle(int* coords, FramebufferPixelFormat* colour);
-
 static void notImplementedYet(char* funcName)
 {
     puts("Not implemented yet");
@@ -219,7 +230,13 @@ GLAPI void APIENTRY glAlphaFuncx(GLenum func, GLclampx ref)
 
 GLAPI void APIENTRY glBindTexture(GLenum target, GLuint texture)
 {
-    notImplementedYet(__func__);
+    if (target == GL_TEXTURE_2D)
+    {
+        currentTexture = texture;
+    } else
+    {
+        currentError = GL_INVALID_ENUM;
+    }
 }
 
 GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor)
@@ -356,7 +373,14 @@ GLAPI void APIENTRY glDepthRangex(GLclampx zNear, GLclampx zFar)
 
 GLAPI void APIENTRY glDisable(GLenum cap)
 {
-    notImplementedYet(__func__);
+    switch (cap)
+    {
+    case GL_TEXTURE_2D:
+        textureMapping2DEnabled = GL_FALSE;
+        break;
+    default:
+        notImplementedYet(__func__);
+    }
 }
 
 GLAPI void APIENTRY glDisableClientState(GLenum array)
@@ -369,6 +393,11 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
     case GL_VERTEX_ARRAY:
         vertexArrayEnabled = GL_FALSE;
         break;
+    case GL_TEXTURE_COORD_ARRAY:
+        textureCoordsEnabled = GL_FALSE;
+        break;
+    default:
+        notImplementedYet(__func__);
     }
     ///TODO: handle other client states
 }
@@ -385,24 +414,34 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
         {
             int c;
             int finalCount = count / 3;
-            for (c = first; c < finalCount; ++c)
+            int firstTrig = first / 3;
+            GLfixed *vertexPtr = (GLfixed*)vertexPointer;
+            GLfixed *uvPtr = (GLfixed*)textureCoordPointer;
+
+            for (c = 0; c < firstTrig; ++c)
+            {
+                vertexPtr += 9;
+                uvPtr += 6;
+            }
+
+            for (c = 0; c < finalCount; ++c)
             {
                 GLfixed vecs[16];
                 GLfixed transformed[16];
 
-                vecs[0] = *((GLfixed*)vertexPointer + 0);
-                vecs[1] = *((GLfixed*)vertexPointer + 1);
-                vecs[2] = *((GLfixed*)vertexPointer + 2);
+                vecs[0] = *(vertexPtr + 0);
+                vecs[1] = *(vertexPtr + 1);
+                vecs[2] = *(vertexPtr + 2);
                 vecs[3] = intToFix(1);
 
-                vecs[4] = *((GLfixed*)vertexPointer + 3);
-                vecs[5] = *((GLfixed*)vertexPointer + 4);
-                vecs[6] = *((GLfixed*)vertexPointer + 5);
+                vecs[4] = *(vertexPtr + 3);
+                vecs[5] = *(vertexPtr + 4);
+                vecs[6] = *(vertexPtr + 5);
                 vecs[7] = intToFix(1);
 
-                vecs[8] = *((GLfixed*)vertexPointer + 6);
-                vecs[9] = *((GLfixed*)vertexPointer + 7);
-                vecs[10] = *((GLfixed*)vertexPointer + 8);
+                vecs[8] = *(vertexPtr + 6);
+                vecs[9] = *(vertexPtr + 7);
+                vecs[10] = *(vertexPtr + 8);
                 vecs[11] = intToFix(1);
 
                 mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
@@ -428,9 +467,29 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
                 };
 
-                uint32_t colours[3] = {0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
 
-                fillTriangle(&coords[0], &colours[0]);
+                if (textureMapping2DEnabled)
+                {
+                    if (textureCoordsEnabled)
+                    {
+                        uint8_t uvCoords[6] = {
+                            fixToInt( *(uvPtr + 0) ), fixToInt( *(uvPtr + 1)),
+                            fixToInt( *(uvPtr + 2) ), fixToInt( *(uvPtr + 3)),
+                            fixToInt( *(uvPtr + 4) ), fixToInt( *(uvPtr + 5)),
+                        };
+
+                        drawTexturedTriangle(&coords[0], &uvCoords[0], &textures[currentTexture], 0);
+                    } else
+                    {
+                        //error?!
+                    }
+                } else
+                {
+                    uint32_t colours[3] = {0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
+                    fillTriangle(&coords[0], &colours[0]);
+                }
+                vertexPtr += 9;
+                uvPtr += 6;
             }
         }
         break;
@@ -452,7 +511,14 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 
 GLAPI void APIENTRY glEnable(GLenum cap)
 {
-    notImplementedYet(__func__);
+    switch (cap)
+    {
+    case GL_TEXTURE_2D:
+        textureMapping2DEnabled = GL_TRUE;
+        break;
+    default:
+        notImplementedYet(__func__);
+    }
 }
 
 GLAPI void APIENTRY glEnableClientState(GLenum array)
@@ -465,8 +531,12 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
     case GL_VERTEX_ARRAY:
         vertexArrayEnabled = GL_TRUE;
         break;
+    case GL_TEXTURE_COORD_ARRAY:
+        textureCoordsEnabled = GL_TRUE;
+        break;
+    default:
+        notImplementedYet(__func__);
     }
-    ///TODO: handle other client states
 }
 
 GLAPI void APIENTRY glFinish(void)
@@ -509,7 +579,12 @@ GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfi
 
 GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* textures)
 {
-    notImplementedYet(__func__);
+    GLuint* ptr = textures;
+
+    for (int c = 0; c < n; ++c)
+    {
+        *ptr++ = currentlyAvailableTexture++;
+    }
 }
 
 GLAPI GLenum APIENTRY glGetError(void)
@@ -673,7 +748,7 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
 
 GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
 {
-    ///TODO: get rid of the sqrt call - 
+    ///TODO: get rid of the sqrt call -
     float fx = fixToFloat(x);
     float fy = fixToFloat(y);
     float fz = fixToFloat(z);
@@ -764,7 +839,10 @@ GLAPI void APIENTRY glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 
 GLAPI void APIENTRY glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    notImplementedYet(__func__);
+    textureCoordPointer = pointer;
+    textureCoordSize = size;
+    textureCoordStride = stride;
+    textureCoordType = type;
 }
 
 GLAPI void APIENTRY glTexEnvx(GLenum target, GLenum pname, GLfixed param)
@@ -780,7 +858,10 @@ GLAPI void APIENTRY glTexEnvxv(GLenum target, GLenum pname, const GLfixed* param
 GLAPI void APIENTRY glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
                                  GLint border, GLenum format, GLenum type, const GLvoid* pixels)
 {
-    notImplementedYet(__func__);
+    textures[currentTexture].width = width;
+    textures[currentTexture].height = height;
+    textures[currentTexture].texels = malloc(sizeof(uint32_t) * width * height);
+    memcpy(textures[currentTexture].texels, pixels, sizeof(uint32_t) * width * height);
 }
 
 GLAPI void APIENTRY glTexParameterx(GLenum target, GLenum pname, GLfixed param)

@@ -29,6 +29,7 @@
 
 #define fixToFloat(fp) ((fp) / 65536.0f)
 
+#define floatToFix(f) ((GLfixed)(65536.0f * (f)))
 
 #include <assert.h>
 #include <math.h>
@@ -37,24 +38,43 @@
 
 #include "internal.h"
 
-void initWindow( KeyCallback callback);
-void swapBuffers(void);
-
 static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
+
+struct Bitmap* texture;
+
+extern uint32_t framebuffer[300 * 300];
+
+GLuint textureID;
 
 static void
 draw(void)
 {
 
-    static const GLfixed verts[3][3] = {
+    static const GLfixed verts[6][3] = {
     { -intToFix(1), -intToFix(1),  intToFix(0) },
     {  intToFix(1), -intToFix(1),  intToFix(0) },
-    {      0,        intToFix(1),  intToFix(0) }
+    {  intToFix(1),  intToFix(1),  intToFix(0) },
+    { -intToFix(1), -intToFix(1),  intToFix(0) },
+    {  intToFix(1), intToFix(1),  intToFix(0) },
+    { -intToFix(1), intToFix(1),  intToFix(0) },
     };
-    static const GLfixed colors[3][4] = {
+    static const GLfixed colors[6][4] = {
     { 65536,     0,     0,    65536 },
     {     0, 65536,     0 ,   65536},
-    {     0,     0, 65536 ,   65536}
+    {     0,     0, 65536 ,   65536},
+    { 65536,     0,     0,    65536 },
+    {     0, 65536,     0 ,   65536},
+    {     0,     0, 65536 ,   65536},
+    };
+
+    static const GLfixed texCoords[12] = {
+        intToFix(  0), intToFix(128),
+        intToFix(128), intToFix(128),
+        intToFix(128), intToFix(0),
+
+        intToFix(  0), intToFix(128),
+        intToFix(128), intToFix(  0),
+        intToFix(  0), intToFix(  0),
     };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -65,14 +85,18 @@ draw(void)
     glRotatex(view_rotz, 0, 0, 1);
 
     {
+        glEnable(GL_TEXTURE_2D);
+        glTexCoordPointer(2, GL_FIXED, 0, texCoords);
         glVertexPointer(3, GL_FIXED, 0, verts);
         glColorPointer(4, GL_FIXED, 0, colors);
 
+        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
 
-        /* draw triangle */
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        /* draw triangles */
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glDrawArrays(GL_TRIANGLES, 3, 3);
 
         /* draw some points */
         // glPointSizex(Div(intToFix(31), intToFix(2)));
@@ -80,6 +104,7 @@ draw(void)
 
         glDisableClientState(GL_VERTEX_ARRAY);
         glDisableClientState(GL_COLOR_ARRAY);
+        glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     }
 
 
@@ -111,6 +136,19 @@ init(void)
     GLfixed grey = Div(intToFix(4), intToFix(10));
     GLfixed fullAlpha = intToFix(1);
     glClearColorx(grey, grey, grey, fullAlpha);
+
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 texture->width,
+                 texture->height,
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 texture->texels);
 }
 
 static void
@@ -148,6 +186,15 @@ void mainLoop(void)
     while (1)
     {
         draw();
+
+        // for (int y = 0; y < texture->height; ++y)
+        // {
+        //     for (int x = 0; x < texture->width; ++x)
+        //     {
+        //         framebuffer[ y * 300 + x ] = texture->texels[texture->width * y + x];
+        //     }
+        // }
+
         swapBuffers();
     }
 }
@@ -156,6 +203,13 @@ void mainLoop(void)
 int
 main(int argc, char* argv[])
 {
+    // for (int c = 0; c < 91; ++c)
+    // {
+    //     printf("%d,\n", floatToFix(sinf( c * (M_PI / 180.0f) ) ) );
+    // }
+
+    texture = loadBitmap("res/opengles.png");
+
     initWindow(special_key);
 
     init();
