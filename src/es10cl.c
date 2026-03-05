@@ -417,7 +417,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             int firstTrig = first / 3;
             GLfixed *vertexPtr = (GLfixed*)vertexPointer;
             GLfixed *uvPtr = (GLfixed*)textureCoordPointer;
-
+	    struct Texture* texture = &textures[currentTexture];
             for (c = 0; c < firstTrig; ++c)
             {
                 vertexPtr += 9;
@@ -473,12 +473,12 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     if (textureCoordsEnabled)
                     {
                         uint8_t uvCoords[6] = {
-                            fixToInt( *(uvPtr + 0) ), fixToInt( *(uvPtr + 1)),
-                            fixToInt( *(uvPtr + 2) ), fixToInt( *(uvPtr + 3)),
-                            fixToInt( *(uvPtr + 4) ), fixToInt( *(uvPtr + 5)),
+			  fixToInt( Mul(*(uvPtr + 0), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 1), intToFix(texture->height))),
+			  fixToInt( Mul(*(uvPtr + 2), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 3), intToFix(texture->height))),
+			  fixToInt( Mul(*(uvPtr + 4), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 5), intToFix(texture->height))),
                         };
 
-                        drawTexturedTriangle(&coords[0], &uvCoords[0], &textures[currentTexture], 0);
+                        drawTexturedTriangle(&coords[0], &uvCoords[0], texture, 0 );
                     } else
                     {
                         //error?!

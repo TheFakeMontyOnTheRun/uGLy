@@ -68,12 +68,12 @@ draw(void)
     };
 
     static const GLfixed texCoords[12] = {
-        intToFix(  0), intToFix(128),
-        intToFix(128), intToFix(128),
-        intToFix(128), intToFix(0),
+        intToFix(  0), intToFix(1),
+        intToFix(1), intToFix(1),
+        intToFix(1), intToFix(0),
 
-        intToFix(  0), intToFix(128),
-        intToFix(128), intToFix(  0),
+        intToFix(  0), intToFix(1),
+        intToFix(1), intToFix(  0),
         intToFix(  0), intToFix(  0),
     };
 
