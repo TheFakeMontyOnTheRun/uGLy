@@ -259,7 +259,7 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	GLfixed dXDy1;
 	GLfixed fX0;
 	GLfixed fX1;
-
+	///TODO: consider the fact that dY2Y0 == dY1Y0.
 	if (dY2Y0 == 0 || dY1Y0 == 0) {
 		return;
 	}
@@ -272,11 +272,11 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	fV1 = fV2 = v0;
 	fU1 = fU2 = u0;
 
-	effectiveDelta = intToFix((coords[5]) - y);
+	effectiveDelta = intToFix(coords[5] - y);
 	fDU1 = Div((u2 - u0), effectiveDelta);
 	fDV1 = Div((v2 - v0), effectiveDelta);
 
-	effectiveDelta = (intToFix((coords[3]) - y));
+	effectiveDelta = intToFix(coords[3] - y);
 	fDU2 = Div((u1 - u0), effectiveDelta);
 	fDV2 = Div((v1 - v0), effectiveDelta);
 
@@ -296,11 +296,6 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 			return;
 		}
 
-		fU1 += fDU1;
-		fV1 += fDV1;
-		fU2 += fDU2;
-		fV2 += fDV2;
-
 		flipped = (fX0 > fX1);
 
 		if (flipped) {
@@ -317,7 +312,7 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 			FramebufferPixelFormat *destination;
 			///TODO: bring in the Div LUT
 			{
-				oneOverLimit = Div(intToFix(1), (fX1 - fX0));
+				oneOverLimit = Div(intToFix(1), intToFix(limit));
 			}
 
 
@@ -338,8 +333,8 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
 				int xPos = iFX0;
 				while (limit--) {
-					u = abs(fixToInt(texelLineX)) % texture->width;
-					v = abs(fixToInt(texelLineY)) % texture->height;
+					u = (fixToInt(texelLineX)) % texture->width;
+					v = (fixToInt(texelLineY)) % texture->height;
 
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
 						*destination = *(texture->texels + (texture->width * v) + u);
@@ -351,6 +346,10 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				}
 			}
 		}
+		fU1 += fDU1;
+		fV1 += fDV1;
+		fU2 += fDU2;
+		fV2 += fDV2;
 		fX0 -= dXDy2;
 		fX1 += dXDy1;
 	}
@@ -408,11 +407,11 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fV1 = fV2 = v0;
 	fU1 = fU2 = u0;
 
-	effectiveDelta = (intToFix(y - (coords[3])));
+	effectiveDelta = intToFix(y - coords[3]);
 	fDU1 = Div((u1 - u0), effectiveDelta);
 	fDV1 = Div((v1 - v0), effectiveDelta);
 
-	effectiveDelta = (intToFix(y - (coords[5])));
+	effectiveDelta = intToFix(y - coords[5]);
 	fDU2 = Div((u2 - u0), effectiveDelta);
 	fDV2 = Div((v2 - v0), effectiveDelta);
 
@@ -431,11 +430,6 @@ static void drawTexturedTopFlatTriangle(int *coords,
 			return;
 		}
 
-		fU1 += fDU1;
-		fV1 += fDV1;
-		fU2 += fDU2;
-		fV2 += fDV2;
-
 		flipped = (fX0 > fX1);
 
 		if (flipped) {
@@ -452,7 +446,7 @@ static void drawTexturedTopFlatTriangle(int *coords,
 			FramebufferPixelFormat *destination;
 			///TODO: bring in the damn Div LUT
 			{
-				oneOverLimit = Div(intToFix(1), (fX1 - fX0));
+				oneOverLimit = Div(intToFix(1), intToFix(limit));
 			}
 
 
@@ -475,8 +469,8 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				int xPos = iFX0;
 
 				while (limit--) {
-					u = abs(fixToInt(texelLineX)) % texture->width;
-					v = abs(fixToInt(texelLineY)) % texture->height;
+					u = (fixToInt(texelLineX)) % texture->width;
+					v = (fixToInt(texelLineY)) % texture->height;
 
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
 						*destination = *(texture->texels + (texture->width * v) + u);
@@ -489,7 +483,10 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				}
 			}
 		}
-
+		fU1 += fDU1;
+		fV1 += fDV1;
+		fU2 += fDU2;
+		fV2 += fDV2;
 		fX0 += dXDy1;
 		fX1 += dXDy2;
 	}
@@ -538,13 +535,13 @@ drawTexturedTriangle(int *coords,
     newCoors[5] = coords[(2 * other) + 1];
 
     newUV[0] = uvCoords[2 * upper];
-    newUV[1] = uvCoords[(2 * upper) + 1];
+    newUV[1] = texture->height - uvCoords[(2 * upper) + 1];
 
     newUV[2] = uvCoords[2 * lower];
-    newUV[3] = uvCoords[(2 * lower) + 1];
+    newUV[3] = texture->height - uvCoords[(2 * lower) + 1];
 
     newUV[4] = uvCoords[2 * other];
-    newUV[5] = uvCoords[(2 * other) + 1];
+    newUV[5] = texture->height - uvCoords[(2 * other) + 1];
 
 
     drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], texture, z);
@@ -557,13 +554,13 @@ drawTexturedTriangle(int *coords,
     newCoors[5] = coords[(2 * upper) + 1];
 
     newUV[0] = uvCoords[2 * lower];
-    newUV[1] = uvCoords[(2 * lower) + 1];
+    newUV[1] = texture->height - uvCoords[(2 * lower) + 1];
 
     newUV[2] = uvCoords[2 * other];
-    newUV[3] = uvCoords[(2 * other) + 1];
+    newUV[3] = texture->height - uvCoords[(2 * other) + 1];
 
     newUV[4] = uvCoords[2 * upper];
-    newUV[5] = uvCoords[(2 * upper) + 1];
+    newUV[5] = texture->height - uvCoords[(2 * upper) + 1];
 
 
     drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], texture, z);

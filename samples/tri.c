@@ -52,12 +52,24 @@ draw(void)
 
     static const GLfixed verts[6][3] = {
     { -intToFix(1), -intToFix(1),  intToFix(0) },
-    {  intToFix(1), -intToFix(1),  intToFix(0) },
     {  intToFix(1),  intToFix(1),  intToFix(0) },
+    {  intToFix(1), -intToFix(1),  intToFix(0) },
+
     { -intToFix(1), -intToFix(1),  intToFix(0) },
     {  intToFix(1), intToFix(1),  intToFix(0) },
     { -intToFix(1), intToFix(1),  intToFix(0) },
     };
+
+    static const GLfixed texCoords[12] = {
+        intToFix(0), intToFix(0),
+        intToFix(1), intToFix(1),
+        intToFix(1), intToFix(0),
+
+        intToFix(0), intToFix(0),
+        intToFix(1), intToFix(1),
+        intToFix(0), intToFix(1),
+    };
+
     static const GLfixed colors[6][4] = {
     { 65536,     0,     0,    65536 },
     {     0, 65536,     0 ,   65536},
@@ -65,16 +77,6 @@ draw(void)
     { 65536,     0,     0,    65536 },
     {     0, 65536,     0 ,   65536},
     {     0,     0, 65536 ,   65536},
-    };
-
-    static const GLfixed texCoords[12] = {
-        intToFix(  0), intToFix(1),
-        intToFix(1), intToFix(1),
-        intToFix(1), intToFix(0),
-
-        intToFix(  0), intToFix(1),
-        intToFix(1), intToFix(  0),
-        intToFix(  0), intToFix(  0),
     };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -96,7 +98,7 @@ draw(void)
 
         /* draw triangles */
         glBindTexture(GL_TEXTURE_2D, textureID);
-        glDrawArrays(GL_TRIANGLES, 3, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         /* draw some points */
         // glPointSizex(Div(intToFix(31), intToFix(2)));

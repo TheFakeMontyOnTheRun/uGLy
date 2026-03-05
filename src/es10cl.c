@@ -473,9 +473,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     if (textureCoordsEnabled)
                     {
                         uint8_t uvCoords[6] = {
-			  fixToInt( Mul(*(uvPtr + 0), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 1), intToFix(texture->height))),
-			  fixToInt( Mul(*(uvPtr + 2), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 3), intToFix(texture->height))),
-			  fixToInt( Mul(*(uvPtr + 4), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 5), intToFix(texture->height))),
+			              fixToInt( Mul(*(uvPtr + 0), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 1), intToFix(texture->height))),
+			              fixToInt( Mul(*(uvPtr + 2), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 3), intToFix(texture->height))),
+			              fixToInt( Mul(*(uvPtr + 4), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 5), intToFix(texture->height))),
                         };
 
                         drawTexturedTriangle(&coords[0], &uvCoords[0], texture, 0 );
