@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
 
 #include "internal.h"
@@ -135,6 +136,7 @@ reshape(int width, int height)
 static void
 init(void)
 {
+    texture = loadBitmap("res/opengles.png");
     GLfixed grey = Div(intToFix(4), intToFix(10));
     GLfixed fullAlpha = intToFix(1);
     glClearColorx(grey, grey, grey, fullAlpha);
@@ -151,6 +153,7 @@ init(void)
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
                  texture->texels);
+    free(texture);
 }
 
 static void
@@ -209,8 +212,6 @@ main(int argc, char* argv[])
     // {
     //     printf("%d,\n", floatToFix(sinf( c * (M_PI / 180.0f) ) ) );
     // }
-
-    texture = loadBitmap("res/opengles.png");
 
     initWindow(special_key);
 
