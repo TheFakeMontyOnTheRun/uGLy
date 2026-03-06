@@ -13,6 +13,8 @@
 #include "internal.h"
 #include "matricesFP.h"
 
+#define TOTAL_TEXTURES_SUPPORTED 8
+
 #define kIntegerPart 16
 
 #define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
@@ -156,11 +158,9 @@ GLfixed cosfpx(GLfixed angle)
     return sinfpx(angle + intToFix(90));
 }
 
-GLuint currentlyAvailableTexture = 0;
-
 GLuint currentTexture = 0;
 
-struct Texture textures[8];
+struct Texture textures[TOTAL_TEXTURES_SUPPORTED];
 
 uint8_t textureMapping2DEnabled = 0;
 
@@ -351,9 +351,17 @@ GLAPI void APIENTRY glCullFace(GLenum mode)
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* textures)
+GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* texturesIn)
 {
-    notImplementedYet(__func__);
+    GLuint* ptr = texturesIn;
+
+    for (int c = 0; c < n; ++c)
+    {
+        GLuint index = *ptr++;
+        free(textures[index].texels);
+        textures[index].texels = NULL;
+        textures[index].inUse = 0;
+    }
 }
 
 GLAPI void APIENTRY glDepthFunc(GLenum func)
@@ -577,13 +585,27 @@ GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfi
     projectionMatrix[14] = -Div(Mul( twoTimesN, zFar), (zFar - zNear));
 }
 
-GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* textures)
+GLuint reserveTexture(void)
 {
-    GLuint* ptr = textures;
+    for (int c = 0; c < TOTAL_TEXTURES_SUPPORTED; ++c)
+    {
+        if (!textures[c].inUse)
+        {
+            textures[c].inUse = 1;
+            return c;
+        }
+    }
+
+    return 0xFFFF;
+}
+
+GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* texturesOut)
+{
+    GLuint* ptr = texturesOut;
 
     for (int c = 0; c < n; ++c)
     {
-        *ptr++ = currentlyAvailableTexture++;
+        *ptr++ = reserveTexture();
     }
 }
 

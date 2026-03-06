@@ -19,6 +19,7 @@ struct Texture
     int width;
     int height;
     uint32_t *texels;
+    uint8_t inUse;
 };
 
 void initWindow( KeyCallback callback);
