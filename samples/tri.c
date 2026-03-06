@@ -82,9 +82,9 @@ draw(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    glRotatex(view_rotx, 1, 0, 0);
-    glRotatex(view_roty, 0, 1, 0);
-    glRotatex(view_rotz, 0, 0, 1);
+    glRotatex(view_rotx, intToFix(1), 0, 0);
+    glRotatex(view_roty, 0, intToFix(1), 0);
+    glRotatex(view_rotz, 0, 0, intToFix(1));
 
     {
         glEnable(GL_TEXTURE_2D);
