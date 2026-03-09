@@ -2,23 +2,7 @@
 #include <stdint.h>
 #include <GLES/gl.h>
 #include "matricesFP.h"
-
-///TODO: add LUT for cos, sin and tan in fixed point
-
-
-#define kIntegerPart 16
-
-#define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
-
-#define intToFix(v)  ((int32_t)((v) << kIntegerPart))
-
-#define Mul(v1, v2) ((GLfixed)((((v1) >> 6) * ((v2) >> 6)) >> 4))
-
-#define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
-
-#define fixToFloat(fp) ((fp) / 65536.0f)
-
-#define floatToFix(f) (65536.0f * (f))
+#include "internal.h"
 
 /**
  *
@@ -93,42 +77,6 @@ void mat4x4_perspective(t_mat4x4 out, GLfixed fov, GLfixed ratio, GLfixed znear,
     out[13] = 0;
     out[14] = -Div(Mul(Mul(2 , zfar), znear), (zfar - znear));
     out[15] = 0;
-}
-
-/**
- *
- * @param out
- * @param cx
- * @param cy
- * @param cz
- * @param tx
- * @param ty
- * @param tz
- * @param ux
- * @param uy
- * @param uz
- */
-void mat4x4_view(t_mat4x4 out,
-                 GLfixed cx, GLfixed cy, GLfixed cz,
-                 GLfixed tx, GLfixed ty, GLfixed tz,
-                 GLfixed ux, GLfixed uy, GLfixed uz)
-{
-    out[0] = intToFix(1);
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = intToFix(1);
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = intToFix(1);
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = intToFix(1);
 }
 
 /**

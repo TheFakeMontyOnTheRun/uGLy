@@ -43,7 +43,7 @@ static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
 struct Bitmap* texture;
 
-extern uint32_t framebuffer[300 * 300];
+extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 GLuint textureID;
 
@@ -187,7 +187,7 @@ special_key(int special)
 
 void mainLoop(void)
 {
-    reshape(300, 300);
+    reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     while (1)
     {
         draw();
@@ -200,6 +200,9 @@ void mainLoop(void)
         //     }
         // }
 
+        view_rotx += Div(intToFix(5), intToFix(10));
+        view_roty += Div(intToFix(2), intToFix(10));
+
         swapBuffers();
     }
 }
@@ -208,6 +211,9 @@ void mainLoop(void)
 int
 main(int argc, char* argv[])
 {
+    (void)argc;
+    (void)argv;
+
     // for (int c = 0; c < 91; ++c)
     // {
     //     printf("%d,\n", floatToFix(sinf( c * (M_PI / 180.0f) ) ) );

@@ -10,33 +10,13 @@
 #include <string.h>
 #include <GLES/gl.h>
 
+#include "fpsqrt.h"
 #include "internal.h"
 #include "matricesFP.h"
 
 #define TOTAL_TEXTURES_SUPPORTED 8
 
-#define kIntegerPart 16
-
-#define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
-
-#define intToFix(v)  ((int32_t)((v) << kIntegerPart))
-
-#define Mul(v1, v2) ((GLfixed)((((v1) >> 6) * ((v2) >> 6)) >> 4))
-
-#define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
-
-#define fixToFloat(fp) ((fp) / 65536.0f)
-
-
-#define floatToFix(f) ((GLfixed)(65536.0f * (f)))
-
 #define MATRIX_STACK_CAPACITY 16
-
-#define MIN(v1, v2) (( (v1) < (v2) ) ? (v1) : (v2) )
-#define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
-
-#define YRES_FRAMEBUFFER 300
-#define XRES_FRAMEBUFFER 300
 
 GLfixed sinfp[91] =
 {
@@ -207,11 +187,7 @@ GLfixed pointSize = intToFix(1);
 uint8_t clearDepth = 0;
 uint8_t clearStencil = 0;
 
-extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-
-static void notImplementedYet(char* funcName)
+static void notImplementedYet(const char* funcName)
 {
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
@@ -549,12 +525,12 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
 
 GLAPI void APIENTRY glFinish(void)
 {
-    notImplementedYet(__func__);
+    /* no-op; might change in the future */
 }
 
 GLAPI void APIENTRY glFlush(void)
 {
-    notImplementedYet(__func__);
+    /* no-op; might change in the future */
 }
 
 GLAPI void APIENTRY glFogx(GLenum pname, GLfixed param)
@@ -611,7 +587,9 @@ GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* texturesOut)
 
 GLAPI GLenum APIENTRY glGetError(void)
 {
-    notImplementedYet(__func__);
+    GLenum previousError = currentError;
+    currentError = GL_NO_ERROR;
+    return previousError;
 }
 
 GLAPI void APIENTRY glGetIntegerv(GLenum pname, GLint* params)
@@ -622,6 +600,7 @@ GLAPI void APIENTRY glGetIntegerv(GLenum pname, GLint* params)
 GLAPI const GLubyte* APIENTRY glGetString(GLenum name)
 {
     notImplementedYet(__func__);
+    return NULL;
 }
 
 GLAPI void APIENTRY glHint(GLenum target, GLenum mode)
@@ -664,6 +643,9 @@ GLAPI void APIENTRY glLoadIdentity(void)
     case GL_MODELVIEW:
         mat4x4_identity(modelViewMatrix);
         break;
+    case GL_TEXTURE:
+    default:
+        notImplementedYet(__func__);
     }
 }
 
@@ -770,42 +752,44 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
 
 GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
 {
-    ///TODO: get rid of the sqrt call -
-    float fx = fixToFloat(x);
-    float fy = fixToFloat(y);
-    float fz = fixToFloat(z);
+    GLfixed fx;
+    GLfixed fy;
+    GLfixed fz;
 
     /* Normalize axis */
-    float len = sqrtf(fx * fx + fy * fy + fz * fz);
-    if (len == 0.0f)
+    GLfixed lenfx = sqrt_fx16_16_to_fx16_16( Mul(x, x) + Mul(y, y) + Mul(z, z) );
+
+    if (lenfx == 0)
+    {
         return;
+    }
 
-    fx /= len;
-    fy /= len;
-    fz /= len;
+    fx = Div(x, lenfx);
+    fy = Div(y, lenfx);
+    fz = Div(z, lenfx);
 
-    float c = fixToFloat(cosfpx(angle));
-    float s = fixToFloat(sinfpx(angle));
-    float t = 1.0f - c;
+    GLfixed c = cosfpx(angle);
+    GLfixed s = sinfpx(angle);
+    GLfixed t = intToFix(1) - c;
 
     GLfixed R[16];
 
     /* First column */
-    R[0] = floatToFix(t*fx*fx + c);
-    R[1] = floatToFix(t*fx*fy + s*fz);
-    R[2] = floatToFix(t*fx*fz - s*fy);
+    R[0] = Mul(Mul(t, fx), fx) + c;
+    R[1] = Mul(Mul(t, fx), fy) + Mul(s, fz);
+    R[2] = Mul(Mul(t, fx), fz) - Mul(s, fy);
     R[3] = 0;
 
     /* Second column */
-    R[4] = floatToFix(t*fx*fy - s*fz);
-    R[5] = floatToFix(t*fy*fy + c);
-    R[6] = floatToFix(t*fy*fz + s*fx);
+    R[4] = Mul(Mul(t, fx), fy) - Mul(s, fz);
+    R[5] = Mul(Mul(t, fy), fy) + c;
+    R[6] = Mul(Mul(t, fy), fz) + Mul(s, fx);
     R[7] = 0;
 
     /* Third column */
-    R[8] = floatToFix(t*fx*fz + s*fy);
-    R[9] = floatToFix(t*fy*fz - s*fx);
-    R[10] = floatToFix(t*fz*fz + c);
+    R[8] = Mul(Mul(t, fx), fz) + Mul(s, fy);
+    R[9] = Mul(Mul(t, fy), fz) - Mul(s, fx);
+    R[10] = Mul(Mul(t, fz), fz) + c;
     R[11] = 0;
 
     /* Fourth column */
