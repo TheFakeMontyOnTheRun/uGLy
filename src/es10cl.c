@@ -525,12 +525,12 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
 
 GLAPI void APIENTRY glFinish(void)
 {
-    notImplementedYet(__func__);
+    /* no-op; might change in the future */
 }
 
 GLAPI void APIENTRY glFlush(void)
 {
-    notImplementedYet(__func__);
+    /* no-op; might change in the future */
 }
 
 GLAPI void APIENTRY glFogx(GLenum pname, GLfixed param)
