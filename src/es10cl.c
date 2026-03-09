@@ -16,28 +16,7 @@
 
 #define TOTAL_TEXTURES_SUPPORTED 8
 
-#define kIntegerPart 16
-
-#define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
-
-#define intToFix(v)  ((int32_t)((v) << kIntegerPart))
-
-#define Mul(v1, v2) ((GLfixed)((((v1) >> 6) * ((v2) >> 6)) >> 4))
-
-#define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
-
-#define fixToFloat(fp) ((fp) / 65536.0f)
-
-
-#define floatToFix(f) ((GLfixed)(65536.0f * (f)))
-
 #define MATRIX_STACK_CAPACITY 16
-
-#define MIN(v1, v2) (( (v1) < (v2) ) ? (v1) : (v2) )
-#define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
-
-#define YRES_FRAMEBUFFER 300
-#define XRES_FRAMEBUFFER 300
 
 GLfixed sinfp[91] =
 {
@@ -207,10 +186,6 @@ GLfixed pointSize = intToFix(1);
 
 uint8_t clearDepth = 0;
 uint8_t clearStencil = 0;
-
-extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 static void notImplementedYet(char* funcName)
 {

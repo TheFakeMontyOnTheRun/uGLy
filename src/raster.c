@@ -9,36 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "internal.h"
-
 typedef int GLfixed;
 
-typedef uint32_t FramebufferPixelFormat;
-
-#define kIntegerPart 16
-
-#define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
-
-#define intToFix(v)  ((int32_t)((v) << kIntegerPart))
-
-#define Mul(v1, v2) ((GLfixed)((((v1) >> 6) * ((v2) >> 6)) >> 4))
-
-#define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
-
-#define fixToFloat(fp) (fixToInt(Mul((fp), intToFix(16))) / 16.0f)
-
-#define MATRIX_STACK_CAPACITY 16
-
-#define MIN(v1, v2) (( (v1) < (v2) ) ? (v1) : (v2) )
-#define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
-
-#define YRES_FRAMEBUFFER 300
-#define XRES_FRAMEBUFFER 300
-
-
-extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+#include "internal.h"
 
 static void fillBottomFlat(const int* coords, FramebufferPixelFormat* colour)
 {

@@ -2,23 +2,7 @@
 #include <stdint.h>
 #include <GLES/gl.h>
 #include "matricesFP.h"
-
-///TODO: add LUT for cos, sin and tan in fixed point
-
-
-#define kIntegerPart 16
-
-#define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
-
-#define intToFix(v)  ((int32_t)((v) << kIntegerPart))
-
-#define Mul(v1, v2) ((GLfixed)((((v1) >> 6) * ((v2) >> 6)) >> 4))
-
-#define Div(v1, v2)  ((GLfixed)((((int64_t) (v1)) * (1 << kIntegerPart)) / (v2)))
-
-#define fixToFloat(fp) ((fp) / 65536.0f)
-
-#define floatToFix(f) (65536.0f * (f))
+#include "internal.h"
 
 /**
  *

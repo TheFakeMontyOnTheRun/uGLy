@@ -11,9 +11,6 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture* videoTexture;
 
-#define YRES_FRAMEBUFFER 300
-#define XRES_FRAMEBUFFER 300
-
 uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
