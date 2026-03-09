@@ -466,13 +466,15 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
                 };
 
+                int halfViewportWidth = viewportWidth / 2;
+                int halfViewportHeight = viewportHeight / 2;
                 int coords[6] = {
-                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])),
-                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])),
-                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])),
-                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
+                    viewportX + halfViewportWidth + fixToInt(Mul(intToFix(halfViewportWidth), vertex[0])),
+                    viewportY + halfViewportHeight - fixToInt(Mul(intToFix(halfViewportHeight), vertex[1])),
+                    viewportX + halfViewportWidth + fixToInt(Mul(intToFix(halfViewportWidth), vertex[2])),
+                    viewportY + halfViewportHeight - fixToInt(Mul(intToFix(halfViewportHeight), vertex[3])),
+                    viewportX + halfViewportWidth + fixToInt(Mul(intToFix(halfViewportWidth), vertex[4])),
+                    viewportY + halfViewportHeight - fixToInt(Mul(intToFix(halfViewportHeight), vertex[5]))
                 };
 
 
