@@ -10,6 +10,7 @@
 #include <string.h>
 #include <GLES/gl.h>
 
+#include "fpsqrt.h"
 #include "internal.h"
 #include "matricesFP.h"
 
@@ -770,42 +771,44 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
 
 GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
 {
-    ///TODO: get rid of the sqrt call -
-    float fx = fixToFloat(x);
-    float fy = fixToFloat(y);
-    float fz = fixToFloat(z);
+    GLfixed fx;
+    GLfixed fy;
+    GLfixed fz;
 
     /* Normalize axis */
-    float len = sqrtf(fx * fx + fy * fy + fz * fz);
-    if (len == 0.0f)
+    GLfixed lenfx = sqrt_fx16_16_to_fx16_16( Mul(x, x) + Mul(y, y) + Mul(z, z) );
+
+    if (lenfx == 0)
+    {
         return;
+    }
 
-    fx /= len;
-    fy /= len;
-    fz /= len;
+    fx = Div(x, lenfx);
+    fy = Div(y, lenfx);
+    fz = Div(z, lenfx);
 
-    float c = fixToFloat(cosfpx(angle));
-    float s = fixToFloat(sinfpx(angle));
-    float t = 1.0f - c;
+    GLfixed c = cosfpx(angle);
+    GLfixed s = sinfpx(angle);
+    GLfixed t = intToFix(1) - c;
 
     GLfixed R[16];
 
     /* First column */
-    R[0] = floatToFix(t*fx*fx + c);
-    R[1] = floatToFix(t*fx*fy + s*fz);
-    R[2] = floatToFix(t*fx*fz - s*fy);
+    R[0] = Mul(Mul(t, fx), fx) + c;
+    R[1] = Mul(Mul(t, fx), fy) + Mul(s, fz);
+    R[2] = Mul(Mul(t, fx), fz) - Mul(s, fy);
     R[3] = 0;
 
     /* Second column */
-    R[4] = floatToFix(t*fx*fy - s*fz);
-    R[5] = floatToFix(t*fy*fy + c);
-    R[6] = floatToFix(t*fy*fz + s*fx);
+    R[4] = Mul(Mul(t, fx), fy) - Mul(s, fz);
+    R[5] = Mul(Mul(t, fy), fy) + c;
+    R[6] = Mul(Mul(t, fy), fz) + Mul(s, fx);
     R[7] = 0;
 
     /* Third column */
-    R[8] = floatToFix(t*fx*fz + s*fy);
-    R[9] = floatToFix(t*fy*fz - s*fx);
-    R[10] = floatToFix(t*fz*fz + c);
+    R[8] = Mul(Mul(t, fx), fz) + Mul(s, fy);
+    R[9] = Mul(Mul(t, fy), fz) - Mul(s, fx);
+    R[10] = Mul(Mul(t, fz), fz) + c;
     R[11] = 0;
 
     /* Fourth column */

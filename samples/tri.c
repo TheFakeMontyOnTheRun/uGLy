@@ -200,6 +200,9 @@ void mainLoop(void)
         //     }
         // }
 
+        view_rotx += Div(intToFix(5), intToFix(10));
+        view_roty += Div(intToFix(2), intToFix(10));
+
         swapBuffers();
     }
 }

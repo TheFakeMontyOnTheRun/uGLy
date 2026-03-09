@@ -8,6 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake-sd
 include_directories(
         ${SDL2_INCLUDE_DIR}
         ${SDL2_IMAGE_INCLUDE_DIRS}
+        third_party/fpsqrt
 )
 
 include_directories(include)
@@ -24,6 +25,7 @@ add_executable(tri
         src/raster.c
         src/sdl2.c
         samples/tri.c
+        third_party/fpsqrt/fpsqrt.c
 )
 
 
