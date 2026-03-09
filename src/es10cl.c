@@ -165,8 +165,8 @@ uint8_t textureCoordsEnabled = GL_FALSE;
 
 uint16_t viewportX;
 uint16_t viewportY;
-uint16_t viewportWidth;
-uint16_t viewportHeight;
+GLfixed halfViewportWidthx;
+GLfixed halfViewportHeightx;
 
 GLenum matrixMode;
 
@@ -443,12 +443,12 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 };
 
                 int coords[6] = {
-                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[0])),
-                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[1])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[2])),
-                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[3])),
-                    (XRES_FRAMEBUFFER / 2) + fixToInt(Mul( intToFix(XRES_FRAMEBUFFER / 2), vertex[4])),
-                    (YRES_FRAMEBUFFER / 2) - fixToInt(Mul( intToFix(YRES_FRAMEBUFFER / 2), vertex[5]))
+                    viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
+                    viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
+                    viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[2])),
+                    viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[3])),
+                    viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[4])),
+                    viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
                 };
 
 
@@ -920,6 +920,6 @@ GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 
     viewportX = x;
     viewportY = y;
-    viewportWidth = width;
-    viewportHeight = height;
+    halfViewportWidthx = Div( intToFix(width), intToFix(2));
+    halfViewportHeightx = Div( intToFix(height), intToFix(2));
 }
