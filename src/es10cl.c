@@ -587,7 +587,9 @@ GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* texturesOut)
 
 GLAPI GLenum APIENTRY glGetError(void)
 {
-    notImplementedYet(__func__);
+    GLenum previousError = currentError;
+    currentError = GL_NO_ERROR;
+    return previousError;
 }
 
 GLAPI void APIENTRY glGetIntegerv(GLenum pname, GLint* params)
