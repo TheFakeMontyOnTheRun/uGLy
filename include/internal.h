@@ -53,8 +53,8 @@ void drawTexturedTriangle(int *coords,
 #define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
 
 
-#define YRES_FRAMEBUFFER 300
 #define XRES_FRAMEBUFFER 300
+#define YRES_FRAMEBUFFER 300
 
 extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
