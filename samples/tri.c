@@ -211,6 +211,9 @@ void mainLoop(void)
 int
 main(int argc, char* argv[])
 {
+    (void)argc;
+    (void)argv;
+
     // for (int c = 0; c < 91; ++c)
     // {
     //     printf("%d,\n", floatToFix(sinf( c * (M_PI / 180.0f) ) ) );

@@ -187,7 +187,7 @@ GLfixed pointSize = intToFix(1);
 uint8_t clearDepth = 0;
 uint8_t clearStencil = 0;
 
-static void notImplementedYet(char* funcName)
+static void notImplementedYet(const char* funcName)
 {
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
@@ -598,6 +598,7 @@ GLAPI void APIENTRY glGetIntegerv(GLenum pname, GLint* params)
 GLAPI const GLubyte* APIENTRY glGetString(GLenum name)
 {
     notImplementedYet(__func__);
+    return NULL;
 }
 
 GLAPI void APIENTRY glHint(GLenum target, GLenum mode)
@@ -640,6 +641,9 @@ GLAPI void APIENTRY glLoadIdentity(void)
     case GL_MODELVIEW:
         mat4x4_identity(modelViewMatrix);
         break;
+    case GL_TEXTURE:
+    default:
+        notImplementedYet(__func__);
     }
 }
 

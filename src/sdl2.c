@@ -65,7 +65,8 @@ struct Bitmap* loadBitmap(const char *filename)
 
     for (int y = 0; y < image->h; y++) {
         for (int x = 0; x < image->w; x++) {
-            uint8_t *pixel_ptr = image->pixels + y * pitch + x * bpp;
+            uint8_t *imagePtr = image->pixels;
+            uint8_t *pixel_ptr = imagePtr + y * pitch + x * bpp;
 
             uint8_t r, g, b, a;
             SDL_GetRGBA(*(uint32_t *)pixel_ptr, image->format, &r, &g, &b, &a);
