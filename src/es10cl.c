@@ -911,6 +911,13 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
+
+    if (width < 0 || height < 0)
+    {
+        currentError = GL_INVALID_VALUE;
+        return;
+    }
+
     viewportX = x;
     viewportY = y;
     viewportWidth = width;
