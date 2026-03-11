@@ -747,7 +747,22 @@ GLAPI void APIENTRY glPushMatrix(void)
 GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
                                  GLvoid* pixels)
 {
-    notImplementedYet(__func__);
+    (void)format;
+    (void)type;
+
+    ///TODO: handle formats and types
+
+    FramebufferPixelFormat* ptrStr;
+    FramebufferPixelFormat* pixelsOut = pixels;
+
+    for (int _y = 0; _y < height; ++_y)
+    {
+        ptrStr = &framebuffer[ XRES_FRAMEBUFFER * (y + _y) + x];
+        for (int _x = 0; _x < width; ++_x)
+        {
+            *pixelsOut++ = *ptrStr++;
+        }
+    }
 }
 
 GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
