@@ -57,8 +57,8 @@ draw(void)
     {  intToFix(1), -intToFix(1),  intToFix(0) },
 
     { -intToFix(1), -intToFix(1),  intToFix(0) },
-    {  intToFix(1), intToFix(1),  intToFix(0) },
     { -intToFix(1), intToFix(1),  intToFix(0) },
+    {  intToFix(1), intToFix(1),  intToFix(0) },
     };
 
     static const GLfixed texCoords[12] = {
@@ -67,14 +67,15 @@ draw(void)
         intToFix(1), intToFix(0),
 
         intToFix(0), intToFix(0),
-        intToFix(1), intToFix(1),
         intToFix(0), intToFix(1),
+        intToFix(1), intToFix(1),
     };
 
     static const GLfixed colors[6][4] = {
     { 65536,     0,     0,    65536 },
     {     0, 65536,     0 ,   65536},
     {     0,     0, 65536 ,   65536},
+
     { 65536,     0,     0,    65536 },
     {     0, 65536,     0 ,   65536},
     {     0,     0, 65536 ,   65536},
