@@ -26,10 +26,9 @@ void initWindow( KeyCallback callback);
 void swapBuffers(void);
 struct Bitmap* loadBitmap(const char *filename);
 
-void fillTriangle(int* coords, FramebufferPixelFormat* colour);
-
 void drawTexturedTriangle(int *coords,
                           uint8_t *uvCoords,
+                          uint8_t *colourChannels,
                           struct Texture *texture,
                           int z);
 

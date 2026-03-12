@@ -52,9 +52,27 @@ draw(void)
 {
 
     static const GLfixed verts[6][3] = {
+        /*
+         *         1
+         *         ^
+         *        / |
+         *       /  |
+         *      0----2
+         */
+
+
     { -intToFix(1), -intToFix(1),  intToFix(0) },
     {  intToFix(1),  intToFix(1),  intToFix(0) },
     {  intToFix(1), -intToFix(1),  intToFix(0) },
+
+        /*
+         *      1
+         *      |-- 2
+         *      |  /
+         *      | /
+         *      0
+         */
+
 
     { -intToFix(1), -intToFix(1),  intToFix(0) },
     { -intToFix(1), intToFix(1),  intToFix(0) },
@@ -72,13 +90,13 @@ draw(void)
     };
 
     static const GLfixed colors[6][4] = {
-    { 65536,     0,     0,    65536 },
-    {     0, 65536,     0 ,   65536},
-    {     0,     0, 65536 ,   65536},
+    { 65536,     0,      0,   65536},
+    { 65536, 65536,  65536,   65536},
+    {     0,     0,  65536,   65536},
 
-    { 65536,     0,     0,    65536 },
+    { 65536,     0,     0,    65536},
     {     0, 65536,     0 ,   65536},
-    {     0,     0, 65536 ,   65536},
+    { 65536, 65536,  65536,   65536},
     };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -201,8 +219,8 @@ void mainLoop(void)
         //     }
         // }
 
-        view_rotx += Div(intToFix(2), intToFix(10));
-        view_roty += Div(intToFix(3), intToFix(10));
+        // view_rotx += Div(intToFix(2), intToFix(10));
+        // view_roty += Div(intToFix(3), intToFix(10));
 
         swapBuffers();
     }

@@ -401,11 +401,15 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             int firstTrig = first / 3;
             GLfixed *vertexPtr = (GLfixed*)vertexPointer;
             GLfixed *uvPtr = (GLfixed*)textureCoordPointer;
-	    struct Texture* texture = &textures[currentTexture];
+            FramebufferPixelFormat *cPtr = (FramebufferPixelFormat*)colorPointer;
+
+	        struct Texture* texture = &textures[currentTexture];
+
             for (c = 0; c < firstTrig; ++c)
             {
-                vertexPtr += 9;
                 uvPtr += 6;
+                vertexPtr += 9;
+                cPtr += 12;
             }
 
             for (c = 0; c < finalCount; ++c)
@@ -451,6 +455,26 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
                 };
 
+                uint8_t coloursArray[12] = {
+                    (
+                        fixToInt(Mul( fixToInt(*(cPtr +  0 )), intToFix(0xFF)) << 24) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  1 )), intToFix(0xFF)) << 16) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  2 )), intToFix(0xFF)) <<  8) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  3 )), intToFix(0xFF)) <<  0)
+                    ),
+                    (
+                        fixToInt(Mul( fixToInt(*(cPtr +  4 )), intToFix(0xFF)) << 24) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  5 )), intToFix(0xFF)) << 16) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  6 )), intToFix(0xFF)) <<  8) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  7 )), intToFix(0xFF)) <<  0)
+                    ),
+                    (
+                        fixToInt(Mul( fixToInt(*(cPtr +  8 )), intToFix(0xFF)) << 24) +
+                        fixToInt(Mul( fixToInt(*(cPtr +  9 )), intToFix(0xFF)) << 16) +
+                        fixToInt(Mul( fixToInt(*(cPtr + 10 )), intToFix(0xFF)) <<  8) +
+                        fixToInt(Mul( fixToInt(*(cPtr + 11 )), intToFix(0xFF)) <<  0)
+                    ),
+                };
 
                 if (textureMapping2DEnabled)
                 {
@@ -462,18 +486,18 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 			              fixToInt( Mul(*(uvPtr + 4), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 5), intToFix(texture->height))),
                         };
 
-                        drawTexturedTriangle(&coords[0], &uvCoords[0], texture, 0 );
+                        drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, 0 );
                     } else
                     {
                         //error?!
                     }
                 } else
                 {
-                    uint32_t colours[3] = {0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
-                    fillTriangle(&coords[0], &colours[0]);
+                    drawTexturedTriangle(&coords[0], NULL, &coloursArray[0], NULL, 0 );
                 }
                 vertexPtr += 9;
                 uvPtr += 6;
+                cPtr += 12;
             }
         }
         break;
