@@ -17,7 +17,7 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 											uint8_t *uvCoords,
 											uint8_t *colourChannels,
 											struct Texture *texture,
-											int z) {
+											uint16_t *z) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -152,7 +152,7 @@ static void drawTexturedTopFlatTriangle(int *coords,
 										uint8_t *uvCoords,
 										uint8_t *colourChannels,
 										struct Texture *texture,
-										int z) {
+										uint16_t *z) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -291,7 +291,8 @@ drawTexturedTriangle(int *coords,
 					uint8_t *uvCoords,
 					uint8_t *colourChannels,
 					struct Texture *texture,
-                     int z) {
+					uint16_t *z) {
+
     int newCoors[6];
     uint8_t newUV[6];
 	uint8_t newColours[12];

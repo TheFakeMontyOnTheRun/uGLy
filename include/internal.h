@@ -30,7 +30,7 @@ void drawTexturedTriangle(int *coords,
                           uint8_t *uvCoords,
                           uint8_t *colourChannels,
                           struct Texture *texture,
-                          int z);
+                          uint16_t *z);
 
 #define kIntegerPart 16
 
