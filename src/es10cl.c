@@ -473,26 +473,22 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[4])),
                     viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
                 };
-
                 uint8_t coloursArray[12] = {
-                    (
-                        fixToInt(Mul( fixToInt(*(cPtr +  0 )), intToFix(0xFF)) << 24) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  1 )), intToFix(0xFF)) << 16) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  2 )), intToFix(0xFF)) <<  8) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  3 )), intToFix(0xFF)) <<  0)
-                    ),
-                    (
-                        fixToInt(Mul( fixToInt(*(cPtr +  4 )), intToFix(0xFF)) << 24) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  5 )), intToFix(0xFF)) << 16) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  6 )), intToFix(0xFF)) <<  8) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  7 )), intToFix(0xFF)) <<  0)
-                    ),
-                    (
-                        fixToInt(Mul( fixToInt(*(cPtr +  8 )), intToFix(0xFF)) << 24) +
-                        fixToInt(Mul( fixToInt(*(cPtr +  9 )), intToFix(0xFF)) << 16) +
-                        fixToInt(Mul( fixToInt(*(cPtr + 10 )), intToFix(0xFF)) <<  8) +
-                        fixToInt(Mul( fixToInt(*(cPtr + 11 )), intToFix(0xFF)) <<  0)
-                    ),
+
+                        fixToInt(Mul( *(cPtr +  0 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  1 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  2 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF))),
+
+                        fixToInt(Mul( *(cPtr +  4 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  5 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  6 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  7 ), intToFix(0xFF))),
+
+                        fixToInt(Mul( *(cPtr +  8 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  9 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr + 10 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
                 };
 
                 if (textureMapping2DEnabled)

@@ -66,11 +66,11 @@ draw(void)
     {  intToFix(1), -intToFix(1),  intToFix(0) },
 
         /*
-         *      1
-         *      |-- 2
+         *      4
+         *      |-- 5
          *      |  /
          *      | /
-         *      0
+         *      3
          */
 
 
@@ -78,6 +78,16 @@ draw(void)
     { -intToFix(1), intToFix(1),  intToFix(0) },
     {  intToFix(1), intToFix(1),  intToFix(0) },
     };
+
+    static const GLfixed colors[6][4] = {
+        { intToFix(1),           0,            0,   intToFix(1)},
+        { intToFix(1), intToFix(1),  intToFix(1),   intToFix(1)},
+        {     0,                 0,  intToFix(1),   intToFix(1)},
+
+        { intToFix(1),           0,            0,   intToFix(1)},
+        {           0, intToFix(1),            0,   intToFix(1)},
+        { intToFix(1), intToFix(1),  intToFix(1),   intToFix(1)},
+        };
 
     static const GLfixed texCoords[12] = {
         intToFix(0), intToFix(0),
@@ -89,15 +99,7 @@ draw(void)
         intToFix(1), intToFix(1),
     };
 
-    static const GLfixed colors[6][4] = {
-    { 65536,     0,      0,   65536},
-    { 65536, 65536,  65536,   65536},
-    {     0,     0,  65536,   65536},
 
-    { 65536,     0,     0,    65536},
-    {     0, 65536,     0 ,   65536},
-    { 65536, 65536,  65536,   65536},
-    };
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -122,6 +124,7 @@ draw(void)
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glPopMatrix();
+    ///TODO: try glLoadIdentity here..I dare you. I DOUBLE DARE YOU
 
     glBindTexture(GL_TEXTURE_2D, textureID[1]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
