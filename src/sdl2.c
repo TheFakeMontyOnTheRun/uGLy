@@ -125,13 +125,41 @@ void swapBuffers(void)
     {
         uint16_t* depthPtr = &zBuffer[0];
         uint32_t* finalPtr = dst;
+
+        uint16_t maxDepth = 0U;
+        uint16_t minDepth = 0xFFFFU;
+        for (int y = 0; y < YRES_FRAMEBUFFER; ++y)
+        {
+            for (int x = 0; x < XRES_FRAMEBUFFER; ++x)
+            {
+                uint16_t depth = *depthPtr++;
+                if (depth < minDepth)
+                {
+                    minDepth = depth;
+                }
+
+                if (depth > maxDepth )
+                {
+                    maxDepth = depth;
+                }
+            }
+        }
+
+        depthPtr = &zBuffer[0];
+        int rangeAdjustment = 0;
+
+        if (maxDepth > 0xFF )
+        {
+            rangeAdjustment = 8;
+        }
+
         for (int y = 0; y < YRES_FRAMEBUFFER; ++y)
         {
             for (int x = 0; x < XRES_FRAMEBUFFER; ++x)
             {
 
                 uint16_t depth = *depthPtr++;
-                uint32_t grey = ((depth >> 8) << 24 ) | ((depth >> 8) << 16 ) | ((depth >> 8) << 8 ) | 0xFF;
+                uint32_t grey = ((depth >> rangeAdjustment) << 24 ) | ((depth >> rangeAdjustment) << 16 ) | ((depth >> rangeAdjustment) << 8 ) | 0xFF;
                 *finalPtr++ = grey;
             }
         }

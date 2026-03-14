@@ -108,6 +108,7 @@ draw(void)
 
 
     glEnable(GL_TEXTURE_2D);
+    glEnable(GL_DEPTH_TEST);
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);
     glColorPointer(4, GL_FIXED, 0, colors);
@@ -122,10 +123,8 @@ draw(void)
 
     glPopMatrix();
 
-
     glBindTexture(GL_TEXTURE_2D, textureID[1]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-
 
     /* draw some points */
     // glPointSizex(Div(intToFix(31), intToFix(2)));
@@ -219,6 +218,12 @@ special_key(int special)
        break;
    case 'x':
        view_rotz += intToFix(5);
+       break;
+
+   case '0':
+       view_rotx = 0;
+       view_roty = 0;
+       view_rotz = 0;
        break;
 
    default:

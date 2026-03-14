@@ -13,6 +13,9 @@ typedef int GLfixed;
 
 #include "internal.h"
 
+extern uint8_t depthTestEnabled;
+extern uint8_t depthWritesEnabled;
+
 static void drawTexturedBottomFlatTriangle(int *coords,
 											uint8_t *uvCoords,
 											uint8_t *colourChannels,
@@ -25,6 +28,13 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	GLfixed fDU2;
 	GLfixed fDV1;
 	GLfixed fDV2;
+
+	GLfixed currentDepth;
+	GLfixed fDZ1;
+	GLfixed fDZ2;
+	GLfixed fZ1;
+	GLfixed fZ2;
+
 	int yFinal = coords[5]; /* not the lowest, neither the topmost */
 
 	GLfixed x0 = intToFix(coords[0]);
@@ -68,9 +78,15 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	fDU1 = Div((u2 - u0), effectiveDelta);
 	fDV1 = Div((v2 - v0), effectiveDelta);
 
+	fDZ1 = Div( intToFix(z[2] - z[0]), effectiveDelta );
+
 	effectiveDelta = intToFix(coords[3] - y);
 	fDU2 = Div((u1 - u0), effectiveDelta);
 	fDV2 = Div((v1 - v0), effectiveDelta);
+
+	fDZ2 = Div( intToFix(z[1] - z[0]), effectiveDelta );
+	fZ1 = intToFix(z[0]);
+	fZ2 = intToFix(z[0]);
 
 	for (; y < yFinal; ++y) {
 
@@ -102,6 +118,10 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 
 		if (limit) {
 			FramebufferPixelFormat *destination;
+			uint16_t *depthDestination;
+			GLfixed fZ;
+			GLfixed fDZLine;
+
 			///TODO: bring in the Div LUT
 			{
 				oneOverLimit = Div(intToFix(1), intToFix(limit));
@@ -109,17 +129,24 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 
 
 			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
+			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 
 			if (flipped) {
 				texelLineDX = Mul((fU1 - fU2), oneOverLimit);
 				texelLineDY = Mul((fV1 - fV2), oneOverLimit);
 				texelLineX = fU2;
 				texelLineY = fV2;
+
+				fZ = fZ2;
+				fDZLine = Mul( (fZ1 - fZ2), oneOverLimit );
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
 				texelLineX = fU1;
 				texelLineY = fV1;
+
+				fZ = fZ1;
+				fDZLine = Mul( (fZ2 - fZ1), oneOverLimit );
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -127,14 +154,25 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				while (limit--) {
 					u = (fixToInt(texelLineX)) % texture->width;
 					v = (fixToInt(texelLineY)) % texture->height;
+					currentDepth = fixToInt(fZ);
 
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
-						*destination = *(texture->texels + (texture->width * v) + u);
+						if (!depthTestEnabled || *depthDestination >= currentDepth)
+						{
+							*destination = *(texture->texels + (texture->width * v) + u);
+
+							if (depthWritesEnabled)
+							{
+								*depthDestination = currentDepth;
+							}
+						}
 					}
 					++xPos;
 					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
+					++depthDestination;
+					fZ += fDZLine;
 				}
 			}
 		}
@@ -144,6 +182,8 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 		fV2 += fDV2;
 		fX0 -= dXDy2;
 		fX1 += dXDy1;
+		fZ1 += fDZ1;
+		fZ2 += fDZ2;
 	}
 }
 
@@ -160,6 +200,13 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	GLfixed fDV1;
 	GLfixed fDU2;
 	GLfixed fDV2;
+
+	GLfixed currentDepth;
+	GLfixed fDZ1;
+	GLfixed fDZ2;
+	GLfixed fZ1;
+	GLfixed fZ2;
+
 	int yFinal = coords[3]; /* not the upper, not the lowest */
 
 	GLfixed x0 = intToFix(coords[0]);
@@ -204,9 +251,16 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fDU1 = Div((u1 - u0), effectiveDelta);
 	fDV1 = Div((v1 - v0), effectiveDelta);
 
+	fDZ1 = Div( intToFix(z[1] - z[0]), effectiveDelta );
+
 	effectiveDelta = intToFix(y - coords[5]);
 	fDU2 = Div((u2 - u0), effectiveDelta);
 	fDV2 = Div((v2 - v0), effectiveDelta);
+
+	fDZ2 = Div( intToFix(z[2] - z[0]), effectiveDelta );
+
+	fZ1 = intToFix(z[0]);
+	fZ2 = intToFix(z[0]);
 
 	for (; y >= yFinal; --y) {
 		int iFX1;
@@ -237,6 +291,10 @@ static void drawTexturedTopFlatTriangle(int *coords,
 
 		if (limit) {
 			FramebufferPixelFormat *destination;
+			uint16_t *depthDestination;
+			GLfixed fZ;
+			GLfixed fDZLine;
+
 			///TODO: bring in the damn Div LUT
 			{
 				oneOverLimit = Div(intToFix(1), intToFix(limit));
@@ -244,17 +302,26 @@ static void drawTexturedTopFlatTriangle(int *coords,
 
 
 			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
+			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 
 			if (flipped) {
 				texelLineDX = Mul((fU1 - fU2), oneOverLimit);
 				texelLineDY = Mul((fV1 - fV2), oneOverLimit);
 				texelLineX = fU2;
 				texelLineY = fV2;
+
+				fZ = fZ2;
+				fDZLine = Mul( (fZ1 - fZ2), oneOverLimit );
+
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
 				texelLineX = fU1;
 				texelLineY = fV1;
+
+				fZ = fZ1;
+				fDZLine = Mul( (fZ2 - fZ1), oneOverLimit );
+
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -264,15 +331,26 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				while (limit--) {
 					u = (fixToInt(texelLineX)) % texture->width;
 					v = (fixToInt(texelLineY)) % texture->height;
+					currentDepth = fixToInt(fZ);
 
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
-						*destination = *(texture->texels + (texture->width * v) + u);
+
+						if (!depthTestEnabled || *depthDestination >= currentDepth)
+						{
+							*destination = *(texture->texels + (texture->width * v) + u);
+							if (depthWritesEnabled)
+							{
+								*depthDestination = currentDepth;
+							}
+						}
 					}
 
 					++xPos;
 					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
+					++depthDestination;
+					fZ += fDZLine;
 				}
 			}
 		}
@@ -282,6 +360,8 @@ static void drawTexturedTopFlatTriangle(int *coords,
 		fV2 += fDV2;
 		fX0 += dXDy1;
 		fX1 += dXDy2;
+		fZ1 += fDZ1;
+		fZ2 += fDZ2;
 	}
 }
 
@@ -296,6 +376,7 @@ drawTexturedTriangle(int *coords,
     int newCoors[6];
     uint8_t newUV[6];
 	uint8_t newColours[12];
+	uint16_t newZ[3];
     int c;
     int upper = -1;
     int lower = -1;
@@ -355,7 +436,11 @@ drawTexturedTriangle(int *coords,
     newUV[4] = uvCoords[2 * other];
     newUV[5] = texture->height - uvCoords[(2 * other) + 1];
 
-    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, z);
+	newZ[0] = z[upper];
+	newZ[1] = z[lower];
+	newZ[2] = z[other];
+
+    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0]);
 
     newCoors[0] = coords[2 * lower];
     newCoors[1] = coords[(2 * lower) + 1];
@@ -390,6 +475,9 @@ drawTexturedTriangle(int *coords,
     newUV[4] = uvCoords[2 * upper];
     newUV[5] = texture->height - uvCoords[(2 * upper) + 1];
 
+	newZ[0] = z[lower];
+	newZ[1] = z[other];
+	newZ[2] = z[upper];
 
-    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, z);
+    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0]);
 }
