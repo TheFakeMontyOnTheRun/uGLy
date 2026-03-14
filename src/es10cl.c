@@ -185,6 +185,8 @@ uint8_t colorArrayEnabled = GL_TRUE;
 GLfixed pointSize = intToFix(1);
 
 uint8_t clearDepth = 0;
+uint8_t depthWritesEnabled = 1;
+uint8_t depthTestEnabled = 0;
 uint8_t clearStencil = 0;
 
 static void notImplementedYet(const char* funcName)
@@ -347,7 +349,7 @@ GLAPI void APIENTRY glDepthFunc(GLenum func)
 
 GLAPI void APIENTRY glDepthMask(GLboolean flag)
 {
-    notImplementedYet(__func__);
+    depthWritesEnabled = flag;
 }
 
 GLAPI void APIENTRY glDepthRangex(GLclampx zNear, GLclampx zFar)
@@ -361,6 +363,9 @@ GLAPI void APIENTRY glDisable(GLenum cap)
     {
     case GL_TEXTURE_2D:
         textureMapping2DEnabled = GL_FALSE;
+        break;
+    case GL_DEPTH_TEST:
+        depthTestEnabled = GL_FALSE;
         break;
     default:
         notImplementedYet(__func__);
@@ -523,6 +528,9 @@ GLAPI void APIENTRY glEnable(GLenum cap)
     {
     case GL_TEXTURE_2D:
         textureMapping2DEnabled = GL_TRUE;
+        break;
+    case GL_DEPTH_TEST:
+        depthTestEnabled = GL_TRUE;
         break;
     default:
         notImplementedYet(__func__);
