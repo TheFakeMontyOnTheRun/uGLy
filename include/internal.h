@@ -56,7 +56,7 @@ void drawTexturedTriangle(int *coords,
 #define YRES_FRAMEBUFFER 300
 
 extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #endif // INTERNAL_H

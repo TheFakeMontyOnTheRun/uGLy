@@ -184,9 +184,9 @@ uint8_t colorArrayEnabled = GL_TRUE;
 
 GLfixed pointSize = intToFix(1);
 
-uint8_t clearDepth = 0;
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
+uint16_t clearDepth = 0;
 uint8_t clearStencil = 0;
 
 static void notImplementedYet(const char* funcName)

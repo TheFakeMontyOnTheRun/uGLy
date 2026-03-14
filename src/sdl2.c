@@ -12,7 +12,7 @@ SDL_Renderer* renderer;
 SDL_Texture* videoTexture;
 
 uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 KeyCallback keyCallback;
