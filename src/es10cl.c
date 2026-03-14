@@ -146,8 +146,6 @@ uint8_t textureMapping2DEnabled = 0;
 
 GLenum currentError = GL_NO_ERROR;
 
-uint32_t clearColor;
-
 uint8_t matrixStackTop = 0;
 
 GLsizei vertexStride = 0;
@@ -186,6 +184,8 @@ GLfixed pointSize = intToFix(1);
 
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
+
+uint32_t clearColor;
 uint16_t clearDepth = 0;
 uint8_t clearStencil = 0;
 
