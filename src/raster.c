@@ -29,7 +29,7 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	GLfixed fDV1;
 	GLfixed fDV2;
 
-	GLfixed currentDepth;
+	uint16_t currentDepth;
 	GLfixed fDZ1;
 	GLfixed fDZ2;
 	GLfixed fZ1;
@@ -201,7 +201,7 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	GLfixed fDU2;
 	GLfixed fDV2;
 
-	GLfixed currentDepth;
+	uint16_t currentDepth;
 	GLfixed fDZ1;
 	GLfixed fDZ2;
 	GLfixed fZ1;
