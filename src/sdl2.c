@@ -84,6 +84,8 @@ struct Bitmap* loadBitmap(const char *filename)
     return toReturn;
 }
 
+int showBufferColour = 1;
+
 void swapBuffers(void)
 {
     void* pixels;
@@ -100,6 +102,14 @@ void swapBuffers(void)
 
         if (event.type == SDL_KEYDOWN)
         {
+            if (event.key.keysym.sym == '1')
+            {
+                showBufferColour = 1;
+            } else if (event.key.keysym.sym == '2')
+            {
+                showBufferColour = 0;
+            }
+
             keyCallback(event.key.keysym.sym);
         }
     }
@@ -108,7 +118,25 @@ void swapBuffers(void)
 
     uint32_t* dst = (uint32_t*)pixels;
 
-    memcpy(dst, framebuffer, sizeof(uint32_t) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+    if (showBufferColour)
+    {
+        memcpy(dst, framebuffer, sizeof(uint32_t) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+    } else
+    {
+        uint16_t* depthPtr = &zBuffer[0];
+        uint32_t* finalPtr = dst;
+        for (int y = 0; y < YRES_FRAMEBUFFER; ++y)
+        {
+            for (int x = 0; x < XRES_FRAMEBUFFER; ++x)
+            {
+
+                uint16_t depth = *depthPtr++;
+                uint32_t grey = ((depth >> 8) << 24 ) | ((depth >> 8) << 16 ) | ((depth >> 8) << 8 ) | 0xFF;
+                *finalPtr++ = grey;
+            }
+        }
+    }
+
 
     SDL_UnlockTexture(videoTexture);
 
