@@ -26,12 +26,11 @@ void initWindow( KeyCallback callback);
 void swapBuffers(void);
 struct Bitmap* loadBitmap(const char *filename);
 
-void fillTriangle(int* coords, FramebufferPixelFormat* colour);
-
 void drawTexturedTriangle(int *coords,
                           uint8_t *uvCoords,
+                          uint8_t *colourChannels,
                           struct Texture *texture,
-                          int z);
+                          uint16_t *z);
 
 #define kIntegerPart 16
 
@@ -57,7 +56,7 @@ void drawTexturedTriangle(int *coords,
 #define YRES_FRAMEBUFFER 300
 
 extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
-extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #endif // INTERNAL_H

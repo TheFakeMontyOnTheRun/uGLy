@@ -13,192 +13,14 @@ typedef int GLfixed;
 
 #include "internal.h"
 
-static void fillBottomFlat(const int* coords, FramebufferPixelFormat* colour)
-{
-    int y = coords[1];
-    GLfixed dXDy2;
-    GLfixed dXDy1;
-    GLfixed fX0;
-    GLfixed fX1;
-    GLfixed dX1X0;
-    GLfixed dX0X2;
-    GLfixed dY1Y0;
-    GLfixed dY2Y0;
-    int yFinal = MIN(coords[3], coords[5]);
-
-    GLfixed x0 = intToFix(coords[0]);
-    GLfixed y0 = intToFix(coords[1]);
-    GLfixed x1 = intToFix(coords[2]);
-    GLfixed y1 = intToFix(coords[3]);
-    GLfixed x2 = intToFix(coords[4]);
-    GLfixed y2 = intToFix(coords[5]);
-
-
-    dX1X0 = (x1 - x0);
-    dX0X2 = (x0 - x2);
-    dY1Y0 = (y1 - y0);
-    dY2Y0 = (y2 - y0);
-
-    if (dY2Y0 == 0 || dY1Y0 == 0)
-    {
-        return;
-    }
-
-    dXDy2 = Div(dX0X2, dY2Y0);
-    dXDy1 = Div(dX1X0, dY1Y0);
-    fX0 = x0;
-    fX1 = x0;
-
-    for (; y < yFinal; ++y)
-    {
-        if (y >= YRES_FRAMEBUFFER)
-        {
-            return;
-        }
-        else if (y >= 0)
-        {
-            int iFX1 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX1)), 0);
-            int iFX0 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX0)), 0);
-            FramebufferPixelFormat* destination = &framebuffer[
-                (XRES_FRAMEBUFFER * y) + MIN(iFX0, iFX1)];
-
-            unsigned int px;
-            size_t length = abs(iFX1 - iFX0);
-            FramebufferPixelFormat* ptr = destination;
-            for (px = 0; px < length; ++px)
-            {
-                *ptr = *colour;
-                ptr++;
-            }
-        }
-        fX0 -= dXDy2;
-        fX1 += dXDy1;
-    }
-}
-
-
-static void fillTopFlat(int* coords, FramebufferPixelFormat* colour)
-{
-    int y = coords[1];
-    int yFinal = MAX(coords[3], coords[5]);
-
-    GLfixed x0 = intToFix(coords[0]);
-    GLfixed y0 = intToFix(coords[1]);
-    GLfixed x1 = intToFix(coords[2]);
-    GLfixed y1 = intToFix(coords[3]);
-    GLfixed x2 = intToFix(coords[4]);
-    GLfixed y2 = intToFix(coords[5]);
-
-    GLfixed dXDy1;
-    GLfixed dXDy2;
-    GLfixed fX0;
-    GLfixed fX1;
-
-
-    GLfixed dX1X0 = (x1 - x0);
-    GLfixed dX2X0 = (x2 - x0);
-    GLfixed dY0Y1 = (y0 - y1);
-    GLfixed dY0Y2 = (y0 - y2);
-
-    if (dY0Y1 == 0 || dY0Y2 == 0)
-    {
-        return;
-    }
-
-    dXDy1 = Div(dX1X0, dY0Y1);
-    dXDy2 = Div(dX2X0, dY0Y2);
-    fX0 = x0; /* p1 */
-    fX1 = x0; /* p2 */
-
-    for (; y >= yFinal; --y)
-    {
-        if (y < 0)
-        {
-            return;
-        }
-        else if (y < YRES_FRAMEBUFFER)
-        {
-            int iFX1 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX1)), 0);
-            int iFX0 = MAX(MIN((XRES_FRAMEBUFFER - 1), fixToInt(fX0)), 0);
-            FramebufferPixelFormat* destination = &framebuffer[
-                (XRES_FRAMEBUFFER * y) + MIN(iFX0, iFX1)];
-
-            unsigned int px;
-            size_t length = abs(iFX1 - iFX0);
-            FramebufferPixelFormat* ptr = destination;
-            for (px = 0; px < length; ++px)
-            {
-                *ptr = *colour;
-                ptr++;
-            }
-        }
-
-        fX0 += dXDy1;
-        fX1 += dXDy2;
-    }
-}
-
-void fillTriangle(int* coords, FramebufferPixelFormat* colour)
-{
-    int newCoors[6];
-    int newCoors2[6];
-
-    int upper = -1;
-    int lower = -1;
-    int other = 0;
-    int c;
-
-    for (c = 0; c < 3; ++c)
-    {
-        if (upper == -1 || coords[(2 * c) + 1] < coords[(2 * upper) + 1])
-        {
-            upper = c;
-        }
-
-        if (lower == -1 || coords[(2 * c) + 1] > coords[(2 * lower) + 1])
-        {
-            lower = c;
-        }
-    }
-
-    if (lower == 0 || upper == 0)
-    {
-        other = 1;
-    }
-
-    if ((lower == 1 || upper == 1) && (other == 1))
-    {
-        other = 2;
-    }
-
-    if ((lower == 2 || upper == 2) && (other == 2))
-    {
-        other = 0;
-    }
-
-    newCoors[0] = coords[2 * upper];
-    newCoors[1] = coords[(2 * upper) + 1];
-    newCoors[2] = coords[2 * lower];
-    newCoors[3] = coords[(2 * lower) + 1];
-    newCoors[4] = coords[2 * other];
-    newCoors[5] = coords[(2 * other) + 1];
-
-    newCoors2[0] = coords[2 * lower];
-    newCoors2[1] = coords[(2 * lower) + 1];
-    newCoors2[2] = coords[2 * other];
-    newCoors2[3] = coords[(2 * other) + 1];
-    newCoors2[4] = coords[2 * upper];
-    newCoors2[5] = coords[(2 * upper) + 1];
-
-
-    fillBottomFlat(&newCoors[0], colour);
-    fillTopFlat(&newCoors2[0], colour);
-}
+extern uint8_t depthTestEnabled;
+extern uint8_t depthWritesEnabled;
 
 static void drawTexturedBottomFlatTriangle(int *coords,
 											uint8_t *uvCoords,
+											uint8_t *colourChannels,
 											struct Texture *texture,
-											int z) {
+											uint16_t *z) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -206,6 +28,30 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	GLfixed fDU2;
 	GLfixed fDV1;
 	GLfixed fDV2;
+
+	uint16_t currentDepth;
+	GLfixed fDZ1;
+	GLfixed fDZ2;
+	GLfixed fZ1;
+	GLfixed fZ2;
+
+	uint8_t currentR;
+	uint8_t currentG;
+	uint8_t currentB;
+	GLfixed fDR1;
+	GLfixed fDR2;
+	GLfixed fDG1;
+	GLfixed fDG2;
+	GLfixed fDB1;
+	GLfixed fDB2;
+	GLfixed fR1;
+	GLfixed fR2;
+	GLfixed fG1;
+	GLfixed fG2;
+	GLfixed fB1;
+	GLfixed fB2;
+
+
 	int yFinal = coords[5]; /* not the lowest, neither the topmost */
 
 	GLfixed x0 = intToFix(coords[0]);
@@ -246,12 +92,36 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	fU1 = fU2 = u0;
 
 	effectiveDelta = intToFix(coords[5] - y);
+
 	fDU1 = Div((u2 - u0), effectiveDelta);
 	fDV1 = Div((v2 - v0), effectiveDelta);
 
+	fDZ1 = Div( intToFix(z[2] - z[0]), effectiveDelta );
+
+	fDR1 = Div( intToFix( colourChannels[8] - colourChannels[0]), effectiveDelta );
+	fDG1 = Div( intToFix( colourChannels[9] - colourChannels[1]), effectiveDelta );
+	fDB1 = Div( intToFix( colourChannels[10] - colourChannels[2]), effectiveDelta );
+
 	effectiveDelta = intToFix(coords[3] - y);
+
 	fDU2 = Div((u1 - u0), effectiveDelta);
 	fDV2 = Div((v1 - v0), effectiveDelta);
+
+	fDZ2 = Div( intToFix(z[1] - z[0]), effectiveDelta );
+
+	fZ1 = intToFix(z[0]);
+	fZ2 = intToFix(z[0]);
+
+	fDR2 = Div( intToFix( colourChannels[4] - colourChannels[0]), effectiveDelta );
+	fDG2 = Div( intToFix( colourChannels[5] - colourChannels[1]), effectiveDelta );
+	fDB2 = Div( intToFix( colourChannels[6] - colourChannels[2]), effectiveDelta );
+
+	fR1 = intToFix(colourChannels[0]);
+	fG1 = intToFix(colourChannels[1]);
+	fB1 = intToFix(colourChannels[2]);
+	fR2 = intToFix(colourChannels[0]);
+	fG2 = intToFix(colourChannels[1]);
+	fB2 = intToFix(colourChannels[2]);
 
 	for (; y < yFinal; ++y) {
 
@@ -283,6 +153,17 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 
 		if (limit) {
 			FramebufferPixelFormat *destination;
+			uint16_t *depthDestination;
+			GLfixed fZ;
+			GLfixed fDZLine;
+
+			GLfixed fR;
+			GLfixed fG;
+			GLfixed fB;
+			GLfixed fDRLine;
+			GLfixed fDGLine;
+			GLfixed fDBLine;
+
 			///TODO: bring in the Div LUT
 			{
 				oneOverLimit = Div(intToFix(1), intToFix(limit));
@@ -290,32 +171,77 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 
 
 			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
+			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 
 			if (flipped) {
 				texelLineDX = Mul((fU1 - fU2), oneOverLimit);
 				texelLineDY = Mul((fV1 - fV2), oneOverLimit);
 				texelLineX = fU2;
 				texelLineY = fV2;
+
+				fZ = fZ2;
+				fDZLine = Mul( (fZ1 - fZ2), oneOverLimit );
+
+				fR = fR2;
+				fG = fG2;
+				fB = fB2;
+				fDRLine = Mul( (fR1 - fR2), oneOverLimit );
+				fDGLine = Mul( (fG1 - fG2), oneOverLimit );
+				fDBLine = Mul( (fB1 - fB2), oneOverLimit );
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
 				texelLineX = fU1;
 				texelLineY = fV1;
+
+				fZ = fZ1;
+				fDZLine = Mul( (fZ2 - fZ1), oneOverLimit );
+
+				fR = fR1;
+				fG = fG1;
+				fB = fB1;
+				fDRLine = Mul( (fR2 - fR1), oneOverLimit );
+				fDGLine = Mul( (fG2 - fG1), oneOverLimit );
+				fDBLine = Mul( (fB2 - fB1), oneOverLimit );
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
 				int xPos = iFX0;
 				while (limit--) {
-					u = (fixToInt(texelLineX)) % texture->width;
-					v = (fixToInt(texelLineY)) % texture->height;
-
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
-						*destination = *(texture->texels + (texture->width * v) + u);
+						currentDepth = fixToInt(fZ);
+						if (!depthTestEnabled || *depthDestination >= currentDepth)
+						{
+							u = (fixToInt(texelLineX)) % texture->width;
+							v = (fixToInt(texelLineY)) % texture->height;
+
+							currentR = fixToInt(fR);
+							currentG = fixToInt(fG);
+							currentB = fixToInt(fB);
+
+							uint32_t texel = *(texture->texels + (texture->width * v) + u);
+							uint8_t texelR = (texel & 0xFF000000) >> 24;
+							uint8_t texelG = (texel & 0x00FF0000) >> 16;
+							uint8_t texelB = (texel & 0x0000FF00) >>  8;
+
+							*destination = (((texelR + currentR) /2 ) << 24) | (((texelG + currentG) /2 ) << 16)| (((texelB + currentB) /2 ) << 8) | 0xFF;
+
+							if (depthWritesEnabled)
+							{
+								*depthDestination = currentDepth;
+							}
+						}
 					}
 					++xPos;
 					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
+					++depthDestination;
+					fZ += fDZLine;
+
+					fR += fDRLine;
+					fG += fDGLine;
+					fB += fDBLine;
 				}
 			}
 		}
@@ -325,14 +251,24 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 		fV2 += fDV2;
 		fX0 -= dXDy2;
 		fX1 += dXDy1;
+		fZ1 += fDZ1;
+		fZ2 += fDZ2;
+
+		fR1 += fDR1;
+		fG1 += fDG1;
+		fB1 += fDB1;
+		fR2 += fDR2;
+		fG2 += fDG2;
+		fB2 += fDB2;
 	}
 }
 
 
 static void drawTexturedTopFlatTriangle(int *coords,
 										uint8_t *uvCoords,
+										uint8_t *colourChannels,
 										struct Texture *texture,
-										int z) {
+										uint16_t *z) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -340,6 +276,29 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	GLfixed fDV1;
 	GLfixed fDU2;
 	GLfixed fDV2;
+
+	uint16_t currentDepth;
+	GLfixed fDZ1;
+	GLfixed fDZ2;
+	GLfixed fZ1;
+	GLfixed fZ2;
+
+	uint8_t currentR;
+	uint8_t currentG;
+	uint8_t currentB;
+	GLfixed fDR1;
+	GLfixed fDR2;
+	GLfixed fDG1;
+	GLfixed fDG2;
+	GLfixed fDB1;
+	GLfixed fDB2;
+	GLfixed fR1;
+	GLfixed fR2;
+	GLfixed fG1;
+	GLfixed fG2;
+	GLfixed fB1;
+	GLfixed fB2;
+
 	int yFinal = coords[3]; /* not the upper, not the lowest */
 
 	GLfixed x0 = intToFix(coords[0]);
@@ -384,9 +343,33 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fDU1 = Div((u1 - u0), effectiveDelta);
 	fDV1 = Div((v1 - v0), effectiveDelta);
 
+	fDZ1 = Div( intToFix(z[1] - z[0]), effectiveDelta );
+
+	fDR1 = Div( intToFix( colourChannels[4] - colourChannels[0]), effectiveDelta );
+	fDG1 = Div( intToFix( colourChannels[5] - colourChannels[1]), effectiveDelta );
+	fDB1 = Div( intToFix( colourChannels[6] - colourChannels[2]), effectiveDelta );
+
 	effectiveDelta = intToFix(y - coords[5]);
+
 	fDU2 = Div((u2 - u0), effectiveDelta);
 	fDV2 = Div((v2 - v0), effectiveDelta);
+
+	fDZ2 = Div( intToFix(z[2] - z[0]), effectiveDelta );
+
+	fDR2 = Div( intToFix( colourChannels[8] - colourChannels[0]), effectiveDelta );
+	fDG2 = Div( intToFix( colourChannels[9] - colourChannels[1]), effectiveDelta );
+	fDB2 = Div( intToFix( colourChannels[10] - colourChannels[2]), effectiveDelta );
+
+	fZ1 = intToFix(z[0]);
+	fZ2 = intToFix(z[0]);
+
+	fR1 = intToFix(colourChannels[0]);
+	fG1 = intToFix(colourChannels[1]);
+	fB1 = intToFix(colourChannels[2]);
+	fR2 = intToFix(colourChannels[0]);
+	fG2 = intToFix(colourChannels[1]);
+	fB2 = intToFix(colourChannels[2]);
+
 
 	for (; y >= yFinal; --y) {
 		int iFX1;
@@ -417,6 +400,16 @@ static void drawTexturedTopFlatTriangle(int *coords,
 
 		if (limit) {
 			FramebufferPixelFormat *destination;
+			uint16_t *depthDestination;
+			GLfixed fZ;
+			GLfixed fDZLine;
+			GLfixed fR;
+			GLfixed fG;
+			GLfixed fB;
+			GLfixed fDRLine;
+			GLfixed fDGLine;
+			GLfixed fDBLine;
+
 			///TODO: bring in the damn Div LUT
 			{
 				oneOverLimit = Div(intToFix(1), intToFix(limit));
@@ -424,17 +417,38 @@ static void drawTexturedTopFlatTriangle(int *coords,
 
 
 			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
+			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 
 			if (flipped) {
 				texelLineDX = Mul((fU1 - fU2), oneOverLimit);
 				texelLineDY = Mul((fV1 - fV2), oneOverLimit);
 				texelLineX = fU2;
 				texelLineY = fV2;
+
+				fZ = fZ2;
+				fDZLine = Mul( (fZ1 - fZ2), oneOverLimit );
+
+				fR = fR2;
+				fG = fG2;
+				fB = fB2;
+				fDRLine = Mul( (fR1 - fR2), oneOverLimit );
+				fDGLine = Mul( (fG1 - fG2), oneOverLimit );
+				fDBLine = Mul( (fB1 - fB2), oneOverLimit );
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
 				texelLineX = fU1;
 				texelLineY = fV1;
+
+				fZ = fZ1;
+				fDZLine = Mul( (fZ2 - fZ1), oneOverLimit );
+
+				fR = fR1;
+				fG = fG1;
+				fB = fB1;
+				fDRLine = Mul( (fR2 - fR1), oneOverLimit );
+				fDGLine = Mul( (fG2 - fG1), oneOverLimit );
+				fDBLine = Mul( (fB2 - fB1), oneOverLimit );
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -442,17 +456,38 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				int xPos = iFX0;
 
 				while (limit--) {
-					u = (fixToInt(texelLineX)) % texture->width;
-					v = (fixToInt(texelLineY)) % texture->height;
-
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
-						*destination = *(texture->texels + (texture->width * v) + u);
+						currentDepth = fixToInt(fZ);
+						if (!depthTestEnabled || *depthDestination >= currentDepth)
+						{
+							u = (fixToInt(texelLineX)) % texture->width;
+							v = (fixToInt(texelLineY)) % texture->height;
+							currentR = fixToInt(fR);
+							currentG = fixToInt(fG);
+							currentB = fixToInt(fB);
+							uint32_t texel = *(texture->texels + (texture->width * v) + u);
+							uint8_t texelR = (texel & 0xFF000000) >> 24;
+							uint8_t texelG = (texel & 0x00FF0000) >> 16;
+							uint8_t texelB = (texel & 0x0000FF00) >>  8;
+
+							*destination = (((texelR + currentR) /2 ) << 24) | (((texelG + currentG) /2 ) << 16)| (((texelB + currentB) /2 ) << 8) | 0xFF;
+
+							if (depthWritesEnabled)
+							{
+								*depthDestination = currentDepth;
+							}
+						}
 					}
 
 					++xPos;
 					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
+					++depthDestination;
+					fZ += fDZLine;
+					fR += fDRLine;
+					fG += fDGLine;
+					fB += fDBLine;
 				}
 			}
 		}
@@ -462,6 +497,14 @@ static void drawTexturedTopFlatTriangle(int *coords,
 		fV2 += fDV2;
 		fX0 += dXDy1;
 		fX1 += dXDy2;
+		fZ1 += fDZ1;
+		fZ2 += fDZ2;
+		fR1 += fDR1;
+		fG1 += fDG1;
+		fB1 += fDB1;
+		fR2 += fDR2;
+		fG2 += fDG2;
+		fB2 += fDB2;
 	}
 }
 
@@ -469,10 +512,14 @@ static void drawTexturedTopFlatTriangle(int *coords,
 void
 drawTexturedTriangle(int *coords,
 					uint8_t *uvCoords,
+					uint8_t *colourChannels,
 					struct Texture *texture,
-                     int z) {
+					uint16_t *z) {
+
     int newCoors[6];
     uint8_t newUV[6];
+	uint8_t newColours[12];
+	uint16_t newZ[3];
     int c;
     int upper = -1;
     int lower = -1;
@@ -507,6 +554,22 @@ drawTexturedTriangle(int *coords,
     newCoors[4] = coords[2 * other];
     newCoors[5] = coords[(2 * other) + 1];
 
+	newColours[0] = colourChannels[4 * upper];
+	newColours[1] = colourChannels[(4 * upper) + 1];
+	newColours[2] = colourChannels[(4 * upper) + 2];
+	newColours[3] = colourChannels[(4 * upper) + 3];
+
+	newColours[4] = colourChannels[4 * lower];
+	newColours[5] = colourChannels[(4 * lower) + 1];
+	newColours[6] = colourChannels[(4 * lower) + 2];
+	newColours[7] = colourChannels[(4 * lower) + 3];
+
+	newColours[8] = colourChannels[4 * other];
+	newColours[9] = colourChannels[(4 * other) + 1];
+	newColours[10] = colourChannels[(4 * other) + 2];
+	newColours[11] = colourChannels[(4 * other) + 3];
+
+	/* note the convertion to the OpenGL texture coordinate system */
     newUV[0] = uvCoords[2 * upper];
     newUV[1] = texture->height - uvCoords[(2 * upper) + 1];
 
@@ -516,8 +579,11 @@ drawTexturedTriangle(int *coords,
     newUV[4] = uvCoords[2 * other];
     newUV[5] = texture->height - uvCoords[(2 * other) + 1];
 
+	newZ[0] = z[upper];
+	newZ[1] = z[lower];
+	newZ[2] = z[other];
 
-    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], texture, z);
+    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0]);
 
     newCoors[0] = coords[2 * lower];
     newCoors[1] = coords[(2 * lower) + 1];
@@ -526,6 +592,23 @@ drawTexturedTriangle(int *coords,
     newCoors[4] = coords[2 * upper];
     newCoors[5] = coords[(2 * upper) + 1];
 
+
+	newColours[0] = colourChannels[4 * lower];
+	newColours[1] = colourChannels[(4 * lower) + 1];
+	newColours[2] = colourChannels[(4 * lower) + 2];
+	newColours[3] = colourChannels[(4 * lower) + 3];
+
+	newColours[4] = colourChannels[4 * other];
+	newColours[5] = colourChannels[(4 * other) + 1];
+	newColours[6] = colourChannels[(4 * other) + 2];
+	newColours[7] = colourChannels[(4 * other) + 3];
+
+	newColours[8] = colourChannels[4 * upper];
+	newColours[9] = colourChannels[(4 * upper) + 1];
+	newColours[10] = colourChannels[(4 * upper) + 2];
+	newColours[11] = colourChannels[(4 * upper) + 3];
+
+	/* note the convertion to the OpenGL texture coordinate system */
     newUV[0] = uvCoords[2 * lower];
     newUV[1] = texture->height - uvCoords[(2 * lower) + 1];
 
@@ -535,6 +618,9 @@ drawTexturedTriangle(int *coords,
     newUV[4] = uvCoords[2 * upper];
     newUV[5] = texture->height - uvCoords[(2 * upper) + 1];
 
+	newZ[0] = z[lower];
+	newZ[1] = z[other];
+	newZ[2] = z[upper];
 
-    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], texture, z);
+    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0]);
 }

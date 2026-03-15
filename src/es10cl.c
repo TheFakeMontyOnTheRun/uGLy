@@ -113,6 +113,36 @@ GLfixed sinfp[91] =
     65536,
 };
 
+
+static const GLfixed dummyColors[6][4] = {
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+};
+
+static const GLfixed dummyTexCoords[12] = {
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+};
+
+uint32_t dummyTexels[1] = {0xFFFFFFFF};
+
+struct Texture dummyTexture =  {
+    .height =  1,
+    .width = 1,
+    .texels = &dummyTexels[0]
+};
+
+
 GLfixed sinfpx(GLfixed angle)
 {
     angle %= intToFix(360);
@@ -145,8 +175,6 @@ struct Texture textures[TOTAL_TEXTURES_SUPPORTED];
 uint8_t textureMapping2DEnabled = 0;
 
 GLenum currentError = GL_NO_ERROR;
-
-uint32_t clearColor;
 
 uint8_t matrixStackTop = 0;
 
@@ -184,8 +212,14 @@ uint8_t colorArrayEnabled = GL_TRUE;
 
 GLfixed pointSize = intToFix(1);
 
-uint8_t clearDepth = 0;
+uint8_t depthWritesEnabled = 1;
+uint8_t depthTestEnabled = 0;
+
+uint32_t clearColor;
+uint16_t clearDepth = 0xFFFF;
 uint8_t clearStencil = 0;
+
+GLfixed zRange;
 
 static void notImplementedYet(const char* funcName)
 {
@@ -347,7 +381,7 @@ GLAPI void APIENTRY glDepthFunc(GLenum func)
 
 GLAPI void APIENTRY glDepthMask(GLboolean flag)
 {
-    notImplementedYet(__func__);
+    depthWritesEnabled = flag;
 }
 
 GLAPI void APIENTRY glDepthRangex(GLclampx zNear, GLclampx zFar)
@@ -361,6 +395,9 @@ GLAPI void APIENTRY glDisable(GLenum cap)
     {
     case GL_TEXTURE_2D:
         textureMapping2DEnabled = GL_FALSE;
+        break;
+    case GL_DEPTH_TEST:
+        depthTestEnabled = GL_FALSE;
         break;
     default:
         notImplementedYet(__func__);
@@ -388,6 +425,12 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    if (!vertexArrayEnabled)
+    {
+        /* if this is disabled, what are we even doing here? */
+        return;
+    }
+
     ///TODO: better place the mvp matrix computation
     GLfixed mvp[16];
     mat4x4_mul(&modelViewMatrix[0], &projectionMatrix[0], &mvp[0]);
@@ -399,13 +442,43 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             int c;
             int finalCount = count / 3;
             int firstTrig = first / 3;
-            GLfixed *vertexPtr = (GLfixed*)vertexPointer;
-            GLfixed *uvPtr = (GLfixed*)textureCoordPointer;
-	    struct Texture* texture = &textures[currentTexture];
+            GLfixed *vertexPtr;
+            GLfixed *uvPtr;
+            GLfixed *cPtr;
+	        struct Texture* texture;
+
+            vertexPtr = (GLfixed*)vertexPointer;
+
+            if (textureCoordsEnabled)
+            {
+                uvPtr = (GLfixed*)textureCoordPointer;
+            } else
+            {
+                uvPtr = &dummyTexCoords[0];
+            }
+
+            if (colorArrayEnabled)
+            {
+                cPtr = (GLfixed*)colorPointer;
+            } else
+            {
+                cPtr = (GLfixed*)&dummyColors[0];
+            }
+
+            if (textureMapping2DEnabled)
+            {
+                texture = &textures[currentTexture];
+            } else
+            {
+                texture = &dummyTexture;
+            }
+
+
             for (c = 0; c < firstTrig; ++c)
             {
-                vertexPtr += 9;
                 uvPtr += 6;
+                vertexPtr += 9;
+                cPtr += 12;
             }
 
             for (c = 0; c < finalCount; ++c)
@@ -442,6 +515,18 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
                 };
 
+                GLfixed half = intToFix(1);//Div(intToFix(1), intToFix(2));
+
+                GLfixed z0 = Mul(Mul(transformed[2], oneOverW0) + intToFix(1), half);
+                GLfixed z1 = Mul(Mul(transformed[6], oneOverW1) + intToFix(1), half);
+                GLfixed z2 = Mul(Mul(transformed[10], oneOverW2) + intToFix(1), half);
+
+                uint16_t zValuesNormalized[3] ={
+                    fixToInt(Mul(z0, zRange)),
+                    fixToInt(Mul(z1, zRange)),
+                    fixToInt(Mul(z2, zRange))
+                };
+
                 int coords[6] = {
                     viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
                     viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
@@ -450,30 +535,38 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[4])),
                     viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
                 };
+                uint8_t coloursArray[12] = {
 
+                        fixToInt(Mul( *(cPtr +  0 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  1 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  2 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF))),
 
-                if (textureMapping2DEnabled)
-                {
-                    if (textureCoordsEnabled)
-                    {
-                        uint8_t uvCoords[6] = {
-			              fixToInt( Mul(*(uvPtr + 0), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 1), intToFix(texture->height))),
-			              fixToInt( Mul(*(uvPtr + 2), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 3), intToFix(texture->height))),
-			              fixToInt( Mul(*(uvPtr + 4), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 5), intToFix(texture->height))),
-                        };
+                        fixToInt(Mul( *(cPtr +  4 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  5 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  6 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  7 ), intToFix(0xFF))),
 
-                        drawTexturedTriangle(&coords[0], &uvCoords[0], texture, 0 );
-                    } else
-                    {
-                        //error?!
-                    }
-                } else
-                {
-                    uint32_t colours[3] = {0xFF0000FF, 0x00FF00FF, 0x0000FFFF};
-                    fillTriangle(&coords[0], &colours[0]);
-                }
+                        fixToInt(Mul( *(cPtr +  8 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr +  9 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr + 10 ), intToFix(0xFF))),
+                        fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
+                };
+
+                uint8_t uvCoords[6] = {
+                    fixToInt(Mul(*(uvPtr + 0), intToFix(texture->width ))),
+                    fixToInt(Mul(*(uvPtr + 1), intToFix(texture->height))),
+                    fixToInt(Mul(*(uvPtr + 2), intToFix(texture->width ))),
+                    fixToInt(Mul(*(uvPtr + 3), intToFix(texture->height))),
+                    fixToInt(Mul(*(uvPtr + 4), intToFix(texture->width ))),
+                    fixToInt(Mul(*(uvPtr + 5), intToFix(texture->height))),
+                };
+
+                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0]);
+
                 vertexPtr += 9;
                 uvPtr += 6;
+                cPtr += 12;
             }
         }
         break;
@@ -499,6 +592,9 @@ GLAPI void APIENTRY glEnable(GLenum cap)
     {
     case GL_TEXTURE_2D:
         textureMapping2DEnabled = GL_TRUE;
+        break;
+    case GL_DEPTH_TEST:
+        depthTestEnabled = GL_TRUE;
         break;
     default:
         notImplementedYet(__func__);
@@ -559,6 +655,7 @@ GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfi
     projectionMatrix[10] = -Div((zFar + zNear), ( zFar - zNear ));
     projectionMatrix[11] = -intToFix(1);
     projectionMatrix[14] = -Div(Mul( twoTimesN, zFar), (zFar - zNear));
+    zRange = zFar - zNear;
 }
 
 GLuint reserveTexture(void)
