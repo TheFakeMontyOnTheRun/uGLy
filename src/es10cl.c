@@ -113,6 +113,36 @@ GLfixed sinfp[91] =
     65536,
 };
 
+
+static const GLfixed dummyColors[6][4] = {
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+};
+
+static const GLfixed dummyTexCoords[12] = {
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+    intToFix(0), intToFix(0),
+};
+
+uint32_t dummyTexels[1] = {0xFFFFFFFF};
+
+struct Texture dummyTexture =  {
+    .height =  1,
+    .width = 1,
+    .texels = &dummyTexels[0]
+};
+
+
 GLfixed sinfpx(GLfixed angle)
 {
     angle %= intToFix(360);
@@ -395,6 +425,12 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    if (!vertexArrayEnabled)
+    {
+        /* if this is disabled, what are we even doing here? */
+        return;
+    }
+
     ///TODO: better place the mvp matrix computation
     GLfixed mvp[16];
     mat4x4_mul(&modelViewMatrix[0], &projectionMatrix[0], &mvp[0]);
@@ -406,11 +442,37 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             int c;
             int finalCount = count / 3;
             int firstTrig = first / 3;
-            GLfixed *vertexPtr = (GLfixed*)vertexPointer;
-            GLfixed *uvPtr = (GLfixed*)textureCoordPointer;
-            FramebufferPixelFormat *cPtr = (FramebufferPixelFormat*)colorPointer;
+            GLfixed *vertexPtr;
+            GLfixed *uvPtr;
+            GLfixed *cPtr;
+	        struct Texture* texture;
 
-	        struct Texture* texture = &textures[currentTexture];
+            vertexPtr = (GLfixed*)vertexPointer;
+
+            if (textureCoordsEnabled)
+            {
+                uvPtr = (GLfixed*)textureCoordPointer;
+            } else
+            {
+                uvPtr = &dummyTexCoords[0];
+            }
+
+            if (colorArrayEnabled)
+            {
+                cPtr = (GLfixed*)colorPointer;
+            } else
+            {
+                cPtr = (GLfixed*)&dummyColors[0];
+            }
+
+            if (textureMapping2DEnabled)
+            {
+                texture = &textures[currentTexture];
+            } else
+            {
+                texture = &dummyTexture;
+            }
+
 
             for (c = 0; c < firstTrig; ++c)
             {
@@ -491,25 +553,17 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
                 };
 
-                if (textureMapping2DEnabled)
-                {
-                    if (textureCoordsEnabled)
-                    {
-                        uint8_t uvCoords[6] = {
-			              fixToInt( Mul(*(uvPtr + 0), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 1), intToFix(texture->height))),
-			              fixToInt( Mul(*(uvPtr + 2), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 3), intToFix(texture->height))),
-			              fixToInt( Mul(*(uvPtr + 4), intToFix(texture->width ))), fixToInt( Mul(*(uvPtr + 5), intToFix(texture->height))),
-                        };
+                uint8_t uvCoords[6] = {
+                    fixToInt(Mul(*(uvPtr + 0), intToFix(texture->width ))),
+                    fixToInt(Mul(*(uvPtr + 1), intToFix(texture->height))),
+                    fixToInt(Mul(*(uvPtr + 2), intToFix(texture->width ))),
+                    fixToInt(Mul(*(uvPtr + 3), intToFix(texture->height))),
+                    fixToInt(Mul(*(uvPtr + 4), intToFix(texture->width ))),
+                    fixToInt(Mul(*(uvPtr + 5), intToFix(texture->height))),
+                };
 
-                        drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0] );
-                    } else
-                    {
-                        //error?!
-                    }
-                } else
-                {
-                    drawTexturedTriangle(&coords[0], NULL, &coloursArray[0], NULL, &zValuesNormalized[0] );
-                }
+                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0]);
+
                 vertexPtr += 9;
                 uvPtr += 6;
                 cPtr += 12;
