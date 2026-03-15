@@ -208,17 +208,17 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
 				int xPos = iFX0;
 				while (limit--) {
-					u = (fixToInt(texelLineX)) % texture->width;
-					v = (fixToInt(texelLineY)) % texture->height;
-					currentDepth = fixToInt(fZ);
-
-					currentR = fixToInt(fR);
-					currentG = fixToInt(fG);
-					currentB = fixToInt(fB);
-
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
+						currentDepth = fixToInt(fZ);
 						if (!depthTestEnabled || *depthDestination >= currentDepth)
 						{
+							u = (fixToInt(texelLineX)) % texture->width;
+							v = (fixToInt(texelLineY)) % texture->height;
+
+							currentR = fixToInt(fR);
+							currentG = fixToInt(fG);
+							currentB = fixToInt(fB);
+
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
@@ -456,17 +456,15 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				int xPos = iFX0;
 
 				while (limit--) {
-					u = (fixToInt(texelLineX)) % texture->width;
-					v = (fixToInt(texelLineY)) % texture->height;
-					currentDepth = fixToInt(fZ);
-					currentR = fixToInt(fR);
-					currentG = fixToInt(fG);
-					currentB = fixToInt(fB);
-
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
-
+						currentDepth = fixToInt(fZ);
 						if (!depthTestEnabled || *depthDestination >= currentDepth)
 						{
+							u = (fixToInt(texelLineX)) % texture->width;
+							v = (fixToInt(texelLineY)) % texture->height;
+							currentR = fixToInt(fR);
+							currentG = fixToInt(fG);
+							currentB = fixToInt(fB);
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
