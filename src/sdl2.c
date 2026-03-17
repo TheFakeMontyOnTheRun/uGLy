@@ -54,7 +54,7 @@ struct Bitmap* loadBitmap(const char *filename)
 
     toReturn->width = image->w;
     toReturn->height = image->h;
-    toReturn->texels = calloc( sizeof(uint32_t), 128 * 128);
+    toReturn->texels = calloc( sizeof(uint32_t), image->w * image->h);
 
     int pitch = image->pitch;
     int bpp = image->format->BytesPerPixel;
