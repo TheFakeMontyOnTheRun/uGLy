@@ -87,12 +87,12 @@ draw(void)
 
     static const GLfixed colors[6][4] = {
         {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
-        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
-        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(0), intToFix(0), intToFix(1), intToFix(1)},
 
         {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
-        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
-        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(0), intToFix(1), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
     };
 
     static const GLfixed texCoords[12] = {
@@ -115,7 +115,7 @@ draw(void)
     glRotatex(view_rotz, 0, 0, intToFix(1));
 
 
-    // glEnable(GL_TEXTURE_2D);
+    glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);

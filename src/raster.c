@@ -240,12 +240,13 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 							currentLight[0] = fixToInt(fLight[0]);
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							// uint8_t texelR = (texel & 0xFF000000) >> 24;
-							// uint8_t texelG = (texel & 0x00FF0000) >> 16;
-							// uint8_t texelB = (texel & 0x0000FF00) >>  8;
-							uint8_t texelR = (currentR * currentLight[0]) / 256;
-							uint8_t texelG = (currentG * currentLight[0]) / 256;
-							uint8_t texelB = (currentB * currentLight[0]) / 256;
+							uint8_t texelR = (texel & 0xFF000000) >> 24;
+							uint8_t texelG = (texel & 0x00FF0000) >> 16;
+							uint8_t texelB = (texel & 0x0000FF00) >>  8;
+
+							texelR = ( texelR * (currentR * currentLight[0]) / 256) / 256;
+							texelG = ( texelG * (currentG * currentLight[0]) / 256) / 256;
+							texelB = ( texelB * (currentB * currentLight[0]) / 256) / 256;
 
 							*destination = (((texelR ) ) << 24) | (((texelG ) ) << 16)| (((texelB) ) << 8) | 0xFF;
 
@@ -515,13 +516,13 @@ static void drawTexturedTopFlatTriangle(int *coords,
 							currentLight[0] = fixToInt(fLight[0]);
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							// uint8_t texelR = (texel & 0xFF000000) >> 24;
-							// uint8_t texelG = (texel & 0x00FF0000) >> 16;
-							// uint8_t texelB = (texel & 0x0000FF00) >>  8;
+							uint8_t texelR = (texel & 0xFF000000) >> 24;
+							uint8_t texelG = (texel & 0x00FF0000) >> 16;
+							uint8_t texelB = (texel & 0x0000FF00) >>  8;
 
-							uint8_t texelR = (currentR * currentLight[0]) / 256;
-							uint8_t texelG = (currentG * currentLight[0]) / 256;
-							uint8_t texelB = (currentB * currentLight[0]) / 256;
+							texelR = ( texelR * (currentR * currentLight[0]) / 256) / 256;
+							texelG = ( texelG * (currentG * currentLight[0]) / 256) / 256;
+							texelB = ( texelB * (currentB * currentLight[0]) / 256) / 256;
 
 							*destination = (((texelR) ) << 24) | (((texelG )  ) << 16)| (((texelB ) ) << 8) | 0xFF;
 
