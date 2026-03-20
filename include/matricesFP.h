@@ -30,4 +30,9 @@ void mat4x4_transpose(t_mat4x4 mat);
 void mat4x4_mul(t_mat4x4 m1, t_mat4x4 m2, t_mat4x4 out);
 
 void mat4x4_identity(t_mat4x4 mat);
+
+GLfixed dotVec( t_vec4 v1,  t_vec4 v2);
+
+void normalizeVec( t_vec4 v1,  t_vec4 v2);
+
 #endif /* MATRICES_H */

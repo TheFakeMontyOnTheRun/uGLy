@@ -3,6 +3,7 @@
 #include <GLES/gl.h>
 #include "matricesFP.h"
 #include "internal.h"
+#include "fpsqrt.h"
 
 /**
  *
@@ -348,4 +349,27 @@ void mat4x4_identity(t_mat4x4 mat)
 {
     mat[1] = mat[2] = mat[3] = mat[4] = mat[6] = mat[7] = mat[8] = mat[9] = mat[11] = mat[12] = mat[13] = mat[14] = 0;
     mat[0] = mat[5] = mat[10] = mat[15] = intToFix(1);
+}
+
+GLfixed dotVec( t_vec4 v1,  t_vec4 v2)
+{
+    return Mul(v1[0], v2[0]) + Mul(v1[1], v2[1]) + Mul(v1[2], v2[2]) + Mul(v1[3], v2[3]);
+}
+
+GLfixed lengthVec(t_vec4 v)
+{
+    return sqrt_fx16_16_to_fx16_16(Mul(v[0], v[0]) +
+                                   Mul(v[1], v[1]) +
+                                   Mul(v[2], v[2]) +
+                                   Mul(v[3], v[3]));
+}
+
+void normalizeVec( t_vec4 v1,  t_vec4 v2)
+{
+    ///TODO: handle 0-length vectors
+    GLfixed oneOverlen = Div( intToFix(1), lengthVec(v2));
+    v1[0] = Mul( oneOverlen, v2[0]);
+    v1[1] = Mul( oneOverlen, v2[1]);
+    v1[2] = Mul( oneOverlen, v2[2]);
+    v1[3] = Mul( oneOverlen, v2[3]);
 }

@@ -20,7 +20,8 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 											uint8_t *uvCoords,
 											uint8_t *colourChannels,
 											struct Texture *texture,
-											uint16_t *z) {
+											uint16_t *z,
+											uint8_t* lightDot) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -34,6 +35,12 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	GLfixed fDZ2;
 	GLfixed fZ1;
 	GLfixed fZ2;
+
+	uint8_t currentLight[8];
+	GLfixed fDLight1[8];
+	GLfixed fDLight2[8];
+	GLfixed fLight1[8];
+	GLfixed fLight2[8];
 
 	uint8_t currentR;
 	uint8_t currentG;
@@ -102,6 +109,8 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	fDG1 = Div( intToFix( colourChannels[9] - colourChannels[1]), effectiveDelta );
 	fDB1 = Div( intToFix( colourChannels[10] - colourChannels[2]), effectiveDelta );
 
+	fDLight1[0] = Div( (intToFix(lightDot[2] - lightDot[0])), effectiveDelta );
+
 	effectiveDelta = intToFix(coords[3] - y);
 
 	fDU2 = Div((u1 - u0), effectiveDelta);
@@ -109,19 +118,18 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 
 	fDZ2 = Div( intToFix(z[1] - z[0]), effectiveDelta );
 
-	fZ1 = intToFix(z[0]);
-	fZ2 = intToFix(z[0]);
-
 	fDR2 = Div( intToFix( colourChannels[4] - colourChannels[0]), effectiveDelta );
 	fDG2 = Div( intToFix( colourChannels[5] - colourChannels[1]), effectiveDelta );
 	fDB2 = Div( intToFix( colourChannels[6] - colourChannels[2]), effectiveDelta );
 
-	fR1 = intToFix(colourChannels[0]);
-	fG1 = intToFix(colourChannels[1]);
-	fB1 = intToFix(colourChannels[2]);
-	fR2 = intToFix(colourChannels[0]);
-	fG2 = intToFix(colourChannels[1]);
-	fB2 = intToFix(colourChannels[2]);
+	fDLight2[0] = Div( (intToFix(lightDot[1] - lightDot[0])), effectiveDelta );
+
+	fZ1 = fZ2 = intToFix(z[0]);
+	fR1 = fR2 = intToFix(colourChannels[0]);
+	fG1 = fG2 = intToFix(colourChannels[1]);
+	fB1 = fB2 = intToFix(colourChannels[2]);
+
+	fLight1[0] = fLight2[0] = intToFix(lightDot[0]);
 
 	for (; y < yFinal; ++y) {
 
@@ -164,6 +172,9 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 			GLfixed fDGLine;
 			GLfixed fDBLine;
 
+			GLfixed fLight[8];
+			GLfixed fDLightLine[8];
+
 			///TODO: bring in the Div LUT
 			{
 				oneOverLimit = Div(intToFix(1), intToFix(limit));
@@ -188,6 +199,10 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				fDRLine = Mul( (fR1 - fR2), oneOverLimit );
 				fDGLine = Mul( (fG1 - fG2), oneOverLimit );
 				fDBLine = Mul( (fB1 - fB2), oneOverLimit );
+
+				fLight[0] = fLight2[0];
+				fDLightLine[0] = Mul( (fLight1[0] - fLight2[0]), oneOverLimit );
+
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
@@ -203,6 +218,9 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				fDRLine = Mul( (fR2 - fR1), oneOverLimit );
 				fDGLine = Mul( (fG2 - fG1), oneOverLimit );
 				fDBLine = Mul( (fB2 - fB1), oneOverLimit );
+
+				fLight[0] = fLight1[0];
+				fDLightLine[0] = Mul( (fLight2[0] - fLight1[0]), oneOverLimit );
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -219,12 +237,17 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 							currentG = fixToInt(fG);
 							currentB = fixToInt(fB);
 
-							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							uint8_t texelR = (texel & 0xFF000000) >> 24;
-							uint8_t texelG = (texel & 0x00FF0000) >> 16;
-							uint8_t texelB = (texel & 0x0000FF00) >>  8;
+							currentLight[0] = fixToInt(fLight[0]);
 
-							*destination = (((texelR + currentR) /2 ) << 24) | (((texelG + currentG) /2 ) << 16)| (((texelB + currentB) /2 ) << 8) | 0xFF;
+							uint32_t texel = *(texture->texels + (texture->width * v) + u);
+							// uint8_t texelR = (texel & 0xFF000000) >> 24;
+							// uint8_t texelG = (texel & 0x00FF0000) >> 16;
+							// uint8_t texelB = (texel & 0x0000FF00) >>  8;
+							uint8_t texelR = (currentR * currentLight[0]) / 256;
+							uint8_t texelG = (currentG * currentLight[0]) / 256;
+							uint8_t texelB = (currentB * currentLight[0]) / 256;
+
+							*destination = (((texelR ) ) << 24) | (((texelG ) ) << 16)| (((texelB) ) << 8) | 0xFF;
 
 							if (depthWritesEnabled)
 							{
@@ -242,6 +265,8 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 					fR += fDRLine;
 					fG += fDGLine;
 					fB += fDBLine;
+
+					fLight[0] += fDLightLine[0];
 				}
 			}
 		}
@@ -260,6 +285,9 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 		fR2 += fDR2;
 		fG2 += fDG2;
 		fB2 += fDB2;
+
+		fLight1[0] += fDLight1[0];
+		fLight2[0] += fDLight2[0];
 	}
 }
 
@@ -268,7 +296,8 @@ static void drawTexturedTopFlatTriangle(int *coords,
 										uint8_t *uvCoords,
 										uint8_t *colourChannels,
 										struct Texture *texture,
-										uint16_t *z) {
+										uint16_t *z,
+										uint8_t* lightDot) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -282,6 +311,12 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	GLfixed fDZ2;
 	GLfixed fZ1;
 	GLfixed fZ2;
+
+	uint8_t currentLight[8];
+	GLfixed fDLight1[8];
+	GLfixed fDLight2[8];
+	GLfixed fLight1[8];
+	GLfixed fLight2[8];
 
 	uint8_t currentR;
 	uint8_t currentG;
@@ -340,6 +375,7 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fU1 = fU2 = u0;
 
 	effectiveDelta = intToFix(y - coords[3]);
+
 	fDU1 = Div((u1 - u0), effectiveDelta);
 	fDV1 = Div((v1 - v0), effectiveDelta);
 
@@ -348,6 +384,8 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fDR1 = Div( intToFix( colourChannels[4] - colourChannels[0]), effectiveDelta );
 	fDG1 = Div( intToFix( colourChannels[5] - colourChannels[1]), effectiveDelta );
 	fDB1 = Div( intToFix( colourChannels[6] - colourChannels[2]), effectiveDelta );
+
+	fDLight1[0] = Div( (intToFix(lightDot[1] - lightDot[0])), effectiveDelta );
 
 	effectiveDelta = intToFix(y - coords[5]);
 
@@ -360,16 +398,15 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fDG2 = Div( intToFix( colourChannels[9] - colourChannels[1]), effectiveDelta );
 	fDB2 = Div( intToFix( colourChannels[10] - colourChannels[2]), effectiveDelta );
 
-	fZ1 = intToFix(z[0]);
-	fZ2 = intToFix(z[0]);
+	fDLight2[0] = Div( (intToFix(lightDot[2] - lightDot[0])), effectiveDelta );
 
-	fR1 = intToFix(colourChannels[0]);
-	fG1 = intToFix(colourChannels[1]);
-	fB1 = intToFix(colourChannels[2]);
-	fR2 = intToFix(colourChannels[0]);
-	fG2 = intToFix(colourChannels[1]);
-	fB2 = intToFix(colourChannels[2]);
+	fZ1 = fZ2 = intToFix(z[0]);
 
+	fR1 = fR2 = intToFix(colourChannels[0]);
+	fG1 = fG2 = intToFix(colourChannels[1]);
+	fB1 = fB2 = intToFix(colourChannels[2]);
+
+	fLight1[0] = fLight2[0] = intToFix(lightDot[0]);
 
 	for (; y >= yFinal; --y) {
 		int iFX1;
@@ -410,6 +447,9 @@ static void drawTexturedTopFlatTriangle(int *coords,
 			GLfixed fDGLine;
 			GLfixed fDBLine;
 
+			GLfixed fLight[8];
+			GLfixed fDLightLine[8];
+
 			///TODO: bring in the damn Div LUT
 			{
 				oneOverLimit = Div(intToFix(1), intToFix(limit));
@@ -434,6 +474,9 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				fDRLine = Mul( (fR1 - fR2), oneOverLimit );
 				fDGLine = Mul( (fG1 - fG2), oneOverLimit );
 				fDBLine = Mul( (fB1 - fB2), oneOverLimit );
+
+				fLight[0] = fLight2[0];
+				fDLightLine[0] = Mul( (fLight1[0] - fLight2[0]), oneOverLimit );
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
@@ -449,6 +492,9 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				fDRLine = Mul( (fR2 - fR1), oneOverLimit );
 				fDGLine = Mul( (fG2 - fG1), oneOverLimit );
 				fDBLine = Mul( (fB2 - fB1), oneOverLimit );
+
+				fLight[0] = fLight1[0];
+				fDLightLine[0] = Mul( (fLight2[0] - fLight1[0]), oneOverLimit );
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -465,12 +511,19 @@ static void drawTexturedTopFlatTriangle(int *coords,
 							currentR = fixToInt(fR);
 							currentG = fixToInt(fG);
 							currentB = fixToInt(fB);
-							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							uint8_t texelR = (texel & 0xFF000000) >> 24;
-							uint8_t texelG = (texel & 0x00FF0000) >> 16;
-							uint8_t texelB = (texel & 0x0000FF00) >>  8;
 
-							*destination = (((texelR + currentR) /2 ) << 24) | (((texelG + currentG) /2 ) << 16)| (((texelB + currentB) /2 ) << 8) | 0xFF;
+							currentLight[0] = fixToInt(fLight[0]);
+
+							uint32_t texel = *(texture->texels + (texture->width * v) + u);
+							// uint8_t texelR = (texel & 0xFF000000) >> 24;
+							// uint8_t texelG = (texel & 0x00FF0000) >> 16;
+							// uint8_t texelB = (texel & 0x0000FF00) >>  8;
+
+							uint8_t texelR = (currentR * currentLight[0]) / 256;
+							uint8_t texelG = (currentG * currentLight[0]) / 256;
+							uint8_t texelB = (currentB * currentLight[0]) / 256;
+
+							*destination = (((texelR) ) << 24) | (((texelG )  ) << 16)| (((texelB ) ) << 8) | 0xFF;
 
 							if (depthWritesEnabled)
 							{
@@ -488,6 +541,8 @@ static void drawTexturedTopFlatTriangle(int *coords,
 					fR += fDRLine;
 					fG += fDGLine;
 					fB += fDBLine;
+
+					fLight[0] += fDLightLine[0];
 				}
 			}
 		}
@@ -505,6 +560,9 @@ static void drawTexturedTopFlatTriangle(int *coords,
 		fR2 += fDR2;
 		fG2 += fDG2;
 		fB2 += fDB2;
+
+		fLight1[0] += fDLight1[0];
+		fLight2[0] += fDLight2[0];
 	}
 }
 
@@ -514,12 +572,14 @@ drawTexturedTriangle(int *coords,
 					uint8_t *uvCoords,
 					uint8_t *colourChannels,
 					struct Texture *texture,
-					uint16_t *z) {
+					uint16_t *z,
+					uint8_t* lightDot) {
 
     int newCoors[6];
     uint8_t newUV[6];
 	uint8_t newColours[12];
 	uint16_t newZ[3];
+	uint8_t newLightDot[24];
     int c;
     int upper = -1;
     int lower = -1;
@@ -583,7 +643,12 @@ drawTexturedTriangle(int *coords,
 	newZ[1] = z[lower];
 	newZ[2] = z[other];
 
-    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0]);
+
+	newLightDot[0] = lightDot[upper];
+	newLightDot[1] = lightDot[lower];
+	newLightDot[2] = lightDot[other];
+
+    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0]);
 
     newCoors[0] = coords[2 * lower];
     newCoors[1] = coords[(2 * lower) + 1];
@@ -622,5 +687,9 @@ drawTexturedTriangle(int *coords,
 	newZ[1] = z[other];
 	newZ[2] = z[upper];
 
-    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0]);
+	newLightDot[0] = lightDot[lower];
+	newLightDot[1] = lightDot[other];
+	newLightDot[2] = lightDot[upper];
+
+    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0]);
 }

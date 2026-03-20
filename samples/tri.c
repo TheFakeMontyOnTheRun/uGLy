@@ -79,15 +79,21 @@ draw(void)
     {  intToFix(1), intToFix(1),  intToFix(0) },
     };
 
-    static const GLfixed colors[6][4] = {
-        { intToFix(1),           0,            0,   intToFix(1)},
-        { intToFix(1), intToFix(1),  intToFix(1),   intToFix(1)},
-        {     0,                 0,  intToFix(1),   intToFix(1)},
+    static const GLfixed normals[12] = {
+        -intToFix(1), 0, 0,
+        intToFix(1),  0, 0,
+        0,  intToFix(1), 0
+    };
 
-        { intToFix(1),           0,            0,   intToFix(1)},
-        {           0, intToFix(1),            0,   intToFix(1)},
-        { intToFix(1), intToFix(1),  intToFix(1),   intToFix(1)},
-        };
+    static const GLfixed colors[6][4] = {
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+    };
 
     static const GLfixed texCoords[12] = {
         intToFix(0), intToFix(0),
@@ -109,15 +115,17 @@ draw(void)
     glRotatex(view_rotz, 0, 0, intToFix(1));
 
 
-    glEnable(GL_TEXTURE_2D);
+    // glEnable(GL_TEXTURE_2D);
     glEnable(GL_DEPTH_TEST);
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);
     glColorPointer(4, GL_FIXED, 0, colors);
+    glNormalPointer(GL_FIXED, 0, normals);
 
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
 
     /* draw triangles */
     glBindTexture(GL_TEXTURE_2D, textureID[0]);
@@ -127,7 +135,7 @@ draw(void)
     ///TODO: try glLoadIdentity here..I dare you. I DOUBLE DARE YOU
 
     glBindTexture(GL_TEXTURE_2D, textureID[1]);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
 
     /* draw some points */
     // glPointSizex(Div(intToFix(31), intToFix(2)));
@@ -136,6 +144,7 @@ draw(void)
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
 
 
 
@@ -164,6 +173,15 @@ reshape(int width, int height)
 static void
 init(void)
 {
+
+    static const GLfixed pos[4] = { -intToFix(1), -intToFix(1), intToFix(0), 0 };
+
+    glLightxv(GL_LIGHT0, GL_POSITION, pos);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+
     GLfixed grey = Div(intToFix(4), intToFix(10));
     GLfixed fullAlpha = intToFix(1);
     glClearColorx(grey, grey, grey, fullAlpha);
