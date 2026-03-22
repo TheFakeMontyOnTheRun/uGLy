@@ -607,11 +607,22 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         t_vec4 normalizedNormal1;
                         t_vec4 normalizedNormal2;
 
-                        normalizeVec(&normalizedLight[0], &lights[d].position[0]);
+                        if (normalizeNormals)
+                        {
+                            normalizeVec(&normalizedLight[0], &lights[d].position[0]);
 
-                        normalizeVec(&normalizedNormal0[0], &transformedNormals[0]);
-                        normalizeVec(&normalizedNormal1[0], &transformedNormals[4]);
-                        normalizeVec(&normalizedNormal2[0], &transformedNormals[8]);
+                            normalizeVec(&normalizedNormal0[0], &transformedNormals[0]);
+                            normalizeVec(&normalizedNormal1[0], &transformedNormals[4]);
+                            normalizeVec(&normalizedNormal2[0], &transformedNormals[8]);
+
+                        } else
+                        {
+                            memcpy(&normalizedLight[0], &lights[d].position[0], sizeof(GLfixed) * 4);
+
+                            memcpy(&normalizedNormal0[0], &transformedNormals[0], sizeof(GLfixed) * 4);
+                            memcpy(&normalizedNormal1[0], &transformedNormals[4], sizeof(GLfixed) * 4);
+                            memcpy(&normalizedNormal2[0], &transformedNormals[8], sizeof(GLfixed) * 4);
+                        }
 
                         GLfixed dot0 = dotVec( &normalizedLight[0],  &normalizedNormal0[0]);
                         GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
