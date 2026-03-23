@@ -109,7 +109,11 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	fDG1 = Div( intToFix( colourChannels[9] - colourChannels[1]), effectiveDelta );
 	fDB1 = Div( intToFix( colourChannels[10] - colourChannels[2]), effectiveDelta );
 
-	fDLight1[0] = Div( (intToFix(lightDot[2] - lightDot[0])), effectiveDelta );
+	for ( int c = 0; c < 8; ++c)
+	{
+		fDLight1[c] = Div( (intToFix(lightDot[c * 3 + 2] - lightDot[c * 3 + 0])), effectiveDelta );
+	}
+
 
 	effectiveDelta = intToFix(coords[3] - y);
 
@@ -122,14 +126,20 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 	fDG2 = Div( intToFix( colourChannels[5] - colourChannels[1]), effectiveDelta );
 	fDB2 = Div( intToFix( colourChannels[6] - colourChannels[2]), effectiveDelta );
 
-	fDLight2[0] = Div( (intToFix(lightDot[1] - lightDot[0])), effectiveDelta );
+	for ( int c = 0; c < 8; ++c)
+	{
+		fDLight2[c] = Div( (intToFix(lightDot[c * 3 + 1] - lightDot[c * 3 + 0])), effectiveDelta );
+	}
 
 	fZ1 = fZ2 = intToFix(z[0]);
 	fR1 = fR2 = intToFix(colourChannels[0]);
 	fG1 = fG2 = intToFix(colourChannels[1]);
 	fB1 = fB2 = intToFix(colourChannels[2]);
 
-	fLight1[0] = fLight2[0] = intToFix(lightDot[0]);
+	for ( int c = 0; c < 8; ++c)
+	{
+		fLight1[c] = fLight2[c] = intToFix(lightDot[c * 3]);
+	}
 
 	for (; y < yFinal; ++y) {
 
@@ -200,8 +210,11 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				fDGLine = Mul( (fG1 - fG2), oneOverLimit );
 				fDBLine = Mul( (fB1 - fB2), oneOverLimit );
 
-				fLight[0] = fLight2[0];
-				fDLightLine[0] = Mul( (fLight1[0] - fLight2[0]), oneOverLimit );
+				for ( int c = 0; c < 8; ++c)
+				{
+					fLight[c] = fLight2[c];
+					fDLightLine[c] = Mul( (fLight1[c] - fLight2[c]), oneOverLimit );
+				}
 
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
@@ -219,8 +232,11 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				fDGLine = Mul( (fG2 - fG1), oneOverLimit );
 				fDBLine = Mul( (fB2 - fB1), oneOverLimit );
 
-				fLight[0] = fLight1[0];
-				fDLightLine[0] = Mul( (fLight2[0] - fLight1[0]), oneOverLimit );
+				for ( int c = 0; c < 8; ++c)
+				{
+					fLight[c] = fLight1[c];
+					fDLightLine[c] = Mul( (fLight2[c] - fLight1[c]), oneOverLimit );
+				}
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -237,18 +253,30 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 							currentG = fixToInt(fG);
 							currentB = fixToInt(fB);
 
-							currentLight[0] = fixToInt(fLight[0]);
+							for ( int c = 0; c < 8; ++c)
+							{
+								currentLight[c] = fixToInt(fLight[c]);
+							}
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
+							uint32_t fragR = 0;
+							uint32_t fragG = 0;
+							uint32_t fragB = 0;
+
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
 							uint8_t texelB = (texel & 0x0000FF00) >>  8;
 
-							texelR = ( texelR * (currentR * currentLight[0]) / 256) / 256;
-							texelG = ( texelG * (currentG * currentLight[0]) / 256) / 256;
-							texelB = ( texelB * (currentB * currentLight[0]) / 256) / 256;
 
-							*destination = (((texelR ) ) << 24) | (((texelG ) ) << 16)| (((texelB) ) << 8) | 0xFF;
+							for (int c = 0; c < 8; ++c)
+							{
+								fragR += ( texelR * (currentR * currentLight[c]) / 256) / 256;
+								fragG += ( texelG * (currentG * currentLight[c]) / 256) / 256;
+								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
+							}
+
+
+							*destination = (( MIN(fragR, 255 ) ) << 24) | ((MIN(fragG, 255 ) ) << 16)| ((MIN(fragB, 255) ) << 8) | 0xFF;
 
 							if (depthWritesEnabled)
 							{
@@ -267,7 +295,10 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 					fG += fDGLine;
 					fB += fDBLine;
 
-					fLight[0] += fDLightLine[0];
+					for ( int c = 0; c < 8; ++c)
+					{
+						fLight[c] += fDLightLine[c];
+					}
 				}
 			}
 		}
@@ -287,8 +318,11 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 		fG2 += fDG2;
 		fB2 += fDB2;
 
-		fLight1[0] += fDLight1[0];
-		fLight2[0] += fDLight2[0];
+		for ( int c = 0; c < 8; ++c)
+		{
+			fLight1[c] += fDLight1[c];
+			fLight2[c] += fDLight2[c];
+		}
 	}
 }
 
@@ -386,8 +420,10 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fDG1 = Div( intToFix( colourChannels[5] - colourChannels[1]), effectiveDelta );
 	fDB1 = Div( intToFix( colourChannels[6] - colourChannels[2]), effectiveDelta );
 
-	fDLight1[0] = Div( (intToFix(lightDot[1] - lightDot[0])), effectiveDelta );
-
+	for ( int c = 0; c < 8; ++c)
+	{
+		fDLight1[c] = Div( (intToFix(lightDot[c * 3 + 1] - lightDot[c * 3])), effectiveDelta );
+	}
 	effectiveDelta = intToFix(y - coords[5]);
 
 	fDU2 = Div((u2 - u0), effectiveDelta);
@@ -399,7 +435,10 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fDG2 = Div( intToFix( colourChannels[9] - colourChannels[1]), effectiveDelta );
 	fDB2 = Div( intToFix( colourChannels[10] - colourChannels[2]), effectiveDelta );
 
-	fDLight2[0] = Div( (intToFix(lightDot[2] - lightDot[0])), effectiveDelta );
+	for ( int c = 0; c < 8; ++c)
+	{
+		fDLight2[c] = Div( (intToFix(lightDot[c * 3 + 2] - lightDot[c * 3])), effectiveDelta );
+	}
 
 	fZ1 = fZ2 = intToFix(z[0]);
 
@@ -407,7 +446,10 @@ static void drawTexturedTopFlatTriangle(int *coords,
 	fG1 = fG2 = intToFix(colourChannels[1]);
 	fB1 = fB2 = intToFix(colourChannels[2]);
 
-	fLight1[0] = fLight2[0] = intToFix(lightDot[0]);
+	for ( int c = 0; c < 8; ++c)
+	{
+		fLight1[c] = fLight2[c] = intToFix(lightDot[c * 3]);
+	}
 
 	for (; y >= yFinal; --y) {
 		int iFX1;
@@ -476,8 +518,11 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				fDGLine = Mul( (fG1 - fG2), oneOverLimit );
 				fDBLine = Mul( (fB1 - fB2), oneOverLimit );
 
-				fLight[0] = fLight2[0];
-				fDLightLine[0] = Mul( (fLight1[0] - fLight2[0]), oneOverLimit );
+				for ( int c = 0; c < 8; ++c)
+				{
+					fLight[c] = fLight2[c];
+					fDLightLine[c] = Mul( (fLight1[c] - fLight2[c]), oneOverLimit );
+				}
 			} else {
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
@@ -494,8 +539,11 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				fDGLine = Mul( (fG2 - fG1), oneOverLimit );
 				fDBLine = Mul( (fB2 - fB1), oneOverLimit );
 
-				fLight[0] = fLight1[0];
-				fDLightLine[0] = Mul( (fLight2[0] - fLight1[0]), oneOverLimit );
+				for ( int c = 0; c < 8; ++c)
+				{
+					fLight[c] = fLight1[c];
+					fDLightLine[c] = Mul( (fLight2[c] - fLight1[c]), oneOverLimit );
+				}
 			}
 
 			if (y >= 0 && y < YRES_FRAMEBUFFER) {
@@ -516,15 +564,24 @@ static void drawTexturedTopFlatTriangle(int *coords,
 							currentLight[0] = fixToInt(fLight[0]);
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
+							uint32_t fragR = 0;
+							uint32_t fragG = 0;
+							uint32_t fragB = 0;
+
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
 							uint8_t texelB = (texel & 0x0000FF00) >>  8;
 
-							texelR = ( texelR * (currentR * currentLight[0]) / 256) / 256;
-							texelG = ( texelG * (currentG * currentLight[0]) / 256) / 256;
-							texelB = ( texelB * (currentB * currentLight[0]) / 256) / 256;
 
-							*destination = (((texelR) ) << 24) | (((texelG )  ) << 16)| (((texelB ) ) << 8) | 0xFF;
+							for (int c = 0; c < 8; ++c)
+							{
+								fragR += ( texelR * (currentR * currentLight[c]) / 256) / 256;
+								fragG += ( texelG * (currentG * currentLight[c]) / 256) / 256;
+								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
+							}
+
+
+							*destination = (( MIN(fragR, 255 ) ) << 24) | ((MIN(fragG, 255 ) ) << 16)| ((MIN(fragB, 255) ) << 8) | 0xFF;
 
 							if (depthWritesEnabled)
 							{
@@ -543,7 +600,10 @@ static void drawTexturedTopFlatTriangle(int *coords,
 					fG += fDGLine;
 					fB += fDBLine;
 
-					fLight[0] += fDLightLine[0];
+					for ( int c = 0; c < 8; ++c)
+					{
+						fLight[c] += fDLightLine[c];
+					}
 				}
 			}
 		}
@@ -562,8 +622,11 @@ static void drawTexturedTopFlatTriangle(int *coords,
 		fG2 += fDG2;
 		fB2 += fDB2;
 
-		fLight1[0] += fDLight1[0];
-		fLight2[0] += fDLight2[0];
+		for ( int c = 0; c < 8; ++c)
+		{
+			fLight1[c] += fDLight1[c];
+			fLight2[c] += fDLight2[c];
+		}
 	}
 }
 
@@ -645,9 +708,14 @@ drawTexturedTriangle(int *coords,
 	newZ[2] = z[other];
 
 
-	newLightDot[0] = lightDot[upper];
-	newLightDot[1] = lightDot[lower];
-	newLightDot[2] = lightDot[other];
+	for (int l = 0; l < 8; ++l)
+	{
+		newLightDot[l * 3 + 0] = lightDot[l * 3 + upper];
+		newLightDot[l * 3 + 1] = lightDot[l * 3 + lower];
+		newLightDot[l * 3 + 2] = lightDot[l * 3 + other];
+	}
+
+
 
     drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0]);
 
@@ -688,9 +756,12 @@ drawTexturedTriangle(int *coords,
 	newZ[1] = z[other];
 	newZ[2] = z[upper];
 
-	newLightDot[0] = lightDot[lower];
-	newLightDot[1] = lightDot[other];
-	newLightDot[2] = lightDot[upper];
+	for (int l = 0; l < 8; ++l)
+	{
+		newLightDot[l * 3 + 0] = lightDot[l * 3 + lower];
+		newLightDot[l * 3 + 1] = lightDot[l * 3 + other];
+		newLightDot[l * 3 + 2] = lightDot[l * 3 + upper];
+	}
 
     drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0]);
 }

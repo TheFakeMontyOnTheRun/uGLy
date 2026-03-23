@@ -633,9 +633,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
                     } else
                     {
-                        lightsDot[d * 3 + 0] = 255;
-                        lightsDot[d * 3 + 1] = 255;
-                        lightsDot[d * 3 + 2] = 255;
+                        lightsDot[d * 3 + 0] = 0;
+                        lightsDot[d * 3 + 1] = 0;
+                        lightsDot[d * 3 + 2] = 0;
                     }
                 }
 
@@ -650,11 +650,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
                 };
 
-                GLfixed half = intToFix(1);//Div(intToFix(1), intToFix(2));
-
-                GLfixed z0 = Mul(Mul(transformed[2], oneOverW0) + intToFix(1), half);
-                GLfixed z1 = Mul(Mul(transformed[6], oneOverW1) + intToFix(1), half);
-                GLfixed z2 = Mul(Mul(transformed[10], oneOverW2) + intToFix(1), half);
+                GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
+                GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
+                GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
 
                 uint16_t zValuesNormalized[3] ={
                     fixToInt(Mul(z0, zRange)),
