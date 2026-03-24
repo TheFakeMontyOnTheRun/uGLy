@@ -20,7 +20,7 @@ mat4x4_ortho(t_mat4x4 out, GLfixed left, GLfixed right, GLfixed bottom, GLfixed 
              GLfixed znear,
              GLfixed zfar)
 {
-#define T(a, b) (a * 4 + b)
+#define T(a, b) ((a) * 4 + b)
 
     out[T(0, 0)] = Div(intToFix(2), (right - left));
     out[T(0, 1)] = 0;

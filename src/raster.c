@@ -16,7 +16,7 @@ typedef int GLfixed;
 extern uint8_t depthTestEnabled;
 extern uint8_t depthWritesEnabled;
 
-static void drawTexturedBottomFlatTriangle(int *coords,
+static void drawTexturedBottomFlatTriangle(const int *coords,
 											uint8_t *uvCoords,
 											uint8_t *colourChannels,
 											struct Texture *texture,
@@ -146,11 +146,6 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 		int iFX1;
 		int iFX0;
 		int flipped;
-		GLfixed texelLineX;
-		GLfixed texelLineY;
-		GLfixed texelLineDX;
-		GLfixed texelLineDY;
-		GLfixed oneOverLimit;
 		int limit;
 
 		if (y >= YRES_FRAMEBUFFER) {
@@ -170,6 +165,12 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 		limit = iFX1 - iFX0;
 
 		if (limit) {
+			GLfixed texelLineX;
+			GLfixed texelLineY;
+			GLfixed texelLineDX;
+			GLfixed texelLineDY;
+			GLfixed oneOverLimit;
+
 			FramebufferPixelFormat *destination;
 			uint16_t *depthDestination;
 			GLfixed fZ;
@@ -239,7 +240,7 @@ static void drawTexturedBottomFlatTriangle(int *coords,
 				}
 			}
 
-			if (y >= 0 && y < YRES_FRAMEBUFFER) {
+			if (y >= 0) {
 				int xPos = iFX0;
 				while (limit--) {
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
@@ -455,11 +456,6 @@ static void drawTexturedTopFlatTriangle(int *coords,
 		int iFX1;
 		int iFX0;
 		int flipped;
-		GLfixed texelLineX;
-		GLfixed texelLineY;
-		GLfixed texelLineDX;
-		GLfixed texelLineDY;
-		GLfixed oneOverLimit;
 		int limit;
 
 		if (y <= 0) {
@@ -479,6 +475,12 @@ static void drawTexturedTopFlatTriangle(int *coords,
 		limit = iFX1 - iFX0;
 
 		if (limit) {
+			GLfixed texelLineX;
+			GLfixed texelLineY;
+			GLfixed texelLineDX;
+			GLfixed texelLineDY;
+			GLfixed oneOverLimit;
+
 			FramebufferPixelFormat *destination;
 			uint16_t *depthDestination;
 			GLfixed fZ;
@@ -546,7 +548,7 @@ static void drawTexturedTopFlatTriangle(int *coords,
 				}
 			}
 
-			if (y >= 0 && y < YRES_FRAMEBUFFER) {
+			if (y < YRES_FRAMEBUFFER) {
 
 				int xPos = iFX0;
 
@@ -632,24 +634,24 @@ static void drawTexturedTopFlatTriangle(int *coords,
 
 
 void
-drawTexturedTriangle(int *coords,
-					uint8_t *uvCoords,
-					uint8_t *colourChannels,
-					struct Texture *texture,
-					uint16_t *z,
-					uint8_t* lightDot) {
+drawTexturedTriangle(const int *coords,
+					const uint8_t *uvCoords,
+					const uint8_t *colourChannels,
+					const struct Texture *texture,
+					const uint16_t *z,
+					const uint8_t* lightDot) {
 
     int newCoors[6];
     uint8_t newUV[6];
 	uint8_t newColours[12];
 	uint16_t newZ[3];
 	uint8_t newLightDot[24];
-    int c;
+
     int upper = -1;
     int lower = -1;
     int other = 0;
 
-    for (c = 0; c < 3; ++c) {
+    for (int c = 0; c < 3; ++c) {
         if (upper == -1 || coords[(2 * c) + 1] < coords[(2 * upper) + 1]) {
             upper = c;
         }

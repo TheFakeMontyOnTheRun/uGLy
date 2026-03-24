@@ -35,12 +35,12 @@ void initWindow( KeyCallback callback);
 void swapBuffers(void);
 struct Bitmap* loadBitmap(const char *filename);
 
-void drawTexturedTriangle(int *coords,
-                          uint8_t *uvCoords,
-                          uint8_t *colourChannels,
-                          struct Texture *texture,
-                          uint16_t *z,
-                          uint8_t* lightDot);
+void drawTexturedTriangle(const int *coords,
+                          const uint8_t *uvCoords,
+                          const uint8_t *colourChannels,
+                          const struct Texture *texture,
+                          const uint16_t *z,
+                          const uint8_t* lightDot);
 
 #define kIntegerPart 16
 

@@ -43,7 +43,7 @@ static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
 struct Bitmap* texture;
 
-extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+
 
 GLuint textureID[2];
 
@@ -156,7 +156,7 @@ draw(void)
 static void
 reshape(int width, int height)
 {
-    GLfixed ar = Div(intToFix(width), intToFix(height));
+    const GLfixed ar = Div(intToFix(width), intToFix(height));
 
     glViewport(0, 0, (GLint)width, (GLint)height);
 
@@ -182,8 +182,8 @@ init(void)
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
 
-    GLfixed grey = Div(intToFix(4), intToFix(10));
-    GLfixed fullAlpha = intToFix(1);
+    const GLfixed grey = Div(intToFix(4), intToFix(10));
+    const GLfixed fullAlpha = intToFix(1);
     glClearColorx(grey, grey, grey, fullAlpha);
 
     glGenTextures(2, &textureID[0]);

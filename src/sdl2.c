@@ -46,9 +46,7 @@ void graphicsShutdown(void)
 
 struct Bitmap* loadBitmap(const char *filename)
 {
-    struct Bitmap* toReturn;
-
-    toReturn = calloc(1, sizeof( struct Bitmap));
+    struct Bitmap* toReturn = calloc(1, sizeof( struct Bitmap));
 
     SDL_Surface *image = IMG_Load(filename);
 
@@ -56,8 +54,8 @@ struct Bitmap* loadBitmap(const char *filename)
     toReturn->height = image->h;
     toReturn->texels = calloc( sizeof(uint32_t), image->w * image->h);
 
-    int pitch = image->pitch;
-    int bpp = image->format->BytesPerPixel;
+    const int pitch = image->pitch;
+    const int bpp = image->format->BytesPerPixel;
 
     if (SDL_MUSTLOCK(image)) {
         SDL_LockSurface(image);
@@ -123,7 +121,7 @@ void swapBuffers(void)
         memcpy(dst, framebuffer, sizeof(uint32_t) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
     } else
     {
-        uint16_t* depthPtr = &zBuffer[0];
+        const uint16_t* depthPtr = &zBuffer[0];
         uint32_t* finalPtr = dst;
 
         uint16_t maxDepth = 0U;
@@ -132,7 +130,7 @@ void swapBuffers(void)
         {
             for (int x = 0; x < XRES_FRAMEBUFFER; ++x)
             {
-                uint16_t depth = *depthPtr++;
+                const uint16_t depth = *depthPtr++;
                 if (depth < minDepth)
                 {
                     minDepth = depth;
@@ -159,7 +157,7 @@ void swapBuffers(void)
             {
 
                 uint16_t depth = *depthPtr++;
-                uint32_t grey = ((depth >> rangeAdjustment) << 24 ) | ((depth >> rangeAdjustment) << 16 ) | ((depth >> rangeAdjustment) << 8 ) | 0xFF;
+                const uint32_t grey = ((depth >> rangeAdjustment) << 24 ) | ((depth >> rangeAdjustment) << 16 ) | ((depth >> rangeAdjustment) << 8 ) | 0xFF;
                 *finalPtr++ = grey;
             }
         }
