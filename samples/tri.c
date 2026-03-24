@@ -260,14 +260,6 @@ void mainLoop(void)
     {
         draw();
 
-        // for (int y = 0; y < texture->height; ++y)
-        // {
-        //     for (int x = 0; x < texture->width; ++x)
-        //     {
-        //         framebuffer[ y * 300 + x ] = texture->texels[texture->width * y + x];
-        //     }
-        // }
-
         // view_rotx += Div(intToFix(2), intToFix(10));
         // view_roty += Div(intToFix(3), intToFix(10));
 
@@ -281,11 +273,6 @@ main(int argc, char* argv[])
 {
     (void)argc;
     (void)argv;
-
-    // for (int c = 0; c < 91; ++c)
-    // {
-    //     printf("%d,\n", floatToFix(sinf( c * (M_PI / 180.0f) ) ) );
-    // }
 
     initWindow(special_key);
 
