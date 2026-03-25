@@ -17,11 +17,12 @@ extern uint8_t depthTestEnabled;
 extern uint8_t depthWritesEnabled;
 
 static void drawTexturedBottomFlatTriangle(const int *coords,
-											uint8_t *uvCoords,
-											uint8_t *colourChannels,
-											struct Texture *texture,
-											uint16_t *z,
-											uint8_t* lightDot) {
+											const uint8_t *uvCoords,
+											const uint8_t *colourChannels,
+											const struct Texture *texture,
+											const uint16_t *z,
+											const uint8_t* lightDot,
+											const uint8_t* ambientLight) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -260,9 +261,9 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 							}
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							uint32_t fragR = 0;
-							uint32_t fragG = 0;
-							uint32_t fragB = 0;
+							uint32_t fragR = ambientLight[0];
+							uint32_t fragG = ambientLight[1];
+							uint32_t fragB = ambientLight[2];
 
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
@@ -328,12 +329,13 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 }
 
 
-static void drawTexturedTopFlatTriangle(int *coords,
-										uint8_t *uvCoords,
-										uint8_t *colourChannels,
-										struct Texture *texture,
-										uint16_t *z,
-										uint8_t* lightDot) {
+static void drawTexturedTopFlatTriangle(const int *coords,
+										const uint8_t *uvCoords,
+										const uint8_t *colourChannels,
+										const struct Texture *texture,
+										const uint16_t *z,
+										const uint8_t* lightDot,
+										const uint8_t* ambientLight) {
 	int y = coords[1];
 	int u, v;
 	GLfixed fU1, fU2, fV1, fV2;
@@ -566,9 +568,9 @@ static void drawTexturedTopFlatTriangle(int *coords,
 							currentLight[0] = fixToInt(fLight[0]);
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							uint32_t fragR = 0;
-							uint32_t fragG = 0;
-							uint32_t fragB = 0;
+							uint32_t fragR = ambientLight[0];
+							uint32_t fragG = ambientLight[1];
+							uint32_t fragB = ambientLight[2];
 
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
@@ -635,11 +637,12 @@ static void drawTexturedTopFlatTriangle(int *coords,
 
 void
 drawTexturedTriangle(const int *coords,
-					const uint8_t *uvCoords,
-					const uint8_t *colourChannels,
-					const struct Texture *texture,
-					const uint16_t *z,
-					const uint8_t* lightDot) {
+					 const uint8_t *uvCoords,
+					 const uint8_t *colourChannels,
+					 const struct Texture *texture,
+					 const uint16_t *z,
+ 					 const uint8_t* lightDot,
+	 				 const uint8_t* ambientLight) {
 
     int newCoors[6];
     uint8_t newUV[6];
@@ -719,7 +722,7 @@ drawTexturedTriangle(const int *coords,
 
 
 
-    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0]);
+    drawTexturedBottomFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0], &ambientLight[0]);
 
     newCoors[0] = coords[2 * lower];
     newCoors[1] = coords[(2 * lower) + 1];
@@ -765,5 +768,5 @@ drawTexturedTriangle(const int *coords,
 		newLightDot[l * 3 + 2] = lightDot[l * 3 + upper];
 	}
 
-    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0]);
+    drawTexturedTopFlatTriangle(&newCoors[0], &newUV[0], &newColours[0], texture, &newZ[0], &newLightDot[0], &ambientLight[0]);
 }

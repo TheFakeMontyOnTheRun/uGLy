@@ -173,10 +173,13 @@ reshape(int width, int height)
 static void
 init(void)
 {
-
+    static const GLfixed ambient[4] = { Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), intToFix(1) };
     static const GLfixed pos[4] = { -intToFix(1), -intToFix(1), intToFix(0), 0 };
 
     glLightxv(GL_LIGHT0, GL_POSITION, pos);
+
+    glLightModelxv(GL_LIGHT_MODEL_AMBIENT, ambient);
+
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);

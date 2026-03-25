@@ -40,7 +40,8 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t *colourChannels,
                           const struct Texture *texture,
                           const uint16_t *z,
-                          const uint8_t* lightDot);
+                          const uint8_t* lightDot,
+                          const uint8_t* ambientLight);
 
 #define kIntegerPart 16
 

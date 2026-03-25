@@ -222,7 +222,7 @@ GLenum normalsType = 0;
 const GLvoid* normalsPointer = NULL;
 uint8_t normalsArrayEnabled = GL_FALSE;
 
-
+GLfixed ambientColour[4];
 
 GLfixed pointSize = intToFix(1);
 
@@ -695,7 +695,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     fixToInt(Mul(*(uvPtr + 5), intToFix(texture->height))),
                 };
 
-                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0], &lightsDot[0]);
+                uint8_t ambientColourComponents[3] = {
+                    fixToInt(Mul( ambientColour[0], intToFix(0xFF))),
+                    fixToInt(Mul( ambientColour[1], intToFix(0xFF))),
+                    fixToInt(Mul( ambientColour[2], intToFix(0xFF))),
+                };
+
+                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0], &lightsDot[0], &ambientColourComponents[0]);
 
                 vertexPtr += 9;
                 uvPtr += 6;
@@ -860,7 +866,14 @@ GLAPI void APIENTRY glLightModelx(GLenum pname, GLfixed param)
 
 GLAPI void APIENTRY glLightModelxv(GLenum pname, const GLfixed* params)
 {
-    notImplementedYet(__func__);
+    switch (pname)
+    {
+    case GL_LIGHT_MODEL_AMBIENT:
+        memcpy(ambientColour, params, sizeof(GLfixed) * 4);
+        break;
+    default:
+        notImplementedYet(__func__);
+    }
 }
 
 GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
