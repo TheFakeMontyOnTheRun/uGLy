@@ -22,15 +22,26 @@ struct Texture
     uint8_t inUse;
 };
 
+struct Light
+{
+    uint8_t enabled;
+    int32_t spotDirection[4]; /* So that we don't have to pull the GL header just yet */
+    int32_t direction[4];
+    int32_t position[4];
+    uint8_t colour[4];
+};
+
 void initWindow( KeyCallback callback);
 void swapBuffers(void);
 struct Bitmap* loadBitmap(const char *filename);
 
-void drawTexturedTriangle(int *coords,
-                          uint8_t *uvCoords,
-                          uint8_t *colourChannels,
-                          struct Texture *texture,
-                          uint16_t *z);
+void drawTexturedTriangle(const int *coords,
+                          const uint8_t *uvCoords,
+                          const uint8_t *colourChannels,
+                          const struct Texture *texture,
+                          const uint16_t *z,
+                          const uint8_t* lightDot,
+                          const uint8_t* ambientLight);
 
 #define kIntegerPart 16
 

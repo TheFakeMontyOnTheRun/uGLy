@@ -43,7 +43,7 @@ static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
 struct Bitmap* texture;
 
-extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+
 
 GLuint textureID[2];
 
@@ -79,15 +79,21 @@ draw(void)
     {  intToFix(1), intToFix(1),  intToFix(0) },
     };
 
-    static const GLfixed colors[6][4] = {
-        { intToFix(1),           0,            0,   intToFix(1)},
-        { intToFix(1), intToFix(1),  intToFix(1),   intToFix(1)},
-        {     0,                 0,  intToFix(1),   intToFix(1)},
+    static const GLfixed normals[12] = {
+        -intToFix(1), 0, 0,
+        intToFix(1),  0, 0,
+        0,  intToFix(1), 0
+    };
 
-        { intToFix(1),           0,            0,   intToFix(1)},
-        {           0, intToFix(1),            0,   intToFix(1)},
-        { intToFix(1), intToFix(1),  intToFix(1),   intToFix(1)},
-        };
+    static const GLfixed colors[6][4] = {
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(0), intToFix(0), intToFix(1), intToFix(1)},
+
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(0), intToFix(1), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    };
 
     static const GLfixed texCoords[12] = {
         intToFix(0), intToFix(0),
@@ -114,10 +120,12 @@ draw(void)
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);
     glColorPointer(4, GL_FIXED, 0, colors);
+    glNormalPointer(GL_FIXED, 0, normals);
 
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
 
     /* draw triangles */
     glBindTexture(GL_TEXTURE_2D, textureID[0]);
@@ -127,7 +135,7 @@ draw(void)
     ///TODO: try glLoadIdentity here..I dare you. I DOUBLE DARE YOU
 
     glBindTexture(GL_TEXTURE_2D, textureID[1]);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
 
     /* draw some points */
     // glPointSizex(Div(intToFix(31), intToFix(2)));
@@ -136,6 +144,7 @@ draw(void)
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
 
 
 
@@ -147,7 +156,7 @@ draw(void)
 static void
 reshape(int width, int height)
 {
-    GLfixed ar = Div(intToFix(width), intToFix(height));
+    const GLfixed ar = Div(intToFix(width), intToFix(height));
 
     glViewport(0, 0, (GLint)width, (GLint)height);
 
@@ -164,8 +173,20 @@ reshape(int width, int height)
 static void
 init(void)
 {
-    GLfixed grey = Div(intToFix(4), intToFix(10));
-    GLfixed fullAlpha = intToFix(1);
+    static const GLfixed ambient[4] = { Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), intToFix(1) };
+    static const GLfixed pos[4] = { -intToFix(1), -intToFix(1), intToFix(0), 0 };
+
+    glLightxv(GL_LIGHT0, GL_POSITION, pos);
+
+    glLightModelxv(GL_LIGHT_MODEL_AMBIENT, ambient);
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+
+    const GLfixed grey = Div(intToFix(4), intToFix(10));
+    const GLfixed fullAlpha = intToFix(1);
     glClearColorx(grey, grey, grey, fullAlpha);
 
     glGenTextures(2, &textureID[0]);
@@ -242,14 +263,6 @@ void mainLoop(void)
     {
         draw();
 
-        // for (int y = 0; y < texture->height; ++y)
-        // {
-        //     for (int x = 0; x < texture->width; ++x)
-        //     {
-        //         framebuffer[ y * 300 + x ] = texture->texels[texture->width * y + x];
-        //     }
-        // }
-
         // view_rotx += Div(intToFix(2), intToFix(10));
         // view_roty += Div(intToFix(3), intToFix(10));
 
@@ -263,11 +276,6 @@ main(int argc, char* argv[])
 {
     (void)argc;
     (void)argv;
-
-    // for (int c = 0; c < 91; ++c)
-    // {
-    //     printf("%d,\n", floatToFix(sinf( c * (M_PI / 180.0f) ) ) );
-    // }
 
     initWindow(special_key);
 

@@ -124,6 +124,12 @@ static const GLfixed dummyColors[6][4] = {
     {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 };
 
+static const GLfixed dummyNormals[12] = {
+    intToFix(1), intToFix(1), intToFix(1),
+    intToFix(1), intToFix(1), intToFix(1),
+    intToFix(1), intToFix(1), intToFix(1)
+};
+
 static const GLfixed dummyTexCoords[12] = {
     intToFix(0), intToFix(0),
     intToFix(0), intToFix(0),
@@ -210,6 +216,14 @@ GLint colorSize = 0;
 const GLvoid* colorPointer = NULL;
 uint8_t colorArrayEnabled = GL_TRUE;
 
+
+GLsizei normalsStride = 0;
+GLenum normalsType = 0;
+const GLvoid* normalsPointer = NULL;
+uint8_t normalsArrayEnabled = GL_FALSE;
+
+GLfixed ambientColour[4];
+
 GLfixed pointSize = intToFix(1);
 
 uint8_t depthWritesEnabled = 1;
@@ -220,6 +234,37 @@ uint16_t clearDepth = 0xFFFF;
 uint8_t clearStencil = 0;
 
 GLfixed zRange;
+
+uint8_t backfaceCullingEnabled;
+uint8_t normalizeNormals;
+uint8_t lightsEnabled;
+
+struct Light lights[8] = {
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    },
+    {
+        .enabled = 0,
+    }
+};
 
 static void notImplementedYet(const char* funcName)
 {
@@ -399,6 +444,25 @@ GLAPI void APIENTRY glDisable(GLenum cap)
     case GL_DEPTH_TEST:
         depthTestEnabled = GL_FALSE;
         break;
+    case GL_CULL_FACE:
+        backfaceCullingEnabled = GL_FALSE;
+        break;
+    case GL_LIGHT0:
+    case GL_LIGHT1:
+    case GL_LIGHT2:
+    case GL_LIGHT3:
+    case GL_LIGHT4:
+    case GL_LIGHT5:
+    case GL_LIGHT6:
+    case GL_LIGHT7:
+        lights[cap - GL_LIGHT0].enabled = GL_FALSE;
+        break;
+    case GL_NORMALIZE:
+        normalizeNormals = GL_FALSE;
+        break;
+    case GL_LIGHTING:
+        lightsEnabled = GL_FALSE;
+        break;
     default:
         notImplementedYet(__func__);
     }
@@ -416,6 +480,9 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
         break;
     case GL_TEXTURE_COORD_ARRAY:
         textureCoordsEnabled = GL_FALSE;
+        break;
+    case GL_NORMAL_ARRAY:
+        normalsArrayEnabled = GL_FALSE;
         break;
     default:
         notImplementedYet(__func__);
@@ -445,6 +512,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             GLfixed *vertexPtr;
             GLfixed *uvPtr;
             GLfixed *cPtr;
+            GLfixed *nPtr;
 	        struct Texture* texture;
 
             vertexPtr = (GLfixed*)vertexPointer;
@@ -465,6 +533,14 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)&dummyColors[0];
             }
 
+            if (normalsArrayEnabled)
+            {
+                nPtr = (GLfixed*)normalsPointer;
+            } else
+            {
+                nPtr = (GLfixed*)&dummyNormals[0];
+            }
+
             if (textureMapping2DEnabled)
             {
                 texture = &textures[currentTexture];
@@ -479,12 +555,14 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 uvPtr += 6;
                 vertexPtr += 9;
                 cPtr += 12;
+                nPtr += 12;
             }
 
             for (c = 0; c < finalCount; ++c)
             {
                 GLfixed vecs[16];
                 GLfixed transformed[16];
+                GLfixed transformedNormals[16];
 
                 vecs[0] = *(vertexPtr + 0);
                 vecs[1] = *(vertexPtr + 1);
@@ -505,6 +583,70 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
                 mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
 
+                vecs[0] = *(nPtr + 0);
+                vecs[1] = *(nPtr + 1);
+                vecs[2] = *(nPtr + 2);
+                vecs[3] = intToFix(0);
+
+                vecs[4] = *(nPtr + 3);
+                vecs[5] = *(nPtr + 4);
+                vecs[6] = *(nPtr + 5);
+                vecs[7] = intToFix(0);
+
+                vecs[8] = *(nPtr + 6);
+                vecs[9] = *(nPtr + 7);
+                vecs[10] = *(nPtr + 8);
+                vecs[11] = intToFix(0);
+
+                mat4x4_transformVec(&transformedNormals[0], &mvp[0], &vecs[0]);
+                mat4x4_transformVec(&transformedNormals[4], &mvp[0], &vecs[4]);
+                mat4x4_transformVec(&transformedNormals[8], &mvp[0], &vecs[8]);
+
+                uint8_t lightsDot[24];
+
+                for (int d = 0; d < 8; ++d )
+                {
+                    if ( lightsEnabled && lights[d].enabled)
+                    {
+                        t_vec4 normalizedLight;
+
+                        t_vec4 normalizedNormal0;
+                        t_vec4 normalizedNormal1;
+                        t_vec4 normalizedNormal2;
+
+                        if (normalizeNormals)
+                        {
+                            normalizeVec(&normalizedLight[0], &lights[d].position[0]);
+
+                            normalizeVec(&normalizedNormal0[0], &transformedNormals[0]);
+                            normalizeVec(&normalizedNormal1[0], &transformedNormals[4]);
+                            normalizeVec(&normalizedNormal2[0], &transformedNormals[8]);
+
+                        } else
+                        {
+                            memcpy(&normalizedLight[0], &lights[d].position[0], sizeof(GLfixed) * 4);
+
+                            memcpy(&normalizedNormal0[0], &transformedNormals[0], sizeof(GLfixed) * 4);
+                            memcpy(&normalizedNormal1[0], &transformedNormals[4], sizeof(GLfixed) * 4);
+                            memcpy(&normalizedNormal2[0], &transformedNormals[8], sizeof(GLfixed) * 4);
+                        }
+
+                        GLfixed dot0 = dotVec( &normalizedLight[0],  &normalizedNormal0[0]);
+                        GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
+                        GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
+
+                        lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(256)));
+                        lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(256)));
+                        lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
+                    } else
+                    {
+                        lightsDot[d * 3 + 0] = 0;
+                        lightsDot[d * 3 + 1] = 0;
+                        lightsDot[d * 3 + 2] = 0;
+                    }
+                }
+
+
                 GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
                 GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
                 GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
@@ -515,11 +657,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
                 };
 
-                GLfixed half = intToFix(1);//Div(intToFix(1), intToFix(2));
-
-                GLfixed z0 = Mul(Mul(transformed[2], oneOverW0) + intToFix(1), half);
-                GLfixed z1 = Mul(Mul(transformed[6], oneOverW1) + intToFix(1), half);
-                GLfixed z2 = Mul(Mul(transformed[10], oneOverW2) + intToFix(1), half);
+                GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
+                GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
+                GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
 
                 uint16_t zValuesNormalized[3] ={
                     fixToInt(Mul(z0, zRange)),
@@ -562,7 +702,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     fixToInt(Mul(*(uvPtr + 5), intToFix(texture->height))),
                 };
 
-                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0]);
+                uint8_t ambientColourComponents[3] = {
+                    fixToInt(Mul( ambientColour[0], intToFix(0xFF))),
+                    fixToInt(Mul( ambientColour[1], intToFix(0xFF))),
+                    fixToInt(Mul( ambientColour[2], intToFix(0xFF))),
+                };
+
+                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0], &lightsDot[0], &ambientColourComponents[0]);
 
                 vertexPtr += 9;
                 uvPtr += 6;
@@ -596,6 +742,25 @@ GLAPI void APIENTRY glEnable(GLenum cap)
     case GL_DEPTH_TEST:
         depthTestEnabled = GL_TRUE;
         break;
+    case GL_CULL_FACE:
+        backfaceCullingEnabled = GL_TRUE;
+        break;
+    case GL_LIGHT0:
+    case GL_LIGHT1:
+    case GL_LIGHT2:
+    case GL_LIGHT3:
+    case GL_LIGHT4:
+    case GL_LIGHT5:
+    case GL_LIGHT6:
+    case GL_LIGHT7:
+        lights[cap - GL_LIGHT0].enabled = GL_TRUE;
+        break;
+    case GL_NORMALIZE:
+        normalizeNormals = GL_TRUE;
+        break;
+    case GL_LIGHTING:
+        lightsEnabled = GL_TRUE;
+        break;
     default:
         notImplementedYet(__func__);
     }
@@ -613,6 +778,9 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
         break;
     case GL_TEXTURE_COORD_ARRAY:
         textureCoordsEnabled = GL_TRUE;
+        break;
+    case GL_NORMAL_ARRAY:
+        normalsArrayEnabled = GL_TRUE;
         break;
     default:
         notImplementedYet(__func__);
@@ -712,7 +880,14 @@ GLAPI void APIENTRY glLightModelx(GLenum pname, GLfixed param)
 
 GLAPI void APIENTRY glLightModelxv(GLenum pname, const GLfixed* params)
 {
-    notImplementedYet(__func__);
+    switch (pname)
+    {
+    case GL_LIGHT_MODEL_AMBIENT:
+        memcpy(ambientColour, params, sizeof(GLfixed) * 4);
+        break;
+    default:
+        notImplementedYet(__func__);
+    }
 }
 
 GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
@@ -722,7 +897,14 @@ GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
 
 GLAPI void APIENTRY glLightxv(GLenum light, GLenum pname, const GLfixed* params)
 {
-    notImplementedYet(__func__);
+    GLfixed *dir = params;
+
+    if (pname != GL_POSITION)
+    {
+        notImplementedYet(__func__);
+    }
+
+    memcpy(&lights[light - GL_LIGHT0].position[0], dir, sizeof(GLfixed) * 4);
 }
 
 GLAPI void APIENTRY glLineWidthx(GLfixed width)
@@ -788,7 +970,9 @@ GLAPI void APIENTRY glNormal3x(GLfixed nx, GLfixed ny, GLfixed nz)
 
 GLAPI void APIENTRY glNormalPointer(GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    notImplementedYet(__func__);
+    normalsStride = stride;
+    normalsType = type;
+    normalsPointer = pointer;
 }
 
 GLAPI void APIENTRY glOrthox(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
