@@ -448,6 +448,13 @@ GLAPI void APIENTRY glDisable(GLenum cap)
         backfaceCullingEnabled = GL_FALSE;
         break;
     case GL_LIGHT0:
+    case GL_LIGHT1:
+    case GL_LIGHT2:
+    case GL_LIGHT3:
+    case GL_LIGHT4:
+    case GL_LIGHT5:
+    case GL_LIGHT6:
+    case GL_LIGHT7:
         lights[cap - GL_LIGHT0].enabled = GL_FALSE;
         break;
     case GL_NORMALIZE:
@@ -739,6 +746,13 @@ GLAPI void APIENTRY glEnable(GLenum cap)
         backfaceCullingEnabled = GL_TRUE;
         break;
     case GL_LIGHT0:
+    case GL_LIGHT1:
+    case GL_LIGHT2:
+    case GL_LIGHT3:
+    case GL_LIGHT4:
+    case GL_LIGHT5:
+    case GL_LIGHT6:
+    case GL_LIGHT7:
         lights[cap - GL_LIGHT0].enabled = GL_TRUE;
         break;
     case GL_NORMALIZE:
