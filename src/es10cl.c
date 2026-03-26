@@ -729,12 +729,18 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0], &lightsDot[0], &ambientColourComponents[0]);
 
                 vertexPtr += 9;
-                uvPtr += 6;
-                cPtr += 12;
 
                 if (normalsArrayEnabled)
                 {
                     nPtr += 9;
+                }
+                if (textureCoordsEnabled)
+                {
+                    uvPtr += 6;
+                }
+                if (colorArrayEnabled)
+                {
+                    cPtr += 12;
                 }
             }
         }
