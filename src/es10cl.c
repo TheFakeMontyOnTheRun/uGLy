@@ -124,7 +124,7 @@ static const GLfixed dummyColors[6][4] = {
     {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 };
 
-static const GLfixed dummyNormals[12] = {
+static const GLfixed dummyNormals[9] = {
     intToFix(1), intToFix(1), intToFix(1),
     intToFix(1), intToFix(1), intToFix(1),
     intToFix(1), intToFix(1), intToFix(1)
@@ -555,7 +555,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 uvPtr += 6;
                 vertexPtr += 9;
                 cPtr += 12;
-                nPtr += 12;
+                nPtr += 9;
             }
 
             for (c = 0; c < finalCount; ++c)
@@ -713,6 +713,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 vertexPtr += 9;
                 uvPtr += 6;
                 cPtr += 12;
+
+                if (normalsArrayEnabled)
+                {
+                    nPtr += 9;
+                }
             }
         }
         break;
