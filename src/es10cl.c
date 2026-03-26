@@ -340,7 +340,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
-    clearColor = red << 24 | green << 16 | blue << 8 | alpha;
+    clearColor = fixToInt(Mul(intToFix(0xFF), red)) << 24 | fixToInt(Mul(intToFix(0xFF),green)) << 16 | fixToInt(Mul(intToFix(0xFF),blue)) << 8 | fixToInt(Mul(intToFix(0xFF),alpha));
 }
 
 GLAPI void APIENTRY glClearDepthx(GLclampx depth)
