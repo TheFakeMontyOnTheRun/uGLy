@@ -6,6 +6,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
 #include "internal.h"
+#include <GLES/gl.h>
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -35,6 +36,9 @@ void initWindow( KeyCallback callback)
                                      SDL_TEXTUREACCESS_STREAMING,
                                      XRES_FRAMEBUFFER, YRES_FRAMEBUFFER
     );
+
+    // the viewport must, by default, be configured to the size of the surface
+    glViewport(0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
 }
 
 void graphicsShutdown(void)

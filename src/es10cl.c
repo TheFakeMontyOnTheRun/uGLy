@@ -204,8 +204,18 @@ GLfixed halfViewportHeightx;
 
 GLenum matrixMode;
 
-GLfixed projectionMatrix[16];
-GLfixed modelViewMatrix[16];
+GLfixed projectionMatrix[16] = {
+    intToFix(1), 0, 0, 0,
+    0, intToFix(1), 0, 0,
+    0, 0, intToFix(1), 0,
+    0, 0, 0, intToFix(1)
+};
+GLfixed modelViewMatrix[16] = {
+    intToFix(1), 0, 0, 0,
+    0, intToFix(1), 0, 0,
+    0, 0, intToFix(1), 0,
+    0, 0, 0, intToFix(1)
+};
 
 GLfixed projectionMatrixStack[16][16];
 GLfixed modelViewMatrixStack[16][16];
@@ -214,7 +224,7 @@ GLsizei colorStride = 0;
 GLenum colorType = 0;
 GLint colorSize = 0;
 const GLvoid* colorPointer = NULL;
-uint8_t colorArrayEnabled = GL_TRUE;
+uint8_t colorArrayEnabled = GL_FALSE;
 
 
 GLsizei normalsStride = 0;
@@ -640,9 +650,17 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
                     } else
                     {
-                        lightsDot[d * 3 + 0] = 0;
-                        lightsDot[d * 3 + 1] = 0;
-                        lightsDot[d * 3 + 2] = 0;
+                        if (lightsEnabled)
+                        {
+                            lightsDot[d * 3 + 0] = 0;
+                            lightsDot[d * 3 + 1] = 0;
+                            lightsDot[d * 3 + 2] = 0;
+                        } else
+                        {
+                            lightsDot[d * 3 + 0] = 255;
+                            lightsDot[d * 3 + 1] = 255;
+                            lightsDot[d * 3 + 2] = 255;
+                        }
                     }
                 }
 

@@ -45,8 +45,6 @@ void drawTexturedTriangle(const int *coords,
 
 #define kIntegerPart 16
 
-#define kIntegerPart 16
-
 #define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
 
 #define intToFix(v)  ((int32_t)((v) << kIntegerPart))
