@@ -978,7 +978,18 @@ GLAPI void APIENTRY glMatrixMode(GLenum mode)
 
 GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
 {
-    notImplementedYet(__func__);
+    switch (matrixMode)
+    {
+        case GL_PROJECTION:
+        memcpy(projectionMatrix, m, sizeof(GLfixed) * 16);
+        break;
+        case GL_MODELVIEW:
+        memcpy(modelViewMatrix, m, sizeof(GLfixed) * 16);
+        break;
+    default:
+        notImplementedYet(__func__);
+    }
+
 }
 
 GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)
