@@ -124,7 +124,7 @@ static const GLfixed dummyColors[6][4] = {
     {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 };
 
-static const GLfixed dummyNormals[12] = {
+static const GLfixed dummyNormals[9] = {
     intToFix(1), intToFix(1), intToFix(1),
     intToFix(1), intToFix(1), intToFix(1),
     intToFix(1), intToFix(1), intToFix(1)
@@ -204,8 +204,18 @@ GLfixed halfViewportHeightx;
 
 GLenum matrixMode;
 
-GLfixed projectionMatrix[16];
-GLfixed modelViewMatrix[16];
+GLfixed projectionMatrix[16] = {
+    intToFix(1), 0, 0, 0,
+    0, intToFix(1), 0, 0,
+    0, 0, intToFix(1), 0,
+    0, 0, 0, intToFix(1)
+};
+GLfixed modelViewMatrix[16] = {
+    intToFix(1), 0, 0, 0,
+    0, intToFix(1), 0, 0,
+    0, 0, intToFix(1), 0,
+    0, 0, 0, intToFix(1)
+};
 
 GLfixed projectionMatrixStack[16][16];
 GLfixed modelViewMatrixStack[16][16];
@@ -214,7 +224,7 @@ GLsizei colorStride = 0;
 GLenum colorType = 0;
 GLint colorSize = 0;
 const GLvoid* colorPointer = NULL;
-uint8_t colorArrayEnabled = GL_TRUE;
+uint8_t colorArrayEnabled = GL_FALSE;
 
 
 GLsizei normalsStride = 0;
@@ -330,7 +340,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
-    clearColor = red << 24 | green << 16 | blue << 8 | alpha;
+    clearColor = fixToInt(Mul(intToFix(0xFF), red)) << 24 | fixToInt(Mul(intToFix(0xFF),green)) << 16 | fixToInt(Mul(intToFix(0xFF),blue)) << 8 | fixToInt(Mul(intToFix(0xFF),alpha));
 }
 
 GLAPI void APIENTRY glClearDepthx(GLclampx depth)
@@ -555,7 +565,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 uvPtr += 6;
                 vertexPtr += 9;
                 cPtr += 12;
-                nPtr += 12;
+                nPtr += 9;
             }
 
             for (c = 0; c < finalCount; ++c)
@@ -640,9 +650,17 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
                     } else
                     {
-                        lightsDot[d * 3 + 0] = 0;
-                        lightsDot[d * 3 + 1] = 0;
-                        lightsDot[d * 3 + 2] = 0;
+                        if (lightsEnabled)
+                        {
+                            lightsDot[d * 3 + 0] = 0;
+                            lightsDot[d * 3 + 1] = 0;
+                            lightsDot[d * 3 + 2] = 0;
+                        } else
+                        {
+                            lightsDot[d * 3 + 0] = 255;
+                            lightsDot[d * 3 + 1] = 255;
+                            lightsDot[d * 3 + 2] = 255;
+                        }
                     }
                 }
 
@@ -711,8 +729,19 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0], &lightsDot[0], &ambientColourComponents[0]);
 
                 vertexPtr += 9;
-                uvPtr += 6;
-                cPtr += 12;
+
+                if (normalsArrayEnabled)
+                {
+                    nPtr += 9;
+                }
+                if (textureCoordsEnabled)
+                {
+                    uvPtr += 6;
+                }
+                if (colorArrayEnabled)
+                {
+                    cPtr += 12;
+                }
             }
         }
         break;
@@ -955,7 +984,18 @@ GLAPI void APIENTRY glMatrixMode(GLenum mode)
 
 GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
 {
-    notImplementedYet(__func__);
+    switch (matrixMode)
+    {
+        case GL_PROJECTION:
+        memcpy(projectionMatrix, m, sizeof(GLfixed) * 16);
+        break;
+        case GL_MODELVIEW:
+        memcpy(modelViewMatrix, m, sizeof(GLfixed) * 16);
+        break;
+    default:
+        notImplementedYet(__func__);
+    }
+
 }
 
 GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)

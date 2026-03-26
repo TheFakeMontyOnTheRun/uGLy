@@ -79,10 +79,13 @@ draw(void)
     {  intToFix(1), intToFix(1),  intToFix(0) },
     };
 
-    static const GLfixed normals[12] = {
-        -intToFix(1), 0, 0,
-        intToFix(1),  0, 0,
-        0,  intToFix(1), 0
+    static const GLfixed normals[18] = {
+        -intToFix(1), intToFix(0), intToFix(0),
+        intToFix(1), intToFix(0), intToFix(0),
+        intToFix(0),  intToFix(1), intToFix(0),
+        -intToFix(1), intToFix(0), intToFix(0),
+        intToFix(1), intToFix(0), intToFix(0),
+        intToFix(0),  intToFix(1), intToFix(0),
     };
 
     static const GLfixed colors[6][4] = {
