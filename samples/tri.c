@@ -134,16 +134,16 @@ draw(void)
     glBindTexture(GL_TEXTURE_2D, textureID[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    glPopMatrix();
+
     ///TODO: try glLoadIdentity here..I dare you. I DOUBLE DARE YOU
 
     glBindTexture(GL_TEXTURE_2D, textureID[1]);
     // glDrawArrays(GL_TRIANGLES, 0, 6);
 
     /* draw some points */
-    // glPointSizex(Div(intToFix(31), intToFix(2)));
-    // glDrawArrays(GL_POINTS, 0, 3);
-
+    glPointSizex(Div(intToFix(31), intToFix(2)));
+    glDrawArrays(GL_POINTS, 0, 6);
+    glPopMatrix();
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);

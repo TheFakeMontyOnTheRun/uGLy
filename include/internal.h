@@ -43,6 +43,8 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
 
+void drawPoint(int* coords, uint8_t* colour, uint16_t zValue, uint16_t pointSize);
+
 #define kIntegerPart 16
 
 #define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
