@@ -12,7 +12,7 @@ SDL_Window* window;
 SDL_Renderer* renderer;
 SDL_Texture* videoTexture;
 
-uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
@@ -32,7 +32,23 @@ void initWindow( KeyCallback callback)
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     videoTexture = SDL_CreateTexture(renderer,
-                                     SDL_PIXELFORMAT_RGBA8888,
+#ifdef BPP24
+    SDL_PIXELFORMAT_RGBA8888,
+#else
+#ifdef BPP16
+    SDL_PIXELFORMAT_RGB565,
+#else
+#ifdef BPP8
+#error "8 BPP TBD"
+#else
+#ifdef BPP1
+#error "1 BPP TBD"
+#else
+#error "No bit depth for framebuffer defined"
+#endif
+#endif
+#endif
+#endif
                                      SDL_TEXTUREACCESS_STREAMING,
                                      XRES_FRAMEBUFFER, YRES_FRAMEBUFFER
     );
@@ -118,15 +134,18 @@ void swapBuffers(void)
 
     SDL_LockTexture(videoTexture, NULL, &pixels, &pitch);
 
-    uint32_t* dst = (uint32_t*)pixels;
+    FramebufferPixelFormat* dst = (FramebufferPixelFormat*)pixels;
 
     if (showBufferColour)
     {
-        memcpy(dst, framebuffer, sizeof(uint32_t) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+        memcpy(dst, framebuffer, sizeof(FramebufferPixelFormat) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
     } else
     {
+#ifndef BPP24
+        return;
+#endif
         const uint16_t* depthPtr = &zBuffer[0];
-        uint32_t* finalPtr = dst;
+        FramebufferPixelFormat* finalPtr = dst;
 
         uint16_t maxDepth = 0U;
         uint16_t minDepth = 0xFFFFU;

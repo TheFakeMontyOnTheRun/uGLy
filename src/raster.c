@@ -277,8 +277,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
 							}
 
-
-							*destination = (( MIN(fragR, 255 ) ) << 24) | ((MIN(fragG, 255 ) ) << 16)| ((MIN(fragB, 255) ) << 8) | 0xFF;
+							*destination = MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF);
 
 							if (depthWritesEnabled)
 							{
@@ -584,8 +583,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
 							}
 
-
-							*destination = (( MIN(fragR, 255 ) ) << 24) | ((MIN(fragG, 255 ) ) << 16)| ((MIN(fragB, 255) ) << 8) | 0xFF;
+							*destination = MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF);
 
 							if (depthWritesEnabled)
 							{
@@ -772,11 +770,11 @@ drawTexturedTriangle(const int *coords,
 }
 
 
-void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* colour, uint16_t currentDepth)
+static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* colour, uint16_t currentDepth)
 {
 	int x, y;
 
-	FramebufferPixelFormat fragment = colour[0] << 24 | colour[1] << 16 | colour[2] << 8 | colour[3];
+	FramebufferPixelFormat fragment = MAKE_PIXEL(colour[0], colour[1], colour[2], colour[3]);
 	for (y = 0; y < height; ++y)
 	{
 		FramebufferPixelFormat* fbPtr =  &framebuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];

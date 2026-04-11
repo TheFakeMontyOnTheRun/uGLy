@@ -239,7 +239,7 @@ GLfixed pointSize = intToFix(1);
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
 
-uint32_t clearColor;
+FramebufferPixelFormat clearColor;
 uint16_t clearDepth = 0xFFFF;
 uint8_t clearStencil = 0;
 
@@ -340,7 +340,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
-    clearColor = fixToInt(Mul(intToFix(0xFF), red)) << 24 | fixToInt(Mul(intToFix(0xFF),green)) << 16 | fixToInt(Mul(intToFix(0xFF),blue)) << 8 | fixToInt(Mul(intToFix(0xFF),alpha));
+    clearColor = MAKE_PIXEL(fixToInt(Mul(intToFix(0xFF), red)), fixToInt(Mul(intToFix(0xFF),green)), fixToInt(Mul(intToFix(0xFF),blue)), fixToInt(Mul(intToFix(0xFF),alpha)));
 }
 
 GLAPI void APIENTRY glClearDepthx(GLclampx depth)

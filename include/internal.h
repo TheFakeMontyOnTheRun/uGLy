@@ -5,7 +5,28 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 typedef void ( *KeyCallback )(int charkey);
+
+
+#ifdef BPP24
 typedef uint32_t FramebufferPixelFormat;
+#define MAKE_PIXEL(r, g, b, a) ((r) << 24 | (g) << 16 | (b) << 8 | (a))
+#else
+#ifdef BPP16
+typedef uint16_t FramebufferPixelFormat;
+#define MAKE_PIXEL(r, g, b, a) ((((r) & 0xF8) << 8) | (((g) & 0xFC) << 3) | ((b) >> 3))
+#else
+#ifdef BPP8
+typedef uint8_t FramebufferPixelFormat;
+#error "8 BPP TBD"
+#else
+#ifdef BPP1
+#error "1 BPP TBD"
+#else
+#error "No bit depth for framebuffer defined"
+#endif
+#endif
+#endif
+#endif
 
 struct Bitmap
 {
@@ -66,7 +87,7 @@ void drawPoint(int* coords, uint8_t* colour, uint16_t zValue, uint16_t pointSize
 #define XRES_FRAMEBUFFER 300
 #define YRES_FRAMEBUFFER 300
 
-extern uint32_t framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
