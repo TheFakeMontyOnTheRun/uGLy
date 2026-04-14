@@ -1,7 +1,7 @@
 //
 // Created by Daniel Monteiro on 01/03/2026.
 //
-
+#include <GLES/gl.h>  /* use OpenGL ES 1.x */
 #ifndef INTERNAL_H
 #define INTERNAL_H
 typedef void ( *KeyCallback )(int charkey);
@@ -56,9 +56,9 @@ struct Texture
 struct Light
 {
     uint8_t enabled;
-    int32_t spotDirection[4]; /* So that we don't have to pull the GL header just yet */
-    int32_t direction[4];
-    int32_t position[4];
+    GLfixed spotDirection[4];
+    GLfixed direction[4];
+    GLfixed position[4];
     uint8_t colour[4];
 };
 
@@ -70,11 +70,17 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t *uvCoords,
                           const uint8_t *colourChannels,
                           const struct Texture *texture,
+#ifndef	DISABLE_DEPTH_BUFFER
                           const uint16_t *z,
+#endif
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
 
-void drawPoint(int* coords, uint8_t* colour, uint16_t zValue, uint16_t pointSize);
+void drawPoint(int* coords, uint8_t* colour,
+#ifndef	DISABLE_DEPTH_BUFFER
+    uint16_t zValue,
+#endif
+    uint16_t pointSize);
 
 #define kIntegerPart 16
 
@@ -94,11 +100,20 @@ void drawPoint(int* coords, uint8_t* colour, uint16_t zValue, uint16_t pointSize
 #define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
 
 
-#define XRES_FRAMEBUFFER 300
-#define YRES_FRAMEBUFFER 300
+#define XRES_FRAMEBUFFER 240
+#define YRES_FRAMEBUFFER 240
 
 extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+
+#ifndef DISABLE_DEPTH_BUFFER
 extern uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t depthTestEnabled;
+extern uint8_t depthWritesEnabled;
+#endif
+
+#ifndef DISABLE_STENCIL_BUFFER
 extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+#endif
+
 
 #endif // INTERNAL_H

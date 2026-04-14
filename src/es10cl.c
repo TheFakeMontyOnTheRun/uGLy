@@ -236,14 +236,18 @@ GLfixed ambientColour[4];
 
 GLfixed pointSize = intToFix(1);
 
+#ifndef	DISABLE_DEPTH_BUFFER
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
+uint16_t clearDepth = 0xFFFF;
+GLfixed zRange;
+#endif
 
 FramebufferPixelFormat clearColor;
-uint16_t clearDepth = 0xFFFF;
-uint8_t clearStencil = 0;
 
-GLfixed zRange;
+#ifndef DISABLE_STENCIL_BUFFER
+uint8_t clearStencil = 0;
+#endif
 
 uint8_t backfaceCullingEnabled;
 uint8_t normalizeNormals;
@@ -320,6 +324,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
         }
     }
 
+#ifndef DISABLE_DEPTH_BUFFER
     if ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT)
     {
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
@@ -327,7 +332,9 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
             zBuffer[c] = clearDepth;
         }
     }
+#endif
 
+#ifndef DISABLE_STENCIL_BUFFER
     if ((mask & GL_STENCIL_BUFFER_BIT) == GL_STENCIL_BUFFER_BIT)
     {
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
@@ -335,6 +342,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
             stencilBuffer[c] = clearStencil;
         }
     }
+#endif
     ///TODO: check for error conditions
 }
 
@@ -436,7 +444,9 @@ GLAPI void APIENTRY glDepthFunc(GLenum func)
 
 GLAPI void APIENTRY glDepthMask(GLboolean flag)
 {
+#ifndef	DISABLE_DEPTH_BUFFER
     depthWritesEnabled = flag;
+#endif
 }
 
 GLAPI void APIENTRY glDepthRangex(GLclampx zNear, GLclampx zFar)
@@ -451,9 +461,11 @@ GLAPI void APIENTRY glDisable(GLenum cap)
     case GL_TEXTURE_2D:
         textureMapping2DEnabled = GL_FALSE;
         break;
+#ifndef	DISABLE_DEPTH_BUFFER
     case GL_DEPTH_TEST:
         depthTestEnabled = GL_FALSE;
         break;
+#endif
     case GL_CULL_FACE:
         backfaceCullingEnabled = GL_FALSE;
         break;
@@ -679,11 +691,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
                 GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
 
+#ifndef	DISABLE_DEPTH_BUFFER
                 uint16_t zValuesNormalized[3] ={
                     fixToInt(Mul(z0, zRange)),
                     fixToInt(Mul(z1, zRange)),
                     fixToInt(Mul(z2, zRange))
                 };
+#endif
 
                 int coords[6] = {
                     viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
@@ -726,7 +740,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     fixToInt(Mul( ambientColour[2], intToFix(0xFF))),
                 };
 
-                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture, &zValuesNormalized[0], &lightsDot[0], &ambientColourComponents[0]);
+                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture,
+#ifndef	DISABLE_DEPTH_BUFFER
+                    &zValuesNormalized[0],
+#endif
+                    &lightsDot[0], &ambientColourComponents[0]);
 
                 vertexPtr += 9;
 
@@ -806,13 +824,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
                 GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
                 GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
-
+#ifndef	DISABLE_DEPTH_BUFFER
                 uint16_t zValuesNormalized[3] ={
                     fixToInt(Mul(z0, zRange)),
                     fixToInt(Mul(z1, zRange)),
                     fixToInt(Mul(z2, zRange))
                 };
-
+#endif
                 int coords[6] = {
                     viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
                     viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
@@ -839,9 +857,23 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
                 };
 
-                drawPoint(&coords[0], &coloursArray[0], zValuesNormalized[0], fixToInt(pointSize));
-                drawPoint(&coords[2], &coloursArray[4], zValuesNormalized[1], fixToInt(pointSize));
-                drawPoint(&coords[4], &coloursArray[8], zValuesNormalized[2], fixToInt(pointSize));
+                drawPoint(&coords[0], &coloursArray[0],
+#ifndef	DISABLE_DEPTH_BUFFER
+                    zValuesNormalized[0],
+#endif
+                    fixToInt(pointSize));
+
+                drawPoint(&coords[2], &coloursArray[4],
+#ifndef	DISABLE_DEPTH_BUFFER
+                    zValuesNormalized[1],
+#endif
+                    fixToInt(pointSize));
+
+                drawPoint(&coords[4], &coloursArray[8],
+#ifndef	DISABLE_DEPTH_BUFFER
+                    zValuesNormalized[2],
+#endif
+                    fixToInt(pointSize));
 
                 vertexPtr += 9;
 
@@ -874,9 +906,11 @@ GLAPI void APIENTRY glEnable(GLenum cap)
     case GL_TEXTURE_2D:
         textureMapping2DEnabled = GL_TRUE;
         break;
+#ifndef	DISABLE_DEPTH_BUFFER
     case GL_DEPTH_TEST:
         depthTestEnabled = GL_TRUE;
         break;
+#endif
     case GL_CULL_FACE:
         backfaceCullingEnabled = GL_TRUE;
         break;
@@ -958,7 +992,10 @@ GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfi
     projectionMatrix[10] = -Div((zFar + zNear), ( zFar - zNear ));
     projectionMatrix[11] = -intToFix(1);
     projectionMatrix[14] = -Div(Mul( twoTimesN, zFar), (zFar - zNear));
+
+#ifndef	DISABLE_DEPTH_BUFFER
     zRange = zFar - zNear;
+#endif
 }
 
 GLuint reserveTexture(void)

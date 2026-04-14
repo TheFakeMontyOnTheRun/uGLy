@@ -13,8 +13,14 @@ SDL_Renderer* renderer;
 SDL_Texture* videoTexture;
 
 FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+
+#ifndef DISABLE_DEPTH_BUFFER
 uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+#endif
+
+#ifndef DISABLE_STENCIL_BUFFER
 uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+#endif
 
 KeyCallback keyCallback;
 
@@ -102,8 +108,6 @@ struct Bitmap* loadBitmap(const char *filename)
     return toReturn;
 }
 
-int showBufferColour = 1;
-
 void swapBuffers(void)
 {
     void* pixels;
@@ -120,14 +124,6 @@ void swapBuffers(void)
 
         if (event.type == SDL_KEYDOWN)
         {
-            if (event.key.keysym.sym == '1')
-            {
-                showBufferColour = 1;
-            } else if (event.key.keysym.sym == '2')
-            {
-                showBufferColour = 0;
-            }
-
             keyCallback(event.key.keysym.sym);
         }
     }
@@ -136,56 +132,7 @@ void swapBuffers(void)
 
     FramebufferPixelFormat* dst = (FramebufferPixelFormat*)pixels;
 
-    if (showBufferColour)
-    {
-        memcpy(dst, framebuffer, sizeof(FramebufferPixelFormat) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
-    } else
-    {
-#ifndef BPP24
-        return;
-#endif
-        const uint16_t* depthPtr = &zBuffer[0];
-        FramebufferPixelFormat* finalPtr = dst;
-
-        uint16_t maxDepth = 0U;
-        uint16_t minDepth = 0xFFFFU;
-        for (int y = 0; y < YRES_FRAMEBUFFER; ++y)
-        {
-            for (int x = 0; x < XRES_FRAMEBUFFER; ++x)
-            {
-                const uint16_t depth = *depthPtr++;
-                if (depth < minDepth)
-                {
-                    minDepth = depth;
-                }
-
-                if (depth > maxDepth )
-                {
-                    maxDepth = depth;
-                }
-            }
-        }
-
-        depthPtr = &zBuffer[0];
-        int rangeAdjustment = 0;
-
-        if (maxDepth > 0xFF )
-        {
-            rangeAdjustment = 8;
-        }
-
-        for (int y = 0; y < YRES_FRAMEBUFFER; ++y)
-        {
-            for (int x = 0; x < XRES_FRAMEBUFFER; ++x)
-            {
-
-                uint16_t depth = *depthPtr++;
-                const uint32_t grey = ((depth >> rangeAdjustment) << 24 ) | ((depth >> rangeAdjustment) << 16 ) | ((depth >> rangeAdjustment) << 8 ) | 0xFF;
-                *finalPtr++ = grey;
-            }
-        }
-    }
-
+    memcpy(dst, framebuffer, sizeof(FramebufferPixelFormat) * XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
 
     SDL_UnlockTexture(videoTexture);
 

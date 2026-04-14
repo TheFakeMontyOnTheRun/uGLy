@@ -90,12 +90,12 @@ draw(void)
 
     static const GLfixed colors[6][4] = {
         {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(0), intToFix(0), intToFix(1), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
 
         {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
-        {intToFix(0), intToFix(1), intToFix(0), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
+        {intToFix(1), intToFix(0), intToFix(0), intToFix(1)},
     };
 
     static const GLfixed texCoords[12] = {
@@ -110,7 +110,11 @@ draw(void)
 
 
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT
+#ifndef DISABLE_DEPTH_BUFFER
+    | GL_DEPTH_BUFFER_BIT
+#endif
+    );
 
     glPushMatrix();
     glRotatex(view_rotx, intToFix(1), 0, 0);
@@ -118,40 +122,41 @@ draw(void)
     glRotatex(view_rotz, 0, 0, intToFix(1));
 
 
-    glEnable(GL_TEXTURE_2D);
+    // glEnable(GL_TEXTURE_2D);
+
+#ifndef DISABLE_DEPTH_BUFFER
     glEnable(GL_DEPTH_TEST);
+#endif
+
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);
     glColorPointer(4, GL_FIXED, 0, colors);
     glNormalPointer(GL_FIXED, 0, normals);
 
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    // glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
+    // glEnableClientState(GL_NORMAL_ARRAY);
 
     /* draw triangles */
-    glBindTexture(GL_TEXTURE_2D, textureID[0]);
+    // glBindTexture(GL_TEXTURE_2D, textureID[0]);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
 
     ///TODO: try glLoadIdentity here..I dare you. I DOUBLE DARE YOU
 
-    glBindTexture(GL_TEXTURE_2D, textureID[1]);
+    // glBindTexture(GL_TEXTURE_2D, textureID[1]);
     // glDrawArrays(GL_TRIANGLES, 0, 6);
 
     /* draw some points */
     glPointSizex(Div(intToFix(31), intToFix(2)));
     glDrawArrays(GL_POINTS, 0, 6);
     glPopMatrix();
+
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
-
-
-
-
+    // glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    // glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 
@@ -192,36 +197,36 @@ init(void)
     const GLfixed fullAlpha = intToFix(1);
     glClearColorx(grey, grey, grey, fullAlpha);
 
-    glGenTextures(2, &textureID[0]);
+    // glGenTextures(2, &textureID[0]);
 
 
-    glBindTexture(GL_TEXTURE_2D, textureID[0]);
-    texture = loadBitmap("res/opengles.png");
-
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB,
-                 texture->width,
-                 texture->height,
-                 0,
-                 GL_RGB,
-                 GL_UNSIGNED_BYTE,
-                 texture->texels);
-    free(texture);
-
-    glBindTexture(GL_TEXTURE_2D, textureID[1]);
-    texture = loadBitmap("res/bricks.png");
-
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB,
-                 texture->width,
-                 texture->height,
-                 0,
-                 GL_RGB,
-                 GL_UNSIGNED_BYTE,
-                 texture->texels);
-    free(texture);
+    // glBindTexture(GL_TEXTURE_2D, textureID[0]);
+    // texture = loadBitmap("res/opengles.png");
+    //
+    // glTexImage2D(GL_TEXTURE_2D,
+    //              0,
+    //              GL_RGB,
+    //              texture->width,
+    //              texture->height,
+    //              0,
+    //              GL_RGB,
+    //              GL_UNSIGNED_BYTE,
+    //              texture->texels);
+    // free(texture);
+    //
+    // glBindTexture(GL_TEXTURE_2D, textureID[1]);
+    // texture = loadBitmap("res/bricks.png");
+    //
+    // glTexImage2D(GL_TEXTURE_2D,
+    //              0,
+    //              GL_RGB,
+    //              texture->width,
+    //              texture->height,
+    //              0,
+    //              GL_RGB,
+    //              GL_UNSIGNED_BYTE,
+    //              texture->texels);
+    // free(texture);
 }
 
 static void
@@ -266,8 +271,8 @@ void mainLoop(void)
     {
         draw();
 
-        // view_rotx += Div(intToFix(2), intToFix(10));
-        // view_roty += Div(intToFix(3), intToFix(10));
+        view_rotx += Div(intToFix(2), intToFix(10));
+        view_roty += Div(intToFix(3), intToFix(10));
 
         swapBuffers();
     }
