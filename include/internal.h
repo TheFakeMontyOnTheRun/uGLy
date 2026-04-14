@@ -13,7 +13,17 @@ typedef uint32_t FramebufferPixelFormat;
 #else
 #ifdef BPP16
 typedef uint16_t FramebufferPixelFormat;
-#define MAKE_PIXEL(r, g, b, a) ((((r) & 0xF8) << 8) | (((g) & 0xFC) << 3) | ((b) >> 3))
+
+static inline uint16_t swap16(uint16_t x) {
+    return (x >> 8) | (x << 8);
+}
+
+#ifdef SDL_DISABLE_IMMINTRIN_H
+#define MAKE_PIXEL(r,g,b, a) ((((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)) )
+#else
+#define MAKE_PIXEL(r,g,b, a) swap16((((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)) )
+#endif
+
 #else
 #ifdef BPP8
 typedef uint8_t FramebufferPixelFormat;
