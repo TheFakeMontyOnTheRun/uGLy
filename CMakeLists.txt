@@ -13,7 +13,7 @@ include_directories(
 
 include_directories(include)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H -DBPP16 -DDISABLE_DEPTH_BUFFER -DDISABLE_STENCIL_BUFFER")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H -DBPP16")
 
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
