@@ -281,13 +281,12 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 							}
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							uint32_t fragR = ambientLight[0];
-							uint32_t fragG = ambientLight[1];
-							uint32_t fragB = ambientLight[2];
-
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
 							uint8_t texelB = (texel & 0x0000FF00) >>  8;
+							uint32_t fragR = ( texelR * (currentR * ambientLight[0]) / 256) / 256;
+							uint32_t fragG = ( texelG * (currentG * ambientLight[1]) / 256) / 256;
+							uint32_t fragB = ( texelB * (currentB * ambientLight[2]) / 256) / 256;
 
 							for (int c = 0; c < 8; ++c)
 							{
@@ -619,14 +618,12 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 							currentLight[0] = fixToInt(fLight[0]);
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
-							uint32_t fragR = ambientLight[0];
-							uint32_t fragG = ambientLight[1];
-							uint32_t fragB = ambientLight[2];
-
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
 							uint8_t texelG = (texel & 0x00FF0000) >> 16;
 							uint8_t texelB = (texel & 0x0000FF00) >>  8;
-
+							uint32_t fragR = ( texelR * (currentR * ambientLight[0]) / 256) / 256;
+							uint32_t fragG = ( texelG * (currentG * ambientLight[1]) / 256) / 256;
+							uint32_t fragB = ( texelB * (currentB * ambientLight[2]) / 256) / 256;
 
 							for (int c = 0; c < 8; ++c)
 							{

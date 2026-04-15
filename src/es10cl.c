@@ -628,51 +628,53 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
                 for (int d = 0; d < 8; ++d )
                 {
-                    if ( lightsEnabled && lights[d].enabled)
+                    if ( lightsEnabled)
                     {
-                        t_vec4 normalizedLight;
-
-                        t_vec4 normalizedNormal0;
-                        t_vec4 normalizedNormal1;
-                        t_vec4 normalizedNormal2;
-
-                        if (normalizeNormals)
+                        if (lights[d].enabled)
                         {
-                            normalizeVec(&normalizedLight[0], &lights[d].position[0]);
+                            t_vec4 normalizedLight;
 
-                            normalizeVec(&normalizedNormal0[0], &transformedNormals[0]);
-                            normalizeVec(&normalizedNormal1[0], &transformedNormals[4]);
-                            normalizeVec(&normalizedNormal2[0], &transformedNormals[8]);
+                            t_vec4 normalizedNormal0;
+                            t_vec4 normalizedNormal1;
+                            t_vec4 normalizedNormal2;
 
+                            if (normalizeNormals)
+                            {
+                                normalizeVec(&normalizedLight[0], &lights[d].position[0]);
+
+                                normalizeVec(&normalizedNormal0[0], &transformedNormals[0]);
+                                normalizeVec(&normalizedNormal1[0], &transformedNormals[4]);
+                                normalizeVec(&normalizedNormal2[0], &transformedNormals[8]);
+
+                            } else
+                            {
+                                memcpy(&normalizedLight[0], &lights[d].position[0], sizeof(GLfixed) * 4);
+
+                                memcpy(&normalizedNormal0[0], &transformedNormals[0], sizeof(GLfixed) * 4);
+                                memcpy(&normalizedNormal1[0], &transformedNormals[4], sizeof(GLfixed) * 4);
+                                memcpy(&normalizedNormal2[0], &transformedNormals[8], sizeof(GLfixed) * 4);
+                            }
+
+                            GLfixed dot0 = dotVec( &normalizedLight[0],  &normalizedNormal0[0]);
+                            GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
+                            GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
+
+                            lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(256)));
+                            lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(256)));
+                            lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
                         } else
-                        {
-                            memcpy(&normalizedLight[0], &lights[d].position[0], sizeof(GLfixed) * 4);
-
-                            memcpy(&normalizedNormal0[0], &transformedNormals[0], sizeof(GLfixed) * 4);
-                            memcpy(&normalizedNormal1[0], &transformedNormals[4], sizeof(GLfixed) * 4);
-                            memcpy(&normalizedNormal2[0], &transformedNormals[8], sizeof(GLfixed) * 4);
-                        }
-
-                        GLfixed dot0 = dotVec( &normalizedLight[0],  &normalizedNormal0[0]);
-                        GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
-                        GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
-
-                        lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(256)));
-                        lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(256)));
-                        lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
-                    } else
-                    {
-                        if (lightsEnabled)
                         {
                             lightsDot[d * 3 + 0] = 0;
                             lightsDot[d * 3 + 1] = 0;
                             lightsDot[d * 3 + 2] = 0;
-                        } else
-                        {
-                            lightsDot[d * 3 + 0] = 255;
-                            lightsDot[d * 3 + 1] = 255;
-                            lightsDot[d * 3 + 2] = 255;
                         }
+                    }else
+                    {
+                        ambientColour[0]=ambientColour[1]=ambientColour[2]=ambientColour[3]=intToFix(1);
+
+                        lightsDot[d * 3 + 0] = 0;
+                        lightsDot[d * 3 + 1] = 0;
+                        lightsDot[d * 3 + 2] = 0;
                     }
                 }
 
