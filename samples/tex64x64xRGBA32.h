@@ -5,7 +5,7 @@
 #ifndef GLES1CL_TEX_H
 #define GLES1CL_TEX_H
 
-uint32_t tex[4096]={4294967295,
+static const uint32_t tex[4096]={4294967295,
 4294967295,
 4294967295,
 4294967295,
