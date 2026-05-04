@@ -367,9 +367,9 @@ GLfixed lengthVec(t_vec4 v)
 void normalizeVec( t_vec4 v1,  t_vec4 v2)
 {
     ///TODO: handle 0-length vectors
-    GLfixed oneOverlen = Div( intToFix(1), lengthVec(v2));
-    v1[0] = Mul( oneOverlen, v2[0]);
-    v1[1] = Mul( oneOverlen, v2[1]);
-    v1[2] = Mul( oneOverlen, v2[2]);
-    v1[3] = Mul( oneOverlen, v2[3]);
+    GLfixed oneOverLen = Div( intToFix(1), lengthVec(v2));
+    v1[0] = Mul( oneOverLen, v2[0]);
+    v1[1] = Mul( oneOverLen, v2[1]);
+    v1[2] = Mul( oneOverLen, v2[2]);
+    v1[3] = Mul( oneOverLen, v2[3]);
 }
