@@ -70,4 +70,6 @@ add_executable(ugly-test  ${TEST_SOURCE_FILES} ${SOURCE_FILES} )
 
 target_link_libraries(ugly-test PRIVATE Threads::Threads)
 
+add_test(NAME ugly-test COMMAND ugly-test)
+
 
