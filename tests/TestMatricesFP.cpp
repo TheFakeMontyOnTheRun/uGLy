@@ -9,12 +9,28 @@
 #include "internal.h"
 
 extern "C" {
+#include "matricesFP.h"
+
 #include "GLES/gl.h"
 }
 
-TEST(TestMatricesFP, dummy)
+TEST(TestMatricesFP, multiplicationWithIdentityResultsInTheMatrix)
 {
-    GLfixed limit = intToFix(1);
-    int32_t converted = fixToInt(limit);
-    ASSERT_EQ(converted, 1);
+    GLfixed mat[16];
+    GLfixed result[16];
+    GLfixed ident[16];
+
+    mat4x4_identity(&ident[0]);
+
+    for (int c = 0; c < 16; ++c)
+    {
+        mat[c] = intToFix(c);
+    }
+
+    mat4x4_mul(&mat[0], &ident[0], &result[0]);
+
+    for (int c = 0; c < 16; ++c)
+    {
+        ASSERT_EQ(result[c], mat[c]);
+    }
 }
