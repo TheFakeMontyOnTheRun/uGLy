@@ -14,6 +14,37 @@ extern "C" {
 #include "GLES/gl.h"
 }
 
+TEST(TestMatricesFP, transposedMultiplicationsIsEqualToTransposedReverseOrder)
+{
+    GLfixed mat1[16];
+    GLfixed mat2[16];
+    GLfixed result1[16];
+    GLfixed result2[16];
+    GLfixed mat1trans[16];
+    GLfixed mat2trans[16];
+
+    for (int c = 0; c < 16; ++c)
+    {
+        mat1[c] = c;
+        mat1trans[c] = c;
+        mat2[15 - c] = c;
+        mat2trans[15 - c] = c;
+    }
+
+    mat4x4_transpose(&mat1trans[0]);
+    mat4x4_transpose(&mat2trans[0]);
+
+    mat4x4_mul(&mat1[0], &mat2[0], &result1[0]);
+    mat4x4_mul(&mat2trans[0], &mat1trans[0], &result2[0]);
+
+    mat4x4_transpose(&result1[0]);
+
+    for (int c = 0; c < 16; ++c)
+    {
+        ASSERT_EQ(result1[c], result2[c]);
+    }
+}
+
 TEST(TestMatricesFP, multiplicationWithInverseMatrixProducesIdentity)
 {
     GLfixed mat[16];
