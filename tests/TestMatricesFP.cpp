@@ -14,6 +14,46 @@ extern "C" {
 #include "GLES/gl.h"
 }
 
+TEST(TestMatricesFP, dotProductOfNormalizedVectorWithOppositeIsMinusOne)
+{
+    GLfixed vec1[4] = {intToFix(1),
+                  intToFix(0),
+                  intToFix(0),
+                  intToFix(0)};
+
+    GLfixed vec2[4] = {-intToFix(1),
+              intToFix(0),
+              intToFix(0),
+              intToFix(0)};
+
+    ASSERT_EQ(dotVec(&vec1[0], &vec2[0]), -intToFix(1));
+}
+
+TEST(TestMatricesFP, dotProductOfNormalizedVectorWithPerpendicularIsZero)
+{
+    GLfixed vec1[4] = {intToFix(1),
+                  intToFix(0),
+                  intToFix(0),
+                  intToFix(0)};
+
+    GLfixed vec2[4] = {intToFix(0),
+              intToFix(1),
+              intToFix(0),
+              intToFix(0)};
+
+    ASSERT_EQ(dotVec(&vec1[0], &vec2[0]), intToFix(0));
+}
+
+TEST(TestMatricesFP, dotProductOfNormalizedVectorWithItselfIsOne)
+{
+    GLfixed vec[4] = {intToFix(1),
+                  intToFix(0),
+                  intToFix(0),
+                  intToFix(0)};
+
+    ASSERT_EQ(dotVec(&vec[0], &vec[0]), intToFix(1));
+}
+
 TEST(TestMatricesFP, canTranslateVectorsWithMatrices)
 {
     GLfixed mat[16];
