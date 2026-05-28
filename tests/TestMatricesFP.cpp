@@ -14,6 +14,34 @@ extern "C" {
 #include "GLES/gl.h"
 }
 
+
+TEST(TestMatricesFP, cantNormalizeNullVectors)
+{
+    GLfixed vec1[4] = {intToFix(0),
+                  intToFix(0),
+                  intToFix(0),
+                  intToFix(0)};
+    GLfixed vec2[4];
+
+    ASSERT_FALSE(normalizeVec(&vec1[0], &vec2[0]));
+}
+
+TEST(TestMatricesFP, nonUnitaryVectorsBecomeNormalized)
+{
+    GLfixed vec1[4] = {intToFix(2),
+                  intToFix(0),
+                  intToFix(0),
+                  intToFix(0)};
+    GLfixed vec2[4];
+
+    ASSERT_TRUE(normalizeVec(&vec1[0], &vec2[0]));
+
+    ASSERT_EQ(vec2[0], intToFix(1));
+    ASSERT_EQ(vec2[1], intToFix(0));
+    ASSERT_EQ(vec2[2], intToFix(0));
+    ASSERT_EQ(vec2[3], intToFix(0));
+}
+
 TEST(TestMatricesFP, dotProductOfNormalizedVectorWithOppositeIsMinusOne)
 {
     GLfixed vec1[4] = {intToFix(1),

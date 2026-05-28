@@ -640,11 +640,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
                             if (normalizeNormals)
                             {
-                                normalizeVec(&normalizedLight[0], &lights[d].position[0]);
+                                normalizeVec(&lights[d].position[0], &normalizedLight[0]);
 
-                                normalizeVec(&normalizedNormal0[0], &transformedNormals[0]);
-                                normalizeVec(&normalizedNormal1[0], &transformedNormals[4]);
-                                normalizeVec(&normalizedNormal2[0], &transformedNormals[8]);
+                                normalizeVec(&transformedNormals[0], &normalizedNormal0[0]);
+                                normalizeVec(&transformedNormals[4], &normalizedNormal1[0]);
+                                normalizeVec(&transformedNormals[8], &normalizedNormal2[0]);
 
                             } else
                             {

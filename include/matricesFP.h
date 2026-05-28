@@ -33,6 +33,6 @@ void mat4x4_identity(t_mat4x4 mat);
 
 GLfixed dotVec( t_vec4 v1,  t_vec4 v2);
 
-void normalizeVec( t_vec4 v1,  t_vec4 v2);
+uint8_t normalizeVec( t_vec4 v,  t_vec4 out);
 
 #endif /* MATRICES_H */

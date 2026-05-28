@@ -281,12 +281,19 @@ GLfixed lengthVec(t_vec4 v)
                                    Mul(v[3], v[3]));
 }
 
-void normalizeVec( t_vec4 v1,  t_vec4 v2)
+uint8_t normalizeVec( t_vec4 v,  t_vec4 out)
 {
-    ///TODO: handle 0-length vectors
-    GLfixed oneOverLen = Div( intToFix(1), lengthVec(v2));
-    v1[0] = Mul( oneOverLen, v2[0]);
-    v1[1] = Mul( oneOverLen, v2[1]);
-    v1[2] = Mul( oneOverLen, v2[2]);
-    v1[3] = Mul( oneOverLen, v2[3]);
+    const GLfixed len = lengthVec(v);
+    if (len == 0)
+    {
+        return 0U;
+    }
+
+    GLfixed oneOverLen = Div( intToFix(1), len);
+    out[0] = Mul( oneOverLen, v[0]);
+    out[1] = Mul( oneOverLen, v[1]);
+    out[2] = Mul( oneOverLen, v[2]);
+    out[3] = Mul( oneOverLen, v[3]);
+
+    return 1U;
 }
