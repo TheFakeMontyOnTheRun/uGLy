@@ -8,81 +8,6 @@
 /**
  *
  * @param out
- * @param left
- * @param right
- * @param bottom
- * @param top
- * @param znear
- * @param zfar
- */
-void
-mat4x4_ortho(t_mat4x4 out, GLfixed left, GLfixed right, GLfixed bottom, GLfixed top,
-             GLfixed znear,
-             GLfixed zfar)
-{
-#define T(a, b) ((a) * 4 + b)
-
-    out[T(0, 0)] = Div(intToFix(2), (right - left));
-    out[T(0, 1)] = 0;
-    out[T(0, 2)] = 0;
-    out[T(0, 3)] = 0;
-
-    out[T(1, 1)] = Div(intToFix(2), (top - bottom));
-    out[T(1, 0)] = 0;
-    out[T(1, 2)] = 0;
-    out[T(1, 3)] = 0;
-
-    out[T(2, 2)] = -Div(intToFix(2), (zfar - znear));
-    out[T(2, 0)] = 0;
-    out[T(2, 1)] = 0;
-    out[T(2, 3)] = 0;
-
-    out[T(3, 0)] = -Div((right + left), (right - left));
-    out[T(3, 1)] = -Div((top + bottom), (top - bottom));
-    out[T(3, 2)] = -Div((zfar + znear), (zfar - znear));
-    out[T(3, 3)] = intToFix(1);
-
-#undef T
-}
-
-/**
- *
- * @param out
- * @param fov
- * @param ratio
- * @param znear
- * @param zfar
- */
-void mat4x4_perspective(t_mat4x4 out, GLfixed fov, GLfixed ratio, GLfixed znear,
-                        GLfixed zfar)
-{
-    GLfixed rad = floatToFix(M_PI / 180.0f);
-    GLfixed oneOverTanFovDiv2 = Div(intToFix(1), floatToFix(tan(fixToFloat(fov) * rad / 2.0f)));
-
-    out[0] = Div(oneOverTanFovDiv2, ratio);
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-
-    out[4] = 0;
-    out[5] = oneOverTanFovDiv2;
-    out[6] = 0;
-    out[7] = 0;
-
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = -Div((zfar + znear), (zfar - znear));
-    out[11] = -1;
-
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = -Div(Mul(Mul(2 , zfar), znear), (zfar - znear));
-    out[15] = 0;
-}
-
-/**
- *
- * @param out
  * @param ox
  * @param oy
  * @param oz
@@ -146,89 +71,6 @@ mat4x4_transformVec(t_vec4 out,
     out[1] = y;
     out[2] = z;
     out[3] = w;
-}
-
-/**
- *
- * @param out
- * @param deg
- */
-void mat4x4_rotateX(t_mat4x4 out, GLfixed deg)
-{
-    GLfixed ca = floatToFix(cosf(fixToFloat(deg) * M_PI / 180.0f));
-    GLfixed sa = floatToFix(sinf(fixToFloat(deg) * M_PI / 180.0f));
-
-    out[0] = intToFix(1);
-    out[1] = 0;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = ca;
-    out[6] = -sa;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = sa;
-    out[10] = ca;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = intToFix(1);
-}
-
-/**
- *
- * @param out
- * @param deg
- */
-void mat4x4_rotateY(t_mat4x4 out, GLfixed deg)
-{
-    GLfixed ca = floatToFix(cosf(fixToFloat(deg) * M_PI / 180.0f));
-    GLfixed sa = floatToFix(sinf(fixToFloat(deg) * M_PI / 180.0f));
-
-    out[0] = ca;
-    out[1] = 0;
-    out[2] = sa;
-    out[3] = 0;
-    out[4] = 0;
-    out[5] = 1;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = -sa;
-    out[9] = 0;
-    out[10] = ca;
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = 1;
-}
-
-/**
- *
- * @param out
- * @param deg
- */
-void mat4x4_rotateZ(t_mat4x4 out, GLfixed deg)
-{
-    GLfixed ca = floatToFix(cosf(fixToFloat(deg) * M_PI / 180.0f));
-    GLfixed sa = floatToFix(sinf(fixToFloat(deg) * M_PI / 180.0f));
-    out[0] = ca;
-    out[1] = -sa;
-    out[2] = 0;
-    out[3] = 0;
-    out[4] = sa;
-    out[5] = ca;
-    out[6] = 0;
-    out[7] = 0;
-    out[8] = 0;
-    out[9] = 0;
-    out[10] = intToFix(1);
-    out[11] = 0;
-    out[12] = 0;
-    out[13] = 0;
-    out[14] = 0;
-    out[15] = intToFix(1);
 }
 
 /**
@@ -364,12 +206,19 @@ GLfixed lengthVec(t_vec4 v)
                                    Mul(v[3], v[3]));
 }
 
-void normalizeVec( t_vec4 v1,  t_vec4 v2)
+uint8_t normalizeVec( t_vec4 v,  t_vec4 out)
 {
-    ///TODO: handle 0-length vectors
-    GLfixed oneOverLen = Div( intToFix(1), lengthVec(v2));
-    v1[0] = Mul( oneOverLen, v2[0]);
-    v1[1] = Mul( oneOverLen, v2[1]);
-    v1[2] = Mul( oneOverLen, v2[2]);
-    v1[3] = Mul( oneOverLen, v2[3]);
+    const GLfixed len = lengthVec(v);
+    if (len == 0)
+    {
+        return 0U;
+    }
+
+    GLfixed oneOverLen = Div( intToFix(1), len);
+    out[0] = Mul( oneOverLen, v[0]);
+    out[1] = Mul( oneOverLen, v[1]);
+    out[2] = Mul( oneOverLen, v[2]);
+    out[3] = Mul( oneOverLen, v[3]);
+
+    return 1U;
 }
