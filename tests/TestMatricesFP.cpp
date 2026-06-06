@@ -114,6 +114,39 @@ TEST(TestMatricesFP, canTranslateVectorsWithMatrices)
     ASSERT_EQ(out[3], expected[3]);
 }
 
+
+TEST(TestMatricesFP, canScaleVectorsWithMatrices)
+{
+    GLfixed mat[16];
+    GLfixed out[4];
+    GLfixed vec[4] = {intToFix(1),
+                      intToFix(2),
+                      intToFix(3),
+                      intToFix(0)};
+
+    mat4x4_transform(mat,
+                     intToFix(0),
+                     intToFix(0),
+                     intToFix(0),
+                     intToFix(2),
+                     intToFix(2),
+                     intToFix(2));
+
+    mat4x4_transformVec(&out[0], &mat[0], &vec[0]);
+
+    GLfixed expected[4] = {
+        intToFix(2),
+        intToFix(4),
+        intToFix(6),
+        intToFix(0)
+    };
+
+    ASSERT_EQ(out[0], expected[0]);
+    ASSERT_EQ(out[1], expected[1]);
+    ASSERT_EQ(out[2], expected[2]);
+    ASSERT_EQ(out[3], expected[3]);
+}
+
 TEST(TestMatricesFP, transposedMultiplicationsIsEqualToTransposedReverseOrder)
 {
     GLfixed mat1[16];
