@@ -76,6 +76,8 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
 
+void uGLyInit(void);
+
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
     uint16_t zValue,

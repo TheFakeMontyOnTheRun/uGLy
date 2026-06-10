@@ -287,6 +287,46 @@ static void notImplementedYet(const char* funcName)
     assert(0);
 }
 
+void uGLyInit(void)
+{
+    currentTexture = 0;
+    textureMapping2DEnabled = 0;
+    currentError = GL_NO_ERROR;
+    matrixStackTop = 0;
+    vertexStride = 0;
+    vertexType = 0;
+    vertexSize = 0;
+    vertexPointer = NULL;
+    vertexArrayEnabled = GL_FALSE;
+    textureCoordStride = 0;
+    textureCoordType = 0;
+    textureCoordSize = 0;
+    textureCoordPointer = NULL;
+    textureCoordsEnabled = GL_FALSE;
+    mat4x4_identity(&projectionMatrix[0]);
+    mat4x4_identity(&modelViewMatrix[0]);
+    colorStride = 0;
+    colorType = 0;
+    colorSize = 0;
+    colorPointer = NULL;
+    colorArrayEnabled = GL_FALSE;
+    normalsStride = 0;
+    normalsType = 0;
+    normalsPointer = NULL;
+    normalsArrayEnabled = GL_FALSE;
+    pointSize = intToFix(1);
+
+#ifndef	DISABLE_DEPTH_BUFFER
+    depthWritesEnabled = 1;
+    depthTestEnabled = 0;
+    clearDepth = 0xFFFF;
+#endif
+
+#ifndef DISABLE_STENCIL_BUFFER
+    clearStencil = 0;
+#endif
+}
+
 GLAPI void APIENTRY glActiveTexture(GLenum texture)
 {
     notImplementedYet(__func__);
