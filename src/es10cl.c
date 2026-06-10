@@ -1226,28 +1226,31 @@ GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
 
 GLAPI void APIENTRY glPopMatrix(void)
 {
+    if (matrixStackTop <= 0)
+    {
+        currentError = GL_STACK_UNDERFLOW;
+        return;
+    }
+
     --matrixStackTop;
 
     memcpy(&projectionMatrix[0], &projectionMatrixStack[matrixStackTop][0], sizeof(GLfixed) * 16);
     memcpy(&modelViewMatrix[0], &modelViewMatrixStack[matrixStackTop][0], sizeof(GLfixed) * 16);
 
-    if (matrixStackTop < 0)
-    {
-        currentError = GL_STACK_UNDERFLOW;
-    }
 }
 
 GLAPI void APIENTRY glPushMatrix(void)
 {
+    if (matrixStackTop >= (MATRIX_STACK_CAPACITY))
+    {
+        currentError = GL_STACK_OVERFLOW;
+        return;
+    }
+
     memcpy(&projectionMatrixStack[matrixStackTop][0], &projectionMatrix[0], sizeof(GLfixed) * 16);
     memcpy(&modelViewMatrixStack[matrixStackTop][0], &modelViewMatrix[0], sizeof(GLfixed) * 16);
 
     ++matrixStackTop;
-
-    if (matrixStackTop >= MATRIX_STACK_CAPACITY)
-    {
-        currentError = GL_STACK_OVERFLOW;
-    }
 }
 
 GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
