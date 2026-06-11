@@ -105,6 +105,10 @@ void drawPoint(int* coords, uint8_t* colour,
 #define XRES_FRAMEBUFFER 240
 #define YRES_FRAMEBUFFER 240
 
+#define TOTAL_TEXTURES_SUPPORTED 8
+
+#define MATRIX_STACK_CAPACITY 16
+
 extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #ifndef DISABLE_DEPTH_BUFFER

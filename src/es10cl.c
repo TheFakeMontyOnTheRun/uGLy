@@ -14,10 +14,6 @@
 #include "internal.h"
 #include "matricesFP.h"
 
-#define TOTAL_TEXTURES_SUPPORTED 8
-
-#define MATRIX_STACK_CAPACITY 16
-
 GLfixed sinfp[91] =
 {
     0,

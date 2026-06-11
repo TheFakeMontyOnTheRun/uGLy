@@ -34,3 +34,28 @@ TEST_F(TestMatricesStack, cantPopMatrixIf)
     glPopMatrix();
     ASSERT_EQ( glGetError(), GL_STACK_UNDERFLOW);
 }
+
+
+TEST_F(TestMatricesStack, cantPushMatricesBeyondLimits)
+{
+    for (int c = 0; c < MATRIX_STACK_CAPACITY; ++c)
+    {
+        glPushMatrix();
+    }
+
+    ASSERT_EQ( glGetError(), GL_NO_ERROR);
+
+    glPushMatrix();
+
+    ASSERT_EQ( glGetError(), GL_STACK_OVERFLOW);
+}
+
+TEST_F(TestMatricesStack, canPushAndPopMatrixButNotBeyond)
+{
+    glPushMatrix();
+    glPopMatrix();
+    ASSERT_EQ( glGetError(), GL_NO_ERROR);
+
+    glPopMatrix();
+    ASSERT_EQ( glGetError(), GL_STACK_UNDERFLOW);
+}
