@@ -714,6 +714,10 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     }
                 }
 
+                if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+                {
+                    goto nextTriangle;
+                }
 
                 GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
                 GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
@@ -784,6 +788,8 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 #endif
                     &lightsDot[0], &ambientColourComponents[0]);
 
+nextTriangle:
+
                 vertexPtr += 9;
 
                 if (normalsArrayEnabled)
@@ -849,6 +855,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
                 mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
 
+                if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+                {
+                    goto nextPoint;
+                }
+
                 GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
                 GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
                 GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
@@ -913,6 +924,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 #endif
                     fixToInt(pointSize));
 
+nextPoint:
                 vertexPtr += 9;
 
                 if (colorArrayEnabled)
