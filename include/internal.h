@@ -76,11 +76,15 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
 
+void uGLyInit(void);
+
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
     uint16_t zValue,
 #endif
     uint16_t pointSize);
+
+GLfixed *currentModelViewMatrix(void);
 
 #define kIntegerPart 16
 
@@ -102,6 +106,10 @@ void drawPoint(int* coords, uint8_t* colour,
 
 #define XRES_FRAMEBUFFER 240
 #define YRES_FRAMEBUFFER 240
+
+#define TOTAL_TEXTURES_SUPPORTED 8
+
+#define MATRIX_STACK_CAPACITY 16
 
 extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 

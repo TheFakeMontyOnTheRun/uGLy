@@ -14,10 +14,6 @@
 #include "internal.h"
 #include "matricesFP.h"
 
-#define TOTAL_TEXTURES_SUPPORTED 8
-
-#define MATRIX_STACK_CAPACITY 16
-
 GLfixed sinfp[91] =
 {
     0,
@@ -285,6 +281,46 @@ static void notImplementedYet(const char* funcName)
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
     assert(0);
+}
+
+void uGLyInit(void)
+{
+    currentTexture = 0;
+    textureMapping2DEnabled = 0;
+    currentError = GL_NO_ERROR;
+    matrixStackTop = 0;
+    vertexStride = 0;
+    vertexType = 0;
+    vertexSize = 0;
+    vertexPointer = NULL;
+    vertexArrayEnabled = GL_FALSE;
+    textureCoordStride = 0;
+    textureCoordType = 0;
+    textureCoordSize = 0;
+    textureCoordPointer = NULL;
+    textureCoordsEnabled = GL_FALSE;
+    mat4x4_identity(&projectionMatrix[0]);
+    mat4x4_identity(&modelViewMatrix[0]);
+    colorStride = 0;
+    colorType = 0;
+    colorSize = 0;
+    colorPointer = NULL;
+    colorArrayEnabled = GL_FALSE;
+    normalsStride = 0;
+    normalsType = 0;
+    normalsPointer = NULL;
+    normalsArrayEnabled = GL_FALSE;
+    pointSize = intToFix(1);
+
+#ifndef	DISABLE_DEPTH_BUFFER
+    depthWritesEnabled = 1;
+    depthTestEnabled = 0;
+    clearDepth = 0xFFFF;
+#endif
+
+#ifndef DISABLE_STENCIL_BUFFER
+    clearStencil = 0;
+#endif
 }
 
 GLAPI void APIENTRY glActiveTexture(GLenum texture)
@@ -678,6 +714,10 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     }
                 }
 
+                if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+                {
+                    goto nextTriangle;
+                }
 
                 GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
                 GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
@@ -748,6 +788,8 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 #endif
                     &lightsDot[0], &ambientColourComponents[0]);
 
+nextTriangle:
+
                 vertexPtr += 9;
 
                 if (normalsArrayEnabled)
@@ -813,6 +855,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
                 mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
 
+                if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+                {
+                    goto nextPoint;
+                }
+
                 GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
                 GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
                 GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
@@ -877,6 +924,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 #endif
                     fixToInt(pointSize));
 
+nextPoint:
                 vertexPtr += 9;
 
                 if (colorArrayEnabled)
@@ -1186,28 +1234,31 @@ GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
 
 GLAPI void APIENTRY glPopMatrix(void)
 {
+    if (matrixStackTop <= 0)
+    {
+        currentError = GL_STACK_UNDERFLOW;
+        return;
+    }
+
     --matrixStackTop;
 
     memcpy(&projectionMatrix[0], &projectionMatrixStack[matrixStackTop][0], sizeof(GLfixed) * 16);
     memcpy(&modelViewMatrix[0], &modelViewMatrixStack[matrixStackTop][0], sizeof(GLfixed) * 16);
 
-    if (matrixStackTop < 0)
-    {
-        currentError = GL_STACK_UNDERFLOW;
-    }
 }
 
 GLAPI void APIENTRY glPushMatrix(void)
 {
+    if (matrixStackTop >= (MATRIX_STACK_CAPACITY))
+    {
+        currentError = GL_STACK_OVERFLOW;
+        return;
+    }
+
     memcpy(&projectionMatrixStack[matrixStackTop][0], &projectionMatrix[0], sizeof(GLfixed) * 16);
     memcpy(&modelViewMatrixStack[matrixStackTop][0], &modelViewMatrix[0], sizeof(GLfixed) * 16);
 
     ++matrixStackTop;
-
-    if (matrixStackTop >= MATRIX_STACK_CAPACITY)
-    {
-        currentError = GL_STACK_OVERFLOW;
-    }
 }
 
 GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
@@ -1403,4 +1454,9 @@ GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
     viewportY = y;
     halfViewportWidthx = Div( intToFix(width), intToFix(2));
     halfViewportHeightx = Div( intToFix(height), intToFix(2));
+}
+
+GLfixed *currentModelViewMatrix(void)
+{
+    return &modelViewMatrix[0];
 }
