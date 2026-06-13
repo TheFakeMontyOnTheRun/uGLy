@@ -59,3 +59,40 @@ TEST_F(TestMatricesStack, canPushAndPopMatrixButNotBeyond)
     glPopMatrix();
     ASSERT_EQ( glGetError(), GL_STACK_UNDERFLOW);
 }
+
+
+TEST_F(TestMatricesStack, pushingMatrixPreservesCurrentMatrix)
+{
+    GLfixed *modelView = currentModelViewMatrix(); 
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatex(intToFix(4), intToFix(3), intToFix(2));
+
+    glPushMatrix();
+    ASSERT_EQ( modelView[12], intToFix(4));
+    ASSERT_EQ( modelView[13], intToFix(3));
+    ASSERT_EQ( modelView[14], intToFix(2));
+    ASSERT_EQ( modelView[15], intToFix(1));
+}
+
+
+TEST_F(TestMatricesStack, poppingMatrixWillRestoreMatrix)
+{
+    GLfixed *modelView = currentModelViewMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatex(intToFix(4), intToFix(3), intToFix(2));
+    glPushMatrix();
+    glLoadIdentity();
+    ASSERT_EQ( modelView[12], intToFix(0));
+    ASSERT_EQ( modelView[13], intToFix(0));
+    ASSERT_EQ( modelView[14], intToFix(0));
+    ASSERT_EQ( modelView[15], intToFix(1));
+
+    glPopMatrix();
+
+    ASSERT_EQ( modelView[12], intToFix(4));
+    ASSERT_EQ( modelView[13], intToFix(3));
+    ASSERT_EQ( modelView[14], intToFix(2));
+    ASSERT_EQ( modelView[15], intToFix(1));
+}

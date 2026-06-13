@@ -1443,3 +1443,8 @@ GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
     halfViewportWidthx = Div( intToFix(width), intToFix(2));
     halfViewportHeightx = Div( intToFix(height), intToFix(2));
 }
+
+GLfixed *currentModelViewMatrix(void)
+{
+    return &modelViewMatrix[0];
+}

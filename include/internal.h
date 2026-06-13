@@ -84,6 +84,8 @@ void drawPoint(int* coords, uint8_t* colour,
 #endif
     uint16_t pointSize);
 
+GLfixed *currentModelViewMatrix(void);
+
 #define kIntegerPart 16
 
 #define fixToInt(fp)  ((GLfixed)((fp) >> kIntegerPart))
