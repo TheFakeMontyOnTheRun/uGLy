@@ -44,6 +44,7 @@ set(TEST_SOURCE_FILES
         tests/TestFixP.cpp
         tests/TestMatricesFP.cpp
         tests/TestMatricesStack.cpp
+        tests/TestErrorHandling.cpp
         tests/common.cpp
 
         third_party/gtest/src/gtest-all.cc
