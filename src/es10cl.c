@@ -695,9 +695,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                             GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
                             GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
 
-                            lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(256)));
-                            lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(256)));
-                            lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
+                            lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(255)));
+                            lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(255)));
+                            lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(255)));
                         } else
                         {
                             lightsDot[d * 3 + 0] = 0;
