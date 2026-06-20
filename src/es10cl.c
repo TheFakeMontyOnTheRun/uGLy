@@ -338,9 +338,10 @@ GLAPI void APIENTRY glBindTexture(GLenum target, GLuint texture)
     if (target == GL_TEXTURE_2D)
     {
         currentTexture = texture;
-    } else
-    {
-        currentError = GL_INVALID_ENUM;
+    } else {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -421,12 +422,18 @@ GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, cons
 
     if (size != 2 && size != 3 && size != 4)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
     }
 
     if (stride < 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
     }
     ///TODO: handle errors on type
 }
@@ -1223,7 +1230,10 @@ GLAPI void APIENTRY glPointSizex(GLfixed size)
     pointSize = size;
     if (size <= 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
     }
 }
 
@@ -1236,7 +1246,11 @@ GLAPI void APIENTRY glPopMatrix(void)
 {
     if (matrixStackTop <= 0)
     {
-        currentError = GL_STACK_UNDERFLOW;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_STACK_UNDERFLOW;
+        }
+
         return;
     }
 
@@ -1251,7 +1265,10 @@ GLAPI void APIENTRY glPushMatrix(void)
 {
     if (matrixStackTop >= (MATRIX_STACK_CAPACITY))
     {
-        currentError = GL_STACK_OVERFLOW;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_STACK_OVERFLOW;
+        }
         return;
     }
 
@@ -1431,12 +1448,18 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
 
     if (size != 2 && size != 3 && size != 4)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
     }
 
     if (stride < 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
     }
     ///TODO: handle type errors
 }
@@ -1446,7 +1469,10 @@ GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 
     if (width < 0 || height < 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
         return;
     }
 

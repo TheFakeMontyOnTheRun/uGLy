@@ -23,6 +23,20 @@ protected:
     }
 };
 
+TEST_F(TestErrorHandling, errorsAreSticky)
+{
+    glPopMatrix();
+
+    for (int c = 0; c < MATRIX_STACK_CAPACITY; ++c)
+    {
+        glPushMatrix();
+    }
+
+    glPushMatrix();
+
+    ASSERT_EQ( glGetError(), GL_STACK_UNDERFLOW);
+}
+
 TEST_F(TestErrorHandling, errorFlagClearsAfterQuerying)
 {
     glPopMatrix();
