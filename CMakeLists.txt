@@ -65,9 +65,21 @@ set(SOURCE_FILES
 include(FindPkgConfig)
 
 add_executable(tri src/sdl2.c samples/tri.c ${SOURCE_FILES} )
-
 target_include_directories(tri PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
 target_link_libraries(tri LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
+
+add_executable(quad_lit src/sdl2.c samples/quad_lit.c ${SOURCE_FILES} )
+target_include_directories(quad_lit PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(quad_lit LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
+
+add_executable(texquads src/sdl2.c samples/texquads.c ${SOURCE_FILES} )
+target_include_directories(texquads PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(texquads LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
+
+add_executable(gears src/sdl2.c samples/gears.c ${SOURCE_FILES} )
+target_include_directories(gears PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(gears LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
+
 
 add_executable(ugly-test  ${TEST_SOURCE_FILES} ${SOURCE_FILES} )
 
