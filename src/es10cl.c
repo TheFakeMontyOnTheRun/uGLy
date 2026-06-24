@@ -573,8 +573,27 @@ GLAPI void APIENTRY glDisable(GLenum cap)
     case GL_LIGHTING:
         lightsEnabled = GL_FALSE;
         break;
-    default:
+    case GL_ALPHA_TEST:
+    case GL_BLEND:
+    case GL_COLOR_LOGIC_OP:
+    case GL_COLOR_MATERIAL:
+    case GL_FOG:
+    case GL_LINE_SMOOTH:
+    case GL_MULTISAMPLE:
+    case GL_POINT_SMOOTH:
+    case GL_POLYGON_OFFSET_FILL:
+    case GL_RESCALE_NORMAL:
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+    case GL_SAMPLE_ALPHA_TO_ONE:
+    case GL_SAMPLE_COVERAGE:
+    case GL_SCISSOR_TEST:
+    case GL_STENCIL_TEST:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
