@@ -493,9 +493,32 @@ GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* texturesIn)
 {
     GLuint* ptr = texturesIn;
 
+    if (n < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
+    if (texturesIn == NULL)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
     for (int c = 0; c < n; ++c)
     {
         GLuint index = *ptr++;
+
+        /* per the standard, if the active texture is being deleted, the bound texture returns to texture 0 */
+        if (index == currentTexture)
+        {
+            currentTexture = 0;
+        }
+
         free(textures[index].texels);
         textures[index].texels = NULL;
         textures[index].inUse = 0;
