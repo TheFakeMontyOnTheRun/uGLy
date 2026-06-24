@@ -1251,14 +1251,31 @@ GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
 
 GLAPI void APIENTRY glLightxv(GLenum light, GLenum pname, const GLfixed* params)
 {
-    GLfixed *dir = params;
+    //TODO: GL_INVALID_VALUE is generated if a spot exponent value is specified outside the range [0, 128], or if spot
+    // cutoff is specified outside the range [0, 90] (except for the special value 180), or if a negative attenuation
+    // factor is specified.
 
-    if (pname != GL_POSITION)
+    switch (pname)
     {
+    case GL_POSITION:
+        memcpy(&lights[light - GL_LIGHT0].position[0], params, sizeof(GLfixed) * 4);
+        break;
+    case GL_AMBIENT:
+    case GL_DIFFUSE:
+    case GL_SPECULAR:
+    case GL_SPOT_DIRECTION:
+    case GL_SPOT_EXPONENT:
+    case GL_SPOT_CUTOFF:
+    case GL_CONSTANT_ATTENUATION:
+    case GL_LINEAR_ATTENUATION:
+    case GL_QUADRATIC_ATTENUATION:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
-
-    memcpy(&lights[light - GL_LIGHT0].position[0], dir, sizeof(GLfixed) * 4);
 }
 
 GLAPI void APIENTRY glLineWidthx(GLfixed width)
