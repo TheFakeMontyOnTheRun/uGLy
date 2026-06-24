@@ -1597,6 +1597,33 @@ GLAPI void APIENTRY glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 
 GLAPI void APIENTRY glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
+    if (size != 2 && size != 3 && size != 4)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
+    if (type != GL_BYTE && type != GL_SHORT && type != GL_FIXED)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    if (stride < 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
     textureCoordPointer = pointer;
     textureCoordSize = size;
     textureCoordStride = stride;
