@@ -1138,6 +1138,15 @@ GLAPI void APIENTRY glFrontFace(GLenum mode)
 
 GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
 {
+    if ((zNear < 0) || (zFar < 0) || (left == right) || (bottom == top) || (zNear == zFar))
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     memset(&projectionMatrix[0], 0, sizeof(GLfixed) * 16);
     GLfixed twoTimesN = Mul(intToFix(2), zNear);
     projectionMatrix[0] = Div(twoTimesN, (right - left ));
