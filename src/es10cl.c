@@ -1671,17 +1671,14 @@ GLAPI void APIENTRY glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 
 GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    vertexStride = stride;
-    vertexType = type;
-    vertexSize = size;
-    vertexPointer = pointer;
-
     if (size != 2 && size != 3 && size != 4)
     {
         if (currentError == GL_NO_ERROR)
         {
             currentError = GL_INVALID_VALUE;
         }
+
+        return;
     }
 
     if (stride < 0)
@@ -1690,8 +1687,24 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
         {
             currentError = GL_INVALID_VALUE;
         }
+
+        return;
     }
-    ///TODO: handle type errors
+
+    if (type != GL_BYTE && type != GL_SHORT && type != GL_FIXED)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    vertexStride = stride;
+    vertexType = type;
+    vertexSize = size;
+    vertexPointer = pointer;
 }
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
