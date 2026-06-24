@@ -1234,8 +1234,13 @@ GLAPI void APIENTRY glLightModelxv(GLenum pname, const GLfixed* params)
     case GL_LIGHT_MODEL_AMBIENT:
         memcpy(ambientColour, params, sizeof(GLfixed) * 4);
         break;
-    default:
+    case GL_LIGHT_MODEL_TWO_SIDE:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
