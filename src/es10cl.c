@@ -415,17 +415,14 @@ GLAPI void APIENTRY glColorMask(GLboolean red, GLboolean green, GLboolean blue, 
 
 GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    colorStride = stride;
-    colorType = type;
-    colorSize = size;
-    colorPointer = pointer;
-
     if (size != 2 && size != 3 && size != 4)
     {
         if (currentError == GL_NO_ERROR)
         {
             currentError = GL_INVALID_VALUE;
         }
+
+        return;
     }
 
     if (stride < 0)
@@ -434,8 +431,24 @@ GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, cons
         {
             currentError = GL_INVALID_VALUE;
         }
+
+        return;
     }
-    ///TODO: handle errors on type
+
+    if (type != GL_FIXED && size != GL_UNSIGNED_BYTE)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    colorStride = stride;
+    colorType = type;
+    colorSize = size;
+    colorPointer = pointer;
 }
 
 GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
