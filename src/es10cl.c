@@ -503,9 +503,7 @@ GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* texturesIn)
 
     if (texturesIn == NULL)
     {
-        if (currentError == GL_NO_ERROR) {
-            currentError = GL_INVALID_VALUE;
-        }
+        //TODO: CRASH!
         return;
     }
 
@@ -1184,6 +1182,12 @@ GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* texturesOut)
             currentError = GL_INVALID_VALUE;
         }
 
+        return;
+    }
+
+    if (texturesOut == NULL)
+    {
+        //TODO: CRASH!
         return;
     }
 
