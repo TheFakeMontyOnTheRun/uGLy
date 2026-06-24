@@ -1105,7 +1105,9 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
         normalsArrayEnabled = GL_TRUE;
         break;
     default:
-        notImplementedYet(__func__);
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
