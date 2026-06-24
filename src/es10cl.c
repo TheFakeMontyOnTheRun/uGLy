@@ -1294,8 +1294,10 @@ GLAPI void APIENTRY glLoadIdentity(void)
         mat4x4_identity(modelViewMatrix);
         break;
     case GL_TEXTURE:
-    default:
         notImplementedYet(__func__);
+        break;
+    default:
+        assert(0);
     }
 }
 
