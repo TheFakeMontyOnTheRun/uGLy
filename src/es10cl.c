@@ -1341,16 +1341,18 @@ GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
 {
     switch (matrixMode)
     {
-        case GL_PROJECTION:
+    case GL_PROJECTION:
         memcpy(projectionMatrix, m, sizeof(GLfixed) * 16);
         break;
-        case GL_MODELVIEW:
+    case GL_MODELVIEW:
         memcpy(modelViewMatrix, m, sizeof(GLfixed) * 16);
         break;
-    default:
+    case GL_TEXTURE:
         notImplementedYet(__func__);
+        break;
+    default:
+        assert(0);
     }
-
 }
 
 GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)
