@@ -1402,14 +1402,17 @@ GLAPI void APIENTRY glPixelStorei(GLenum pname, GLint param)
 
 GLAPI void APIENTRY glPointSizex(GLfixed size)
 {
-    pointSize = size;
     if (size <= 0)
     {
         if (currentError == GL_NO_ERROR)
         {
             currentError = GL_INVALID_VALUE;
         }
+
+        return;
     }
+
+    pointSize = size;
 }
 
 GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
