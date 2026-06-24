@@ -352,9 +352,17 @@ GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor)
 
 GLAPI void APIENTRY glClear(GLbitfield mask)
 {
-    int c;
+    if ((mask & ~(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)) != 0) {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT)
     {
+        int c;
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             framebuffer[c] = clearColor;
@@ -364,6 +372,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 #ifndef DISABLE_DEPTH_BUFFER
     if ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT)
     {
+        int c;
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             zBuffer[c] = clearDepth;
@@ -374,13 +383,13 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 #ifndef DISABLE_STENCIL_BUFFER
     if ((mask & GL_STENCIL_BUFFER_BIT) == GL_STENCIL_BUFFER_BIT)
     {
+        int c;
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             stencilBuffer[c] = clearStencil;
         }
     }
 #endif
-    ///TODO: check for error conditions
 }
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
