@@ -614,9 +614,10 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
         normalsArrayEnabled = GL_FALSE;
         break;
     default:
-        notImplementedYet(__func__);
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
-    ///TODO: handle other client states
 }
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
