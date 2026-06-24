@@ -622,6 +622,13 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    if (count < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+    }
+
     if (!vertexArrayEnabled)
     {
         /* if this is disabled, what are we even doing here? */
@@ -1011,8 +1018,13 @@ nextPoint:
     case GL_LINES:
     case GL_TRIANGLE_STRIP:
     case GL_TRIANGLE_FAN:
-    default:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
