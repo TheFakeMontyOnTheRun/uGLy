@@ -1462,7 +1462,32 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
     (void)format;
     (void)type;
 
-    ///TODO: handle formats and types
+    if (format != GL_RGBA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    if (type != GL_UNSIGNED_BYTE)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    if (width < 0 || height < 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
 
     FramebufferPixelFormat* ptrStr;
     FramebufferPixelFormat* pixelsOut = pixels;
