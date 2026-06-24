@@ -1178,6 +1178,15 @@ GLuint reserveTexture(void)
 
 GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* texturesOut)
 {
+    if (n < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     GLuint* ptr = texturesOut;
 
     for (int c = 0; c < n; ++c)
