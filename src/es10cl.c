@@ -1367,6 +1367,24 @@ GLAPI void APIENTRY glNormal3x(GLfixed nx, GLfixed ny, GLfixed nz)
 
 GLAPI void APIENTRY glNormalPointer(GLenum type, GLsizei stride, const GLvoid* pointer)
 {
+    if (type != GL_SHORT && type != GL_BYTE && type != GL_FIXED)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (stride < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     normalsStride = stride;
     normalsType = type;
     normalsPointer = pointer;
