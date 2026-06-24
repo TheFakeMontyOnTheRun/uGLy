@@ -1323,7 +1323,18 @@ GLAPI void APIENTRY glMaterialxv(GLenum face, GLenum pname, const GLfixed* param
 
 GLAPI void APIENTRY glMatrixMode(GLenum mode)
 {
-    matrixMode = mode;
+    switch (mode)
+    {
+    case GL_PROJECTION:
+    case GL_MODELVIEW:
+    case GL_TEXTURE:
+        matrixMode = mode;
+        return;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
+    }
 }
 
 GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
