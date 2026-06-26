@@ -1643,6 +1643,116 @@ GLAPI void APIENTRY glTexEnvxv(GLenum target, GLenum pname, const GLfixed* param
 GLAPI void APIENTRY glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
                                  GLint border, GLenum format, GLenum type, const GLvoid* pixels)
 {
+    if (target != GL_TEXTURE_2D)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (format != GL_ALPHA && format != GL_RGB && format != GL_RGBA && format != GL_LUMINANCE && format != GL_LUMINANCE_ALPHA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (type !=  GL_UNSIGNED_BYTE && type !=  GL_UNSIGNED_SHORT_5_6_5 && type !=  GL_UNSIGNED_SHORT_4_4_4_4 && type !=  GL_UNSIGNED_SHORT_5_5_5_1)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (level < 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (level > MAX_TEXTURE_SIZE_LOG2)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (internalformat != GL_ALPHA && internalformat != GL_RGB && internalformat != GL_RGBA && internalformat != GL_LUMINANCE && internalformat != GL_LUMINANCE_ALPHA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (width < 0 || height < 0 || width > MAX_TEXTURE_SIZE || height > MAX_TEXTURE_SIZE || !POT(width) || !POT(height))
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (border != 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (format != internalformat)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_OPERATION;
+        }
+
+        return;
+    }
+
+    if (type == GL_UNSIGNED_SHORT_5_6_5 && format != GL_RGB)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_OPERATION;
+        }
+
+        return;
+    }
+
+    if ((type ==  GL_UNSIGNED_SHORT_4_4_4_4 || type ==  GL_UNSIGNED_SHORT_5_5_5_1) && format !=  GL_RGBA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_OPERATION;
+        }
+
+        return;
+    }
+
     textures[currentTexture].width = width;
     textures[currentTexture].height = height;
     textures[currentTexture].texels = malloc(sizeof(uint32_t) * width * height);
