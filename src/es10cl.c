@@ -338,9 +338,10 @@ GLAPI void APIENTRY glBindTexture(GLenum target, GLuint texture)
     if (target == GL_TEXTURE_2D)
     {
         currentTexture = texture;
-    } else
-    {
-        currentError = GL_INVALID_ENUM;
+    } else {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -351,9 +352,17 @@ GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor)
 
 GLAPI void APIENTRY glClear(GLbitfield mask)
 {
-    int c;
+    if ((mask & ~(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)) != 0) {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT)
     {
+        int c;
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             framebuffer[c] = clearColor;
@@ -363,6 +372,7 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 #ifndef DISABLE_DEPTH_BUFFER
     if ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT)
     {
+        int c;
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             zBuffer[c] = clearDepth;
@@ -373,13 +383,13 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 #ifndef DISABLE_STENCIL_BUFFER
     if ((mask & GL_STENCIL_BUFFER_BIT) == GL_STENCIL_BUFFER_BIT)
     {
+        int c;
         for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
         {
             stencilBuffer[c] = clearStencil;
         }
     }
 #endif
-    ///TODO: check for error conditions
 }
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
@@ -414,21 +424,40 @@ GLAPI void APIENTRY glColorMask(GLboolean red, GLboolean green, GLboolean blue, 
 
 GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    colorStride = stride;
-    colorType = type;
-    colorSize = size;
-    colorPointer = pointer;
-
     if (size != 2 && size != 3 && size != 4)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
     }
 
     if (stride < 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
     }
-    ///TODO: handle errors on type
+
+    if (type != GL_FIXED && size != GL_UNSIGNED_BYTE)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    colorStride = stride;
+    colorType = type;
+    colorSize = size;
+    colorPointer = pointer;
 }
 
 GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
@@ -464,9 +493,30 @@ GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* texturesIn)
 {
     GLuint* ptr = texturesIn;
 
+    if (n < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
+    if (texturesIn == NULL)
+    {
+        //TODO: CRASH!
+        return;
+    }
+
     for (int c = 0; c < n; ++c)
     {
         GLuint index = *ptr++;
+
+        /* per the standard, if the active texture is being deleted, the bound texture returns to texture 0 */
+        if (index == currentTexture)
+        {
+            currentTexture = 0;
+        }
+
         free(textures[index].texels);
         textures[index].texels = NULL;
         textures[index].inUse = 0;
@@ -521,8 +571,27 @@ GLAPI void APIENTRY glDisable(GLenum cap)
     case GL_LIGHTING:
         lightsEnabled = GL_FALSE;
         break;
-    default:
+    case GL_ALPHA_TEST:
+    case GL_BLEND:
+    case GL_COLOR_LOGIC_OP:
+    case GL_COLOR_MATERIAL:
+    case GL_FOG:
+    case GL_LINE_SMOOTH:
+    case GL_MULTISAMPLE:
+    case GL_POINT_SMOOTH:
+    case GL_POLYGON_OFFSET_FILL:
+    case GL_RESCALE_NORMAL:
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+    case GL_SAMPLE_ALPHA_TO_ONE:
+    case GL_SAMPLE_COVERAGE:
+    case GL_SCISSOR_TEST:
+    case GL_STENCIL_TEST:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -543,13 +612,21 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
         normalsArrayEnabled = GL_FALSE;
         break;
     default:
-        notImplementedYet(__func__);
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
-    ///TODO: handle other client states
 }
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
+    if (count < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+    }
+
     if (!vertexArrayEnabled)
     {
         /* if this is disabled, what are we even doing here? */
@@ -695,9 +772,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                             GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
                             GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
 
-                            lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(256)));
-                            lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(256)));
-                            lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(256)));
+                            lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(255)));
+                            lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(255)));
+                            lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(255)));
                         } else
                         {
                             lightsDot[d * 3 + 0] = 0;
@@ -939,8 +1016,13 @@ nextPoint:
     case GL_LINES:
     case GL_TRIANGLE_STRIP:
     case GL_TRIANGLE_FAN:
-    default:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -980,8 +1062,27 @@ GLAPI void APIENTRY glEnable(GLenum cap)
     case GL_LIGHTING:
         lightsEnabled = GL_TRUE;
         break;
-    default:
+    case GL_ALPHA_TEST:
+    case GL_BLEND:
+    case GL_COLOR_LOGIC_OP:
+    case GL_COLOR_MATERIAL:
+    case GL_FOG:
+    case GL_LINE_SMOOTH:
+    case GL_MULTISAMPLE:
+    case GL_POINT_SMOOTH:
+    case GL_POLYGON_OFFSET_FILL:
+    case GL_RESCALE_NORMAL:
+    case GL_SAMPLE_ALPHA_TO_COVERAGE:
+    case GL_SAMPLE_ALPHA_TO_ONE:
+    case GL_SAMPLE_COVERAGE:
+    case GL_SCISSOR_TEST:
+    case GL_STENCIL_TEST:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -1002,7 +1103,9 @@ GLAPI void APIENTRY glEnableClientState(GLenum array)
         normalsArrayEnabled = GL_TRUE;
         break;
     default:
-        notImplementedYet(__func__);
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -1033,6 +1136,15 @@ GLAPI void APIENTRY glFrontFace(GLenum mode)
 
 GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
 {
+    if ((zNear < 0) || (zFar < 0) || (left == right) || (bottom == top) || (zNear == zFar))
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     memset(&projectionMatrix[0], 0, sizeof(GLfixed) * 16);
     GLfixed twoTimesN = Mul(intToFix(2), zNear);
     projectionMatrix[0] = Div(twoTimesN, (right - left ));
@@ -1064,6 +1176,21 @@ GLuint reserveTexture(void)
 
 GLAPI void APIENTRY glGenTextures(GLsizei n, GLuint* texturesOut)
 {
+    if (n < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (texturesOut == NULL)
+    {
+        //TODO: CRASH!
+        return;
+    }
+
     GLuint* ptr = texturesOut;
 
     for (int c = 0; c < n; ++c)
@@ -1107,8 +1234,13 @@ GLAPI void APIENTRY glLightModelxv(GLenum pname, const GLfixed* params)
     case GL_LIGHT_MODEL_AMBIENT:
         memcpy(ambientColour, params, sizeof(GLfixed) * 4);
         break;
-    default:
+    case GL_LIGHT_MODEL_TWO_SIDE:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
 }
 
@@ -1119,14 +1251,31 @@ GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
 
 GLAPI void APIENTRY glLightxv(GLenum light, GLenum pname, const GLfixed* params)
 {
-    GLfixed *dir = params;
+    //TODO: GL_INVALID_VALUE is generated if a spot exponent value is specified outside the range [0, 128], or if spot
+    // cutoff is specified outside the range [0, 90] (except for the special value 180), or if a negative attenuation
+    // factor is specified.
 
-    if (pname != GL_POSITION)
+    switch (pname)
     {
+    case GL_POSITION:
+        memcpy(&lights[light - GL_LIGHT0].position[0], params, sizeof(GLfixed) * 4);
+        break;
+    case GL_AMBIENT:
+    case GL_DIFFUSE:
+    case GL_SPECULAR:
+    case GL_SPOT_DIRECTION:
+    case GL_SPOT_EXPONENT:
+    case GL_SPOT_CUTOFF:
+    case GL_CONSTANT_ATTENUATION:
+    case GL_LINEAR_ATTENUATION:
+    case GL_QUADRATIC_ATTENUATION:
         notImplementedYet(__func__);
+        break;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
     }
-
-    memcpy(&lights[light - GL_LIGHT0].position[0], dir, sizeof(GLfixed) * 4);
 }
 
 GLAPI void APIENTRY glLineWidthx(GLfixed width)
@@ -1145,8 +1294,10 @@ GLAPI void APIENTRY glLoadIdentity(void)
         mat4x4_identity(modelViewMatrix);
         break;
     case GL_TEXTURE:
-    default:
         notImplementedYet(__func__);
+        break;
+    default:
+        assert(0);
     }
 }
 
@@ -1172,23 +1323,36 @@ GLAPI void APIENTRY glMaterialxv(GLenum face, GLenum pname, const GLfixed* param
 
 GLAPI void APIENTRY glMatrixMode(GLenum mode)
 {
-    matrixMode = mode;
+    switch (mode)
+    {
+    case GL_PROJECTION:
+    case GL_MODELVIEW:
+    case GL_TEXTURE:
+        matrixMode = mode;
+        return;
+    default:
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
+    }
 }
 
 GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
 {
     switch (matrixMode)
     {
-        case GL_PROJECTION:
+    case GL_PROJECTION:
         memcpy(projectionMatrix, m, sizeof(GLfixed) * 16);
         break;
-        case GL_MODELVIEW:
+    case GL_MODELVIEW:
         memcpy(modelViewMatrix, m, sizeof(GLfixed) * 16);
         break;
-    default:
+    case GL_TEXTURE:
         notImplementedYet(__func__);
+        break;
+    default:
+        assert(0);
     }
-
 }
 
 GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)
@@ -1203,6 +1367,24 @@ GLAPI void APIENTRY glNormal3x(GLfixed nx, GLfixed ny, GLfixed nz)
 
 GLAPI void APIENTRY glNormalPointer(GLenum type, GLsizei stride, const GLvoid* pointer)
 {
+    if (type != GL_SHORT && type != GL_BYTE && type != GL_FIXED)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (stride < 0)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
     normalsStride = stride;
     normalsType = type;
     normalsPointer = pointer;
@@ -1220,11 +1402,17 @@ GLAPI void APIENTRY glPixelStorei(GLenum pname, GLint param)
 
 GLAPI void APIENTRY glPointSizex(GLfixed size)
 {
-    pointSize = size;
     if (size <= 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
     }
+
+    pointSize = size;
 }
 
 GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
@@ -1236,7 +1424,11 @@ GLAPI void APIENTRY glPopMatrix(void)
 {
     if (matrixStackTop <= 0)
     {
-        currentError = GL_STACK_UNDERFLOW;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_STACK_UNDERFLOW;
+        }
+
         return;
     }
 
@@ -1251,7 +1443,10 @@ GLAPI void APIENTRY glPushMatrix(void)
 {
     if (matrixStackTop >= (MATRIX_STACK_CAPACITY))
     {
-        currentError = GL_STACK_OVERFLOW;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_STACK_OVERFLOW;
+        }
         return;
     }
 
@@ -1267,7 +1462,32 @@ GLAPI void APIENTRY glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height
     (void)format;
     (void)type;
 
-    ///TODO: handle formats and types
+    if (format != GL_RGBA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    if (type != GL_UNSIGNED_BYTE)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    if (width < 0 || height < 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
 
     FramebufferPixelFormat* ptrStr;
     FramebufferPixelFormat* pixelsOut = pixels;
@@ -1377,6 +1597,33 @@ GLAPI void APIENTRY glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 
 GLAPI void APIENTRY glTexCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
+    if (size != 2 && size != 3 && size != 4)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
+    if (type != GL_BYTE && type != GL_SHORT && type != GL_FIXED)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    if (stride < 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+        return;
+    }
+
     textureCoordPointer = pointer;
     textureCoordSize = size;
     textureCoordStride = stride;
@@ -1396,6 +1643,116 @@ GLAPI void APIENTRY glTexEnvxv(GLenum target, GLenum pname, const GLfixed* param
 GLAPI void APIENTRY glTexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height,
                                  GLint border, GLenum format, GLenum type, const GLvoid* pixels)
 {
+    if (target != GL_TEXTURE_2D)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (format != GL_ALPHA && format != GL_RGB && format != GL_RGBA && format != GL_LUMINANCE && format != GL_LUMINANCE_ALPHA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (type !=  GL_UNSIGNED_BYTE && type !=  GL_UNSIGNED_SHORT_5_6_5 && type !=  GL_UNSIGNED_SHORT_4_4_4_4 && type !=  GL_UNSIGNED_SHORT_5_5_5_1)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (level < 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (level > MAX_TEXTURE_SIZE_LOG2)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (internalformat != GL_ALPHA && internalformat != GL_RGB && internalformat != GL_RGBA && internalformat != GL_LUMINANCE && internalformat != GL_LUMINANCE_ALPHA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (width < 0 || height < 0 || width > MAX_TEXTURE_SIZE || height > MAX_TEXTURE_SIZE || !POT(width) || !POT(height))
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (border != 0)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
+    }
+
+    if (format != internalformat)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_OPERATION;
+        }
+
+        return;
+    }
+
+    if (type == GL_UNSIGNED_SHORT_5_6_5 && format != GL_RGB)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_OPERATION;
+        }
+
+        return;
+    }
+
+    if ((type ==  GL_UNSIGNED_SHORT_4_4_4_4 || type ==  GL_UNSIGNED_SHORT_5_5_5_1) && format !=  GL_RGBA)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_OPERATION;
+        }
+
+        return;
+    }
+
     textures[currentTexture].width = width;
     textures[currentTexture].height = height;
     textures[currentTexture].texels = malloc(sizeof(uint32_t) * width * height);
@@ -1424,21 +1781,40 @@ GLAPI void APIENTRY glTranslatex(GLfixed x, GLfixed y, GLfixed z)
 
 GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* pointer)
 {
-    vertexStride = stride;
-    vertexType = type;
-    vertexSize = size;
-    vertexPointer = pointer;
-
     if (size != 2 && size != 3 && size != 4)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
     }
 
     if (stride < 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
+
+        return;
     }
-    ///TODO: handle type errors
+
+    if (type != GL_BYTE && type != GL_SHORT && type != GL_FIXED)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    vertexStride = stride;
+    vertexType = type;
+    vertexSize = size;
+    vertexPointer = pointer;
 }
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
@@ -1446,7 +1822,10 @@ GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 
     if (width < 0 || height < 0)
     {
-        currentError = GL_INVALID_VALUE;
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_VALUE;
+        }
         return;
     }
 

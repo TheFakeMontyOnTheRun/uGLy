@@ -108,7 +108,12 @@ GLfixed *currentModelViewMatrix(void);
 #define YRES_FRAMEBUFFER 240
 
 #define TOTAL_TEXTURES_SUPPORTED 8
+#define MAX_TEXTURE_SIZE_LOG2 8
+#define MAX_TEXTURE_SIZE (1 << MAX_TEXTURE_SIZE_LOG2)
 
+
+
+#define POT(x) ( (x) == 0 ? 0 : (((x) & ((x)-1)) == 0) )
 #define MATRIX_STACK_CAPACITY 16
 
 extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
