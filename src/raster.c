@@ -615,7 +615,10 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 							currentG = fixToInt(fG);
 							currentB = fixToInt(fB);
 
-							currentLight[0] = fixToInt(fLight[0]);
+							for (int c = 0; c < 8; ++c)
+							{
+								currentLight[c] = fixToInt(fLight[c]);
+							}
 
 							uint32_t texel = *(texture->texels + (texture->width * v) + u);
 							uint8_t texelR = (texel & 0xFF000000) >> 24;
