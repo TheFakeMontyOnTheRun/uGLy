@@ -620,7 +620,7 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
     }
 }
 
-void processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[16], GLfixed transformed[16], GLfixed transformedNormals[16])
+void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[16], GLfixed transformed[16], GLfixed transformedNormals[16])
 {
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
@@ -656,9 +656,9 @@ void processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixe
     vecs[10] = *(nPtr + 8);
     vecs[11] = intToFix(0);
 
-    mat4x4_transformVec(&transformedNormals[0], &mvp[0], &vecs[0]);
-    mat4x4_transformVec(&transformedNormals[4], &mvp[0], &vecs[4]);
-    mat4x4_transformVec(&transformedNormals[8], &mvp[0], &vecs[8]);
+    mat4x4_transformVec(&transformedNormals[0], &mv[0], &vecs[0]);
+    mat4x4_transformVec(&transformedNormals[4], &mv[0], &vecs[4]);
+    mat4x4_transformVec(&transformedNormals[8], &mv[0], &vecs[8]);
 
     uint8_t lightsDot[24];
 
@@ -963,7 +963,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed transformed[16];
                 GLfixed transformedNormals[16];
 
-                processTriangle(mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
 
                 vertexPtr += 9;
 
