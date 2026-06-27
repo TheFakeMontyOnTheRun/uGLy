@@ -810,7 +810,7 @@ void processPoints(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed v
     mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
     mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
 
-    if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+    if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[11] == 0))
     {
         return;
     }
