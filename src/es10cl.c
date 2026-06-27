@@ -1328,7 +1328,25 @@ GLAPI void APIENTRY glMaterialx(GLenum face, GLenum pname, GLfixed param)
 
 GLAPI void APIENTRY glMaterialxv(GLenum face, GLenum pname, const GLfixed* params)
 {
-    notImplementedYet(__func__);
+
+    if (face != GL_FRONT_AND_BACK)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+
+    if (pname != GL_AMBIENT && pname != GL_DIFFUSE && pname != GL_SPECULAR && pname != GL_EMISSION && pname != GL_SHININESS && pname != GL_AMBIENT_AND_DIFFUSE)
+    {
+        if (currentError == GL_NO_ERROR) {
+            currentError = GL_INVALID_ENUM;
+        }
+
+        return;
+    }
+    ///TODO: implement this properly
 }
 
 GLAPI void APIENTRY glMatrixMode(GLenum mode)
