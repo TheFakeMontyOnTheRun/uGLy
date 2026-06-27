@@ -714,7 +714,7 @@ void processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixe
         }
     }
 
-    if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+    if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[11] == 0))
     {
         return;
     }
