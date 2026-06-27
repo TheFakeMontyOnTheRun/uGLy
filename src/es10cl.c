@@ -618,6 +618,176 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
     }
 }
 
+int processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[16], GLfixed transformed[16], GLfixed transformedNormals[16])
+{
+    vecs[0] = *(vertexPtr + 0);
+    vecs[1] = *(vertexPtr + 1);
+    vecs[2] = *(vertexPtr + 2);
+    vecs[3] = intToFix(1);
+
+    vecs[4] = *(vertexPtr + 3);
+    vecs[5] = *(vertexPtr + 4);
+    vecs[6] = *(vertexPtr + 5);
+    vecs[7] = intToFix(1);
+
+    vecs[8] = *(vertexPtr + 6);
+    vecs[9] = *(vertexPtr + 7);
+    vecs[10] = *(vertexPtr + 8);
+    vecs[11] = intToFix(1);
+
+    mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
+    mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
+    mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
+
+    vecs[0] = *(nPtr + 0);
+    vecs[1] = *(nPtr + 1);
+    vecs[2] = *(nPtr + 2);
+    vecs[3] = intToFix(0);
+
+    vecs[4] = *(nPtr + 3);
+    vecs[5] = *(nPtr + 4);
+    vecs[6] = *(nPtr + 5);
+    vecs[7] = intToFix(0);
+
+    vecs[8] = *(nPtr + 6);
+    vecs[9] = *(nPtr + 7);
+    vecs[10] = *(nPtr + 8);
+    vecs[11] = intToFix(0);
+
+    mat4x4_transformVec(&transformedNormals[0], &mvp[0], &vecs[0]);
+    mat4x4_transformVec(&transformedNormals[4], &mvp[0], &vecs[4]);
+    mat4x4_transformVec(&transformedNormals[8], &mvp[0], &vecs[8]);
+
+    uint8_t lightsDot[24];
+
+    for (int d = 0; d < 8; ++d )
+    {
+        if ( lightsEnabled)
+        {
+            if (lights[d].enabled)
+            {
+                t_vec4 normalizedLight;
+
+                t_vec4 normalizedNormal0;
+                t_vec4 normalizedNormal1;
+                t_vec4 normalizedNormal2;
+
+                if (normalizeNormals)
+                {
+                    normalizeVec(&lights[d].position[0], &normalizedLight[0]);
+
+                    normalizeVec(&transformedNormals[0], &normalizedNormal0[0]);
+                    normalizeVec(&transformedNormals[4], &normalizedNormal1[0]);
+                    normalizeVec(&transformedNormals[8], &normalizedNormal2[0]);
+
+                } else
+                {
+                    memcpy(&normalizedLight[0], &lights[d].position[0], sizeof(GLfixed) * 4);
+
+                    memcpy(&normalizedNormal0[0], &transformedNormals[0], sizeof(GLfixed) * 4);
+                    memcpy(&normalizedNormal1[0], &transformedNormals[4], sizeof(GLfixed) * 4);
+                    memcpy(&normalizedNormal2[0], &transformedNormals[8], sizeof(GLfixed) * 4);
+                }
+
+                GLfixed dot0 = dotVec( &normalizedLight[0],  &normalizedNormal0[0]);
+                GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
+                GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
+
+                lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(255)));
+                lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(255)));
+                lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(255)));
+            } else
+            {
+                lightsDot[d * 3 + 0] = 0;
+                lightsDot[d * 3 + 1] = 0;
+                lightsDot[d * 3 + 2] = 0;
+            }
+        }else
+        {
+            ambientColour[0]=ambientColour[1]=ambientColour[2]=ambientColour[3]=intToFix(1);
+
+            lightsDot[d * 3 + 0] = 0;
+            lightsDot[d * 3 + 1] = 0;
+            lightsDot[d * 3 + 2] = 0;
+        }
+    }
+
+    if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
+    {
+        return 0;
+    }
+
+    GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
+    GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
+    GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
+
+    GLfixed vertex[6] = {
+        Mul(oneOverW0, transformed[0]), Mul(oneOverW0, transformed[1]),
+        Mul(oneOverW1, transformed[4]), Mul(oneOverW1, transformed[5]),
+        Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
+    };
+
+    GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
+    GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
+    GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
+
+#ifndef	DISABLE_DEPTH_BUFFER
+    uint16_t zValuesNormalized[3] ={
+        fixToInt(Mul(z0, zRange)),
+        fixToInt(Mul(z1, zRange)),
+        fixToInt(Mul(z2, zRange))
+    };
+#endif
+
+    int coords[6] = {
+        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
+        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
+        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[2])),
+        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[3])),
+        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[4])),
+        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
+    };
+    uint8_t coloursArray[12] = {
+
+        fixToInt(Mul( *(cPtr +  0 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  1 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  2 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF))),
+
+        fixToInt(Mul( *(cPtr +  4 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  5 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  6 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  7 ), intToFix(0xFF))),
+
+        fixToInt(Mul( *(cPtr +  8 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  9 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr + 10 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
+    };
+
+    uint8_t uvCoords[6] = {
+        fixToInt(Mul(*(uvPtr + 0), intToFix(texture->width ))),
+        fixToInt(Mul(*(uvPtr + 1), intToFix(texture->height))),
+        fixToInt(Mul(*(uvPtr + 2), intToFix(texture->width ))),
+        fixToInt(Mul(*(uvPtr + 3), intToFix(texture->height))),
+        fixToInt(Mul(*(uvPtr + 4), intToFix(texture->width ))),
+        fixToInt(Mul(*(uvPtr + 5), intToFix(texture->height))),
+    };
+
+    uint8_t ambientColourComponents[3] = {
+        fixToInt(Mul( ambientColour[0], intToFix(0xFF))),
+        fixToInt(Mul( ambientColour[1], intToFix(0xFF))),
+        fixToInt(Mul( ambientColour[2], intToFix(0xFF))),
+    };
+
+    drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture,
+#ifndef	DISABLE_DEPTH_BUFFER
+                         &zValuesNormalized[0],
+#endif
+                         &lightsDot[0], &ambientColourComponents[0]);
+    return 1;
+}
+
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 {
     if (count < 0)
@@ -699,171 +869,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed transformed[16];
                 GLfixed transformedNormals[16];
 
-                vecs[0] = *(vertexPtr + 0);
-                vecs[1] = *(vertexPtr + 1);
-                vecs[2] = *(vertexPtr + 2);
-                vecs[3] = intToFix(1);
-
-                vecs[4] = *(vertexPtr + 3);
-                vecs[5] = *(vertexPtr + 4);
-                vecs[6] = *(vertexPtr + 5);
-                vecs[7] = intToFix(1);
-
-                vecs[8] = *(vertexPtr + 6);
-                vecs[9] = *(vertexPtr + 7);
-                vecs[10] = *(vertexPtr + 8);
-                vecs[11] = intToFix(1);
-
-                mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
-                mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
-                mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
-
-                vecs[0] = *(nPtr + 0);
-                vecs[1] = *(nPtr + 1);
-                vecs[2] = *(nPtr + 2);
-                vecs[3] = intToFix(0);
-
-                vecs[4] = *(nPtr + 3);
-                vecs[5] = *(nPtr + 4);
-                vecs[6] = *(nPtr + 5);
-                vecs[7] = intToFix(0);
-
-                vecs[8] = *(nPtr + 6);
-                vecs[9] = *(nPtr + 7);
-                vecs[10] = *(nPtr + 8);
-                vecs[11] = intToFix(0);
-
-                mat4x4_transformVec(&transformedNormals[0], &mvp[0], &vecs[0]);
-                mat4x4_transformVec(&transformedNormals[4], &mvp[0], &vecs[4]);
-                mat4x4_transformVec(&transformedNormals[8], &mvp[0], &vecs[8]);
-
-                uint8_t lightsDot[24];
-
-                for (int d = 0; d < 8; ++d )
-                {
-                    if ( lightsEnabled)
-                    {
-                        if (lights[d].enabled)
-                        {
-                            t_vec4 normalizedLight;
-
-                            t_vec4 normalizedNormal0;
-                            t_vec4 normalizedNormal1;
-                            t_vec4 normalizedNormal2;
-
-                            if (normalizeNormals)
-                            {
-                                normalizeVec(&lights[d].position[0], &normalizedLight[0]);
-
-                                normalizeVec(&transformedNormals[0], &normalizedNormal0[0]);
-                                normalizeVec(&transformedNormals[4], &normalizedNormal1[0]);
-                                normalizeVec(&transformedNormals[8], &normalizedNormal2[0]);
-
-                            } else
-                            {
-                                memcpy(&normalizedLight[0], &lights[d].position[0], sizeof(GLfixed) * 4);
-
-                                memcpy(&normalizedNormal0[0], &transformedNormals[0], sizeof(GLfixed) * 4);
-                                memcpy(&normalizedNormal1[0], &transformedNormals[4], sizeof(GLfixed) * 4);
-                                memcpy(&normalizedNormal2[0], &transformedNormals[8], sizeof(GLfixed) * 4);
-                            }
-
-                            GLfixed dot0 = dotVec( &normalizedLight[0],  &normalizedNormal0[0]);
-                            GLfixed dot1 = dotVec( &normalizedLight[0],  &normalizedNormal1[0]);
-                            GLfixed dot2 = dotVec( &normalizedLight[0],  &normalizedNormal2[0]);
-
-                            lightsDot[d * 3 + 0] = fixToInt(Mul(MAX(0, dot0), intToFix(255)));
-                            lightsDot[d * 3 + 1] = fixToInt(Mul(MAX(0, dot1), intToFix(255)));
-                            lightsDot[d * 3 + 2] = fixToInt(Mul(MAX(0, dot2), intToFix(255)));
-                        } else
-                        {
-                            lightsDot[d * 3 + 0] = 0;
-                            lightsDot[d * 3 + 1] = 0;
-                            lightsDot[d * 3 + 2] = 0;
-                        }
-                    }else
-                    {
-                        ambientColour[0]=ambientColour[1]=ambientColour[2]=ambientColour[3]=intToFix(1);
-
-                        lightsDot[d * 3 + 0] = 0;
-                        lightsDot[d * 3 + 1] = 0;
-                        lightsDot[d * 3 + 2] = 0;
-                    }
-                }
-
-                if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
-                {
-                    goto nextTriangle;
-                }
-
-                GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
-                GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
-                GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
-
-                GLfixed vertex[6] = {
-                    Mul(oneOverW0, transformed[0]), Mul(oneOverW0, transformed[1]),
-                    Mul(oneOverW1, transformed[4]), Mul(oneOverW1, transformed[5]),
-                    Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
-                };
-
-                GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
-                GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
-                GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
-
-#ifndef	DISABLE_DEPTH_BUFFER
-                uint16_t zValuesNormalized[3] ={
-                    fixToInt(Mul(z0, zRange)),
-                    fixToInt(Mul(z1, zRange)),
-                    fixToInt(Mul(z2, zRange))
-                };
-#endif
-
-                int coords[6] = {
-                    viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
-                    viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
-                    viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[2])),
-                    viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[3])),
-                    viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[4])),
-                    viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
-                };
-                uint8_t coloursArray[12] = {
-
-                        fixToInt(Mul( *(cPtr +  0 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  1 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  2 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF))),
-
-                        fixToInt(Mul( *(cPtr +  4 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  5 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  6 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  7 ), intToFix(0xFF))),
-
-                        fixToInt(Mul( *(cPtr +  8 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr +  9 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr + 10 ), intToFix(0xFF))),
-                        fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
-                };
-
-                uint8_t uvCoords[6] = {
-                    fixToInt(Mul(*(uvPtr + 0), intToFix(texture->width ))),
-                    fixToInt(Mul(*(uvPtr + 1), intToFix(texture->height))),
-                    fixToInt(Mul(*(uvPtr + 2), intToFix(texture->width ))),
-                    fixToInt(Mul(*(uvPtr + 3), intToFix(texture->height))),
-                    fixToInt(Mul(*(uvPtr + 4), intToFix(texture->width ))),
-                    fixToInt(Mul(*(uvPtr + 5), intToFix(texture->height))),
-                };
-
-                uint8_t ambientColourComponents[3] = {
-                    fixToInt(Mul( ambientColour[0], intToFix(0xFF))),
-                    fixToInt(Mul( ambientColour[1], intToFix(0xFF))),
-                    fixToInt(Mul( ambientColour[2], intToFix(0xFF))),
-                };
-
-                drawTexturedTriangle(&coords[0], &uvCoords[0], &coloursArray[0], texture,
-#ifndef	DISABLE_DEPTH_BUFFER
-                    &zValuesNormalized[0],
-#endif
-                    &lightsDot[0], &ambientColourComponents[0]);
+                if (!processTriangle(mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals)) goto nextTriangle;
 
 nextTriangle:
 
