@@ -887,6 +887,8 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
         if (currentError == GL_NO_ERROR) {
             currentError = GL_INVALID_VALUE;
         }
+
+        return;
     }
 
     if (!vertexArrayEnabled)
