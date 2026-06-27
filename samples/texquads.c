@@ -144,7 +144,7 @@ draw(void)
 
     /* draw some points */
     glPointSizex(Div(intToFix(31), intToFix(2)));
-    glDrawArrays(GL_POINTS, 0, 6);
+    glDrawArrays(GL_POINTS, 0, 4);
 
     glPopMatrix();
 

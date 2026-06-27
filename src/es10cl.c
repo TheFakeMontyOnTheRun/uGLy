@@ -985,8 +985,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
     case GL_POINTS:
  {
             int c;
-            int finalCount = count / 3;
-            int firstTrig = first / 3;
+            int finalCount = count;
             GLfixed *vertexPtr;
             GLfixed *cPtr;
 
@@ -1000,10 +999,10 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)&dummyColors[0];
             }
 
-            for (c = 0; c < firstTrig; ++c)
+            for (c = 0; c < first; ++c)
             {
-                vertexPtr += 9;
-                cPtr += 12;
+                vertexPtr += 3;
+                cPtr += 4;
             }
 
             for (c = 0; c < finalCount; ++c)
@@ -1012,11 +1011,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed transformed[16];
 
                 processPoints(mvp, vertexPtr, cPtr, vecs, transformed);
-                vertexPtr += 9;
+                vertexPtr += 3;
 
                 if (colorArrayEnabled)
                 {
-                    cPtr += 12;
+                    cPtr += 4;
                 }
             }
         }
