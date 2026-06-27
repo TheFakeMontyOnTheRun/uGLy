@@ -620,7 +620,7 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
     }
 }
 
-int processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[16], GLfixed transformed[16], GLfixed transformedNormals[16])
+void processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[16], GLfixed transformed[16], GLfixed transformedNormals[16])
 {
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
@@ -716,7 +716,7 @@ int processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed
 
     if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[12] == 0))
     {
-        return 0;
+        return;
     }
 
     GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
@@ -787,7 +787,6 @@ int processTriangle(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed
                          &zValuesNormalized[0],
 #endif
                          &lightsDot[0], &ambientColourComponents[0]);
-    return 1;
 }
 
 GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
@@ -871,9 +870,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed transformed[16];
                 GLfixed transformedNormals[16];
 
-                if (!processTriangle(mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals)) goto nextTriangle;
-
-nextTriangle:
+                processTriangle(mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
 
                 vertexPtr += 9;
 
