@@ -49,61 +49,42 @@ static void
 draw(void)
 {
 
-    static const GLfixed verts[6][3] = {
+    static const GLfixed verts[4][3] = {
         /*
-         *         1
-         *         ^
-         *        / |
-         *       /  |
-         *      0----2
+         *      0
+         *      |-- 2
+         *      |  /|
+         *      | / |
+         *      |/--|
+         *      1   3
          */
 
 
-    { -intToFix(1), -intToFix(1),  intToFix(0) },
-    {  intToFix(1),  intToFix(1),  intToFix(0) },
-    {  intToFix(1), -intToFix(1),  intToFix(0) },
-
-        /*
-         *      4
-         *      |-- 5
-         *      |  /
-         *      | /
-         *      3
-         */
-
-
-    { -intToFix(1), -intToFix(1),  intToFix(0) },
     { -intToFix(1), intToFix(1),  intToFix(0) },
+    { -intToFix(1), -intToFix(1),  intToFix(0) },
     {  intToFix(1), intToFix(1),  intToFix(0) },
+    {  intToFix(1), -intToFix(1),  intToFix(0) },
     };
 
-    static const GLfixed normals[18] = {
-        -intToFix(1), intToFix(0), intToFix(0),
+    static const GLfixed normals[12] = {
         intToFix(1), intToFix(0), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
         -intToFix(1), intToFix(0), intToFix(0),
-        intToFix(1), intToFix(0), intToFix(0),
+        intToFix(0),  intToFix(1), intToFix(0),
         intToFix(0),  intToFix(1), intToFix(0),
     };
 
-    static const GLfixed colors[6][4] = {
+    static const GLfixed colors[4][4] = {
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
     };
 
-    static const GLfixed texCoords[12] = {
+    static const GLfixed texCoords[8] = {
+        intToFix(0), intToFix(1),
         intToFix(0), intToFix(0),
         intToFix(1), intToFix(1),
         intToFix(1), intToFix(0),
-
-        intToFix(0), intToFix(0),
-        intToFix(0), intToFix(1),
-        intToFix(1), intToFix(1),
     };
 
 
@@ -138,7 +119,7 @@ draw(void)
 
     /* draw triangles */
     glBindTexture(GL_TEXTURE_2D, textureID);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glPopMatrix();
 }
 
