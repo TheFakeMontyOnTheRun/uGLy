@@ -185,6 +185,7 @@ GLenum vertexType = 0;
 GLint vertexSize = 0;
 const GLvoid* vertexPointer = NULL;
 uint8_t vertexArrayEnabled = GL_FALSE;
+uint8_t smoothShadingModel = GL_FALSE;
 
 GLsizei textureCoordStride = 0;
 GLenum textureCoordType = 0;
@@ -227,6 +228,7 @@ GLsizei normalsStride = 0;
 GLenum normalsType = 0;
 const GLvoid* normalsPointer = NULL;
 uint8_t normalsArrayEnabled = GL_FALSE;
+GLfixed currentNormal[3];
 
 GLfixed ambientColour[4];
 
@@ -1368,7 +1370,9 @@ GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfix
 
 GLAPI void APIENTRY glNormal3x(GLfixed nx, GLfixed ny, GLfixed nz)
 {
-    notImplementedYet(__func__);
+    currentNormal[0] = nx;
+    currentNormal[1] = ny;
+    currentNormal[2] = nz;
 }
 
 GLAPI void APIENTRY glNormalPointer(GLenum type, GLsizei stride, const GLvoid* pointer)
@@ -1583,7 +1587,16 @@ GLAPI void APIENTRY glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 
 GLAPI void APIENTRY glShadeModel(GLenum mode)
 {
-    notImplementedYet(__func__);
+    if (mode != GL_FLAT && mode != GL_SMOOTH)
+    {
+        if (currentError == GL_NO_ERROR)
+        {
+            currentError = GL_INVALID_ENUM;
+        }
+        return;
+    }
+
+    smoothShadingModel = (mode == GL_SMOOTH);
 }
 
 GLAPI void APIENTRY glStencilFunc(GLenum func, GLint ref, GLuint mask)
