@@ -1021,10 +1021,88 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             }
         }
         break;
+    case GL_TRIANGLE_STRIP:
+        {
+            int c;
+            int finalCount = count - 2;
+            int firstTrig = first;
+            GLfixed *vertexPtr;
+            GLfixed *uvPtr;
+            GLfixed *cPtr;
+            GLfixed *nPtr;
+            struct Texture* texture;
+
+            vertexPtr = (GLfixed*)vertexPointer;
+
+            if (textureCoordsEnabled)
+            {
+                uvPtr = (GLfixed*)textureCoordPointer;
+            } else
+            {
+                uvPtr = &dummyTexCoords[0];
+            }
+
+            if (colorArrayEnabled)
+            {
+                cPtr = (GLfixed*)colorPointer;
+            } else
+            {
+                cPtr = (GLfixed*)&dummyColors[0];
+            }
+
+            if (normalsArrayEnabled)
+            {
+                nPtr = (GLfixed*)normalsPointer;
+            } else
+            {
+                nPtr = (GLfixed*)&dummyNormals[0];
+            }
+
+            if (textureMapping2DEnabled)
+            {
+                texture = &textures[currentTexture];
+            } else
+            {
+                texture = &dummyTexture;
+            }
+
+
+            for (c = 0; c < firstTrig; ++c)
+            {
+                uvPtr += 2;
+                vertexPtr += 3;
+                cPtr += 4;
+                nPtr += 3;
+            }
+
+            for (c = 0; c < finalCount; ++c)
+            {
+                GLfixed vecs[16];
+                GLfixed transformed[16];
+                GLfixed transformedNormals[16];
+
+                processTriangle(modelViewMatrix, mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
+
+                vertexPtr += 3;
+
+                if (normalsArrayEnabled)
+                {
+                    nPtr += 3;
+                }
+                if (textureCoordsEnabled)
+                {
+                    uvPtr += 2;
+                }
+                if (colorArrayEnabled)
+                {
+                    cPtr += 4;
+                }
+            }
+        }
+        break;
     case GL_LINE_STRIP:
     case GL_LINE_LOOP:
     case GL_LINES:
-    case GL_TRIANGLE_STRIP:
     case GL_TRIANGLE_FAN:
         notImplementedYet(__func__);
         break;
