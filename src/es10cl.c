@@ -1582,6 +1582,35 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
         }
         break;
     case GL_POINTS:
+        {
+            int c;
+            int index;
+            int finalCount = count;
+
+            GLfixed* cPtr = (GLfixed*)&dummyColors[0];
+
+            for (c = 0; c < finalCount; ++c)
+            {
+                GLfixed vecs[16];
+                GLfixed transformed[16];
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c];
+                } else {
+                    index = ((uint8_t*)indices)[c];
+                }
+
+                GLfixed* vertexPtr = (GLfixed*)vertexPointer + (3 * index);
+
+                if (colorArrayEnabled)
+                {
+                    cPtr = (GLfixed*)colorPointer + ( 2 * index);
+                }
+
+                processPoints(mvp, vertexPtr, cPtr, vecs, transformed);
+            }
+        }
+        break;
     case GL_TRIANGLE_STRIP:
     case GL_LINE_STRIP:
     case GL_LINE_LOOP:
