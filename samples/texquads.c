@@ -51,62 +51,41 @@ static void
 draw(void)
 {
 
-    static const GLfixed verts[6][3] = {
+    static const GLfixed verts[4][3] = {
         /*
-         *         1
-         *         ^
-         *        / |
-         *       /  |
-         *      0----2
+         *      0    3
+         *      |\---|
+         *      | \  |
+         *      |  \ |
+         *      1---\2
          */
 
-
+    { -intToFix(1),  intToFix(1),  intToFix(0) },
     { -intToFix(1), -intToFix(1),  intToFix(0) },
-    {  intToFix(1),  intToFix(1),  intToFix(0) },
     {  intToFix(1), -intToFix(1),  intToFix(0) },
-
-        /*
-         *      4
-         *      |-- 5
-         *      |  /
-         *      | /
-         *      3
-         */
-
-
-    { -intToFix(1), -intToFix(1),  intToFix(0) },
-    { -intToFix(1), intToFix(1),  intToFix(0) },
-    {  intToFix(1), intToFix(1),  intToFix(0) },
+    {  intToFix(1),  intToFix(1),  intToFix(0) }
     };
 
-    uint8_t indices[4] = {4, 0, 2, 1};
+    uint8_t indices[4] = {0, 1, 2, 3};
 
-    static const GLfixed normals[18] = {
-        -intToFix(1), intToFix(0), intToFix(0),
-        intToFix(1), intToFix(0), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
-        -intToFix(1), intToFix(0), intToFix(0),
-        intToFix(1), intToFix(0), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
+    static const GLfixed normals[12] = {
+        intToFix(0), intToFix(0), -intToFix(1),
+        intToFix(0), intToFix(0), -intToFix(1),
+        intToFix(0), intToFix(0), -intToFix(1),
+        intToFix(0), intToFix(0), -intToFix(1)
     };
 
-    static const GLfixed colors[6][4] = {
+    static const GLfixed colors[4][4] = {
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)}
     };
 
-    static const GLfixed texCoords[12] = {
-        intToFix(0), intToFix(0),
-        intToFix(1), intToFix(1),
-        intToFix(1), intToFix(0),
-
-        intToFix(0), intToFix(0),
+    static const GLfixed texCoords[8] = {
         intToFix(0), intToFix(1),
+        intToFix(0), intToFix(0),
+        intToFix(1), intToFix(0),
         intToFix(1), intToFix(1),
     };
 
@@ -142,7 +121,7 @@ draw(void)
 
     /* draw triangles */
     glBindTexture(GL_TEXTURE_2D, textureID[0]);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     /* draw some points */
     glPointSizex(Div(intToFix(31), intToFix(2)));
@@ -182,7 +161,7 @@ static void
 init(void)
 {
     static const GLfixed ambient[4] = { Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), intToFix(1) };
-    static const GLfixed pos[4] = { -intToFix(1), -intToFix(1), intToFix(0), 0 };
+    static const GLfixed pos[4] = { intToFix(0), intToFix(0), -intToFix(1), 0 };
 
     glLightxv(GL_LIGHT0, GL_POSITION, pos);
 
