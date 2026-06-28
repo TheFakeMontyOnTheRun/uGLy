@@ -796,86 +796,42 @@ void processPoints(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed v
     vecs[2] = *(vertexPtr + 2);
     vecs[3] = intToFix(1);
 
-    vecs[4] = *(vertexPtr + 3);
-    vecs[5] = *(vertexPtr + 4);
-    vecs[6] = *(vertexPtr + 5);
-    vecs[7] = intToFix(1);
-
-    vecs[8] = *(vertexPtr + 6);
-    vecs[9] = *(vertexPtr + 7);
-    vecs[10] = *(vertexPtr + 8);
-    vecs[11] = intToFix(1);
-
     mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
-    mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
-    mat4x4_transformVec(&transformed[8], &mvp[0], &vecs[8]);
 
-    if ((transformed[3] == 0) || (transformed[7] == 0) || (transformed[11] == 0))
+    if (transformed[3] == 0)
     {
         return;
     }
 
     GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
-    GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
-    GLfixed oneOverW2 = Div(intToFix(1), transformed[11]);
 
-    GLfixed vertex[6] = {
-        Mul(oneOverW0, transformed[0]), Mul(oneOverW0, transformed[1]),
-        Mul(oneOverW1, transformed[4]), Mul(oneOverW1, transformed[5]),
-        Mul(oneOverW2, transformed[8]), Mul(oneOverW2, transformed[9]),
+    GLfixed vertex[2] = {
+        Mul(oneOverW0, transformed[0]), Mul(oneOverW0, transformed[1])
     };
 
     GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
-    GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
-    GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
+
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint16_t zValuesNormalized[3] ={
-        fixToInt(Mul(z0, zRange)),
-        fixToInt(Mul(z1, zRange)),
-        fixToInt(Mul(z2, zRange))
+    uint16_t zValuesNormalized[1] ={
+        fixToInt(Mul(z0, zRange))
     };
 #endif
-    int coords[6] = {
-        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
-        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
-        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[2])),
-        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[3])),
-        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[4])),
-        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[5]))
-    };
-    uint8_t coloursArray[12] = {
 
+    int coords[2] = {
+        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
+        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1]))
+    };
+
+    uint8_t coloursArray[4] = {
         fixToInt(Mul( *(cPtr +  0 ), intToFix(0xFF))),
         fixToInt(Mul( *(cPtr +  1 ), intToFix(0xFF))),
         fixToInt(Mul( *(cPtr +  2 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF))),
-
-        fixToInt(Mul( *(cPtr +  4 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr +  5 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr +  6 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr +  7 ), intToFix(0xFF))),
-
-        fixToInt(Mul( *(cPtr +  8 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr +  9 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr + 10 ), intToFix(0xFF))),
-        fixToInt(Mul( *(cPtr + 11 ), intToFix(0xFF)))
+        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF)))
     };
 
     drawPoint(&coords[0], &coloursArray[0],
 #ifndef	DISABLE_DEPTH_BUFFER
               zValuesNormalized[0],
-#endif
-              fixToInt(pointSize));
-
-    drawPoint(&coords[2], &coloursArray[4],
-#ifndef	DISABLE_DEPTH_BUFFER
-              zValuesNormalized[1],
-#endif
-              fixToInt(pointSize));
-
-    drawPoint(&coords[4], &coloursArray[8],
-#ifndef	DISABLE_DEPTH_BUFFER
-              zValuesNormalized[2],
 #endif
               fixToInt(pointSize));
 }
