@@ -67,10 +67,10 @@ draw(void)
     };
 
     static const GLfixed normals[12] = {
-        intToFix(1), intToFix(0), intToFix(0),
-        -intToFix(1), intToFix(0), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
+        intToFix(0), intToFix(0), intToFix(1),
+        intToFix(0), intToFix(0), intToFix(1),
+        intToFix(0),  intToFix(0), intToFix(1),
+        intToFix(0),  intToFix(0), intToFix(1),
     };
 
     static const GLfixed colors[4][4] = {
@@ -146,7 +146,7 @@ static void
 init(void)
 {
     static const GLfixed ambient[4] = { Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), intToFix(1) };
-    static const GLfixed pos[4] = { -intToFix(1), -intToFix(1), intToFix(0), 0 };
+    static const GLfixed pos[4] = { intToFix(0), intToFix(0), intToFix(1), 0 };
 
     glLightxv(GL_LIGHT0, GL_POSITION, pos);
 
