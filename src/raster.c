@@ -879,7 +879,6 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 			}
 		}
 	}
-
 }
 
 void drawPoint(int* coords, uint8_t* colour,

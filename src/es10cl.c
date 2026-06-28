@@ -939,7 +939,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
         }
         break;
     case GL_POINTS:
- {
+        {
             int c;
             int finalCount = count;
             GLfixed *vertexPtr;
