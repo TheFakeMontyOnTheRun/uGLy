@@ -79,6 +79,8 @@ draw(void)
     {  intToFix(1), intToFix(1),  intToFix(0) },
     };
 
+    uint8_t indices[4] = {4, 0, 2, 1};
+
     static const GLfixed normals[18] = {
         -intToFix(1), intToFix(0), intToFix(0),
         intToFix(1), intToFix(0), intToFix(0),
@@ -149,8 +151,7 @@ draw(void)
     glPopMatrix();
 
     glBindTexture(GL_TEXTURE_2D, textureID[1]);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, indices);
 
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
