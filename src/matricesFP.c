@@ -1,10 +1,11 @@
+#ifndef SGDK
 #include <math.h>
 #include <stdint.h>
+#endif
 #include <GLES/gl.h>
 #include "matricesFP.h"
 #include "internal.h"
 #include "fpsqrt.h"
-
 /**
  *
  * @param out

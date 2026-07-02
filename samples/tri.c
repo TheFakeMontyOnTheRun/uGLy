@@ -14,7 +14,10 @@
  * 5 June 2008
  */
 
+#ifndef SGDK
 #include <stdint.h>
+#endif
+
 #define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
@@ -29,10 +32,12 @@
 
 #define fixToFloat(fp) ((fp) / 65536.0f)
 
-
+#ifndef SGDK
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#endif
+
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
 
 #include "internal.h"
@@ -60,9 +65,9 @@ draw(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    glRotatex(view_rotx, 1, 0, 0);
-    glRotatex(view_roty, 0, 1, 0);
-    glRotatex(view_rotz, 0, 0, 1);
+    glRotatex(view_rotx, intToFix(1), 0, 0);
+    glRotatex(view_roty, 0, intToFix(1), 0);
+    glRotatex(view_rotz, 0, 0, intToFix(1));
 
     {
         glVertexPointer(3, GL_FIXED, 0, verts);
@@ -144,7 +149,7 @@ special_key(int special)
 
 void mainLoop(void)
 {
-    reshape(300, 300);
+    reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     while (1)
     {
         draw();
@@ -152,7 +157,7 @@ void mainLoop(void)
     }
 }
 
-
+#ifndef SGDK
 int
 main(int argc, char* argv[])
 {
@@ -164,3 +169,4 @@ main(int argc, char* argv[])
 
     return 0;
 }
+#endif

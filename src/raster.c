@@ -1,6 +1,7 @@
 //
 // Created by Daniel Monteiro on 01/03/2026.
 //
+#ifndef SGDK
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>
@@ -8,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 
 typedef int GLfixed;
 

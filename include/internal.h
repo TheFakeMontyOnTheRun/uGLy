@@ -29,10 +29,17 @@ static inline uint16_t swap16(uint16_t x) {
 typedef uint8_t FramebufferPixelFormat;
 #error "8 BPP TBD"
 #else
+#ifdef BPP4
+typedef uint8_t FramebufferPixelFormat;
+
+#define MAKE_PIXEL(r,g,b, a) (((((r) >> 7) << 3) | (((g) >> 6) << 1) | ((b) >> 7)) )
+
+#else
 #ifdef BPP1
 #error "1 BPP TBD"
 #else
 #error "No bit depth for framebuffer defined"
+#endif
 #endif
 #endif
 #endif
@@ -104,8 +111,8 @@ GLfixed *currentModelViewMatrix(void);
 #define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
 
 
-#define XRES_FRAMEBUFFER 240
-#define YRES_FRAMEBUFFER 240
+#define XRES_FRAMEBUFFER 64
+#define YRES_FRAMEBUFFER 64
 
 #define TOTAL_TEXTURES_SUPPORTED 8
 #define MAX_TEXTURE_SIZE_LOG2 8
