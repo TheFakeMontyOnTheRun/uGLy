@@ -873,7 +873,9 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 				}
 #endif
 			}
+#ifndef	DISABLE_DEPTH_BUFFER
 			++depthDestination;
+#endif
 			ADVANCE(fbPtr, (x + x0), (y + y0));
 		}
 	}
