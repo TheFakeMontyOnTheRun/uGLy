@@ -206,8 +206,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 			}
 
 
-			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
-
+			destination = SEEK(framebuffer, iFX0, y, FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 #endif
@@ -297,8 +296,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
 							}
 
-							*destination = MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF);
-
+							EMIT(destination, xPos, y, MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF));
 #ifndef	DISABLE_DEPTH_BUFFER
 							if (depthWritesEnabled)
 							{
@@ -308,8 +306,8 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 
 						}
 					}
+					ADVANCE(destination, xPos, y);
 					++xPos;
-					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
 
@@ -545,8 +543,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 			}
 
 
-			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
-
+			destination = SEEK(framebuffer, iFX0, y, FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 #endif
@@ -637,8 +634,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
 							}
 
-							*destination = MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF);
-
+							EMIT(destination, xPos, y, MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF));
 #ifndef	DISABLE_DEPTH_BUFFER
 							if (depthWritesEnabled)
 							{
@@ -648,8 +644,8 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 						}
 					}
 
+					ADVANCE(destination, xPos, y);
 					++xPos;
-					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
 
@@ -858,8 +854,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 	FramebufferPixelFormat fragment = MAKE_PIXEL(colour[0], colour[1], colour[2], colour[3]);
 	for (y = 0; y < height; ++y)
 	{
-		FramebufferPixelFormat* fbPtr =  &framebuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
-
+		FramebufferPixelFormat* fbPtr = SEEK(framebuffer, (x0), (y0 + y), FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 		uint16_t* depthDestination = &zBuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
 #endif
@@ -870,8 +865,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 			if (!depthTestEnabled || *depthDestination >= currentDepth)
 #endif
 			{
-				*fbPtr = fragment;
-				++fbPtr;
+				EMIT(fbPtr, (x + x0), (y + y0), fragment);
 #ifndef	DISABLE_DEPTH_BUFFER
 				if (depthWritesEnabled)
 				{
@@ -879,6 +873,8 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 				}
 #endif
 			}
+			++depthDestination;
+			ADVANCE(fbPtr, (x + x0), (y + y0));
 		}
 	}
 }

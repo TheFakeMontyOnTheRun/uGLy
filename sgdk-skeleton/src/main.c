@@ -16,21 +16,7 @@ uint8_t latch = GL_NO_ERROR;
 
 void swapBuffers(void)
 {
-	uint8_t x, y;
-
-	for (y = 0; y < YRES_FRAMEBUFFER; ++y)
-	{
-		for (x = 0; x < XRES_FRAMEBUFFER; ++x)
-		{
-			int col = framebuffer[(y * XRES_FRAMEBUFFER) + x];
-			BMP_setPixelFast(2 * x, 2 * y, col | (col << 4));
-			BMP_setPixelFast((2 * x) + 1, 2 * y, col | (col << 4));
-
-			BMP_setPixelFast(2 * x, (2 * y) + 1, col | (col << 4));
-			BMP_setPixelFast((2 * x) + 1, (2 * y) + 1, col | (col << 4));
-
-		}
-	}
+	BMP_drawBitmapData(framebuffer, 0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER, XRES_FRAMEBUFFER);
 
 	int error = glGetError();
 	if (error != GL_NO_ERROR)

@@ -245,7 +245,10 @@ uint16_t clearDepth = 0xFFFF;
 GLfixed zRange;
 #endif
 
-FramebufferPixelFormat clearColor;
+uint8_t clearColorR;
+uint8_t clearColorG;
+uint8_t clearColorB;
+uint8_t clearColorA;
 
 #ifndef DISABLE_STENCIL_BUFFER
 uint8_t clearStencil = 0;
@@ -370,10 +373,17 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
     if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT)
     {
-        int c;
-        for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
+        FramebufferPixelFormat fragment = MAKE_PIXEL(clearColorR, clearColorG, clearColorB, clearColorA);
+
+        for (int y = 0; y < YRES_FRAMEBUFFER; y++)
         {
-            framebuffer[c] = clearColor;
+            FramebufferPixelFormat *ptr = SEEK(framebuffer, 0, y, FRAMEBUFFER_PITCH);
+
+            for (int x = 0; x < XRES_FRAMEBUFFER ; ++x)
+            {
+                EMIT(ptr, x, y, fragment);
+                ADVANCE(ptr, x, y);
+            }
         }
     }
 
@@ -402,7 +412,10 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
-    clearColor = MAKE_PIXEL(fixToInt(Mul(intToFix(0xFF), red)), fixToInt(Mul(intToFix(0xFF),green)), fixToInt(Mul(intToFix(0xFF),blue)), fixToInt(Mul(intToFix(0xFF),alpha)));
+    clearColorR = fixToInt(Mul(intToFix(0xFF), red));
+    clearColorG = fixToInt(Mul(intToFix(0xFF),green));
+    clearColorB = fixToInt(Mul(intToFix(0xFF),blue));
+    clearColorA = fixToInt(Mul(intToFix(0xFF),alpha));
 }
 
 GLAPI void APIENTRY glClearDepthx(GLclampx depth)
