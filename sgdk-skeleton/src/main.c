@@ -96,4 +96,5 @@ int main(bool unused) {
 		swapBuffers();
 	}
 	return 0;
+	XGM_startPlay(music);
 }
