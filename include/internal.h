@@ -4,6 +4,13 @@
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
 #ifndef INTERNAL_H
 #define INTERNAL_H
+
+#ifndef SGDK
+#include <stdint.h>
+#else
+#include <genesis.h>
+#endif
+
 typedef void ( *KeyCallback )(int charkey);
 
 

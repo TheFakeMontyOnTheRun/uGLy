@@ -12,7 +12,6 @@ FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 #endif
 
-uint8_t pos = 0;
 uint8_t latch = GL_NO_ERROR;
 
 void swapBuffers(void)
@@ -27,10 +26,6 @@ void swapBuffers(void)
 			BMP_setPixelFast(x, y, col | (col << 4));
 		}
 	}
-
-	 BMP_setPixelFast(pos, 159, 0);
-	 BMP_setPixelFast(pos + 1, 159, 0);
-	pos += 2;
 
 	int error = glGetError();
 	if (error != GL_NO_ERROR)
@@ -47,9 +42,6 @@ void swapBuffers(void)
 		while (1);
 	}
 
-	 BMP_setPixelFast(pos, 159, 15);
-	 BMP_setPixelFast(pos + 1, 159, 15);
-
 	if (latch == GL_NO_ERROR)
 	{
 		VDP_waitVSync();
@@ -57,7 +49,8 @@ void swapBuffers(void)
 	}
 }
 
-int main(bool unused) {
+void initWindow( KeyCallback callback)
+{
 	VDP_setScreenWidth256();
 	VDP_setHInterrupt(0);
 	VDP_setHilightShadow(0);
@@ -86,15 +79,5 @@ int main(bool unused) {
 
 
 	glViewport(0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
-
-	init();
-
-	reshape(64, 64);
-
-	while(TRUE) {
-		draw();
-		swapBuffers();
-	}
-	return 0;
 	XGM_startPlay(music);
 }

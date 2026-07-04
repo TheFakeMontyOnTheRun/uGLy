@@ -14,10 +14,6 @@
  * 5 June 2008
  */
 
-#ifndef SGDK
-#include <stdint.h>
-#endif
-
 #define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
@@ -32,15 +28,9 @@
 
 #define fixToFloat(fp) ((fp) / 65536.0f)
 
-#ifndef SGDK
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#endif
+#include "internal.h"
 
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
-
-#include "internal.h"
 
 void initWindow( KeyCallback callback);
 void swapBuffers(void);
@@ -146,7 +136,6 @@ special_key(int special)
    }
 }
 
-
 void mainLoop(void)
 {
     reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
@@ -157,10 +146,9 @@ void mainLoop(void)
     }
 }
 
-#ifndef SGDK
 int
-main(int argc, char* argv[])
-{
+main(int argc, char* argv[]) {
+
     initWindow(special_key);
 
     init();
@@ -169,4 +157,3 @@ main(int argc, char* argv[])
 
     return 0;
 }
-#endif
