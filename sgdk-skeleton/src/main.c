@@ -23,7 +23,12 @@ void swapBuffers(void)
 		for (x = 0; x < XRES_FRAMEBUFFER; ++x)
 		{
 			int col = framebuffer[(y * XRES_FRAMEBUFFER) + x];
-			BMP_setPixelFast(x, y, col | (col << 4));
+			BMP_setPixelFast(2 * x, 2 * y, col | (col << 4));
+			BMP_setPixelFast((2 * x) + 1, 2 * y, col | (col << 4));
+
+			BMP_setPixelFast(2 * x, (2 * y) + 1, col | (col << 4));
+			BMP_setPixelFast((2 * x) + 1, (2 * y) + 1, col | (col << 4));
+
 		}
 	}
 
