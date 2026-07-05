@@ -4,14 +4,157 @@
 #include "../../src/raster.c"
 #include "../../src/matricesFP.c"
 #include "../../third_party/fpsqrt/fpsqrt.c"
+#include "tex32x32xRGBA32_MD.h"
 
 #define FX_1 intToFix(1)
 #define FX_5 intToFix(5)
 
 void initWindow( KeyCallback callback);
 void swapBuffers(void);
+uint8_t demo = -1;
+static GLfixed rx = 0, ry = -intToFix(360), rz = 0;
 
-static GLfixed rx = 0, ry = 0, rz = 0;
+
+
+struct Bitmap* texture;
+
+GLuint textureID;
+
+static void
+quad_draw(void)
+{
+
+    static const GLfixed verts[4][3] = {
+        /*
+         *      0
+         *      |-- 2
+         *      |  /|
+         *      | / |
+         *      |/--|
+         *      1   3
+         */
+
+
+    { -FX_1, FX_1,  intToFix(0) },
+    { -FX_1, -FX_1,  intToFix(0) },
+    {  FX_1, FX_1,  intToFix(0) },
+    {  FX_1, -FX_1,  intToFix(0) },
+    };
+
+    static const GLfixed normals[12] = {
+        intToFix(0), intToFix(0), FX_1,
+        intToFix(0), intToFix(0), FX_1,
+        intToFix(0),  intToFix(0), FX_1,
+        intToFix(0),  intToFix(0), FX_1,
+    };
+
+    static const GLfixed colors[4][4] = {
+        {FX_1, FX_1, FX_1, FX_1},
+        {FX_1, FX_1, FX_1, FX_1},
+        {FX_1, FX_1, FX_1, FX_1},
+        {FX_1, FX_1, FX_1, FX_1},
+    };
+
+    static const GLfixed texCoords[8] = {
+        intToFix(0), FX_1,
+        intToFix(0), intToFix(0),
+        FX_1, FX_1,
+        FX_1, intToFix(0),
+    };
+
+
+
+    glClear(GL_COLOR_BUFFER_BIT
+#ifndef DISABLE_DEPTH_BUFFER
+    | GL_DEPTH_BUFFER_BIT
+#endif
+    );
+
+    glPushMatrix();
+    glRotatex(rx, FX_1, 0, 0);
+    glRotatex(ry, 0, FX_1, 0);
+    glRotatex(rz, 0, 0, FX_1);
+
+
+    glEnable(GL_TEXTURE_2D);
+
+#ifndef DISABLE_DEPTH_BUFFER
+    glEnable(GL_DEPTH_TEST);
+#endif
+
+    glTexCoordPointer(2, GL_FIXED, 0, texCoords);
+    glVertexPointer(3, GL_FIXED, 0, verts);
+    glColorPointer(4, GL_FIXED, 0, colors);
+    glNormalPointer(GL_FIXED, 0, normals);
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+
+    /* draw triangles */
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glPopMatrix();
+}
+
+
+/* new window size or exposure */
+static void
+quad_reshape(int width, int height)
+{
+    const GLfixed ar = Div(intToFix(width), intToFix(height));
+
+    glViewport(0, 0, (GLint)width, (GLint)height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustumx(-ar, ar, -FX_1, FX_1, intToFix(5), intToFix(60));
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatex(0, 0, -intToFix(10));
+}
+
+
+static void
+quad_init(void)
+{
+    static const GLfixed ambient[4] = { Div(FX_1, intToFix(5)), Div(FX_1, intToFix(5)), Div(FX_1, intToFix(5)), FX_1 };
+    static const GLfixed pos[4] = { intToFix(0), intToFix(0), FX_1, 0 };
+
+    glLightxv(GL_LIGHT0, GL_POSITION, pos);
+
+    glLightModelxv(GL_LIGHT_MODEL_AMBIENT, ambient);
+
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_NORMALIZE);
+
+    const GLfixed grey = Div(intToFix(6), intToFix(10));
+    const GLfixed fullAlpha = FX_1;
+    glClearColorx(grey, grey, grey, fullAlpha);
+
+    glGenTextures(1, &textureID);
+
+
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    // texture = loadBitmap("res/opengles.png");
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 32,
+                 32,
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 &tex[0]);
+    // free(texture->texels);
+    // free(texture);
+}
+
 
 static void
 tri_draw(void)
@@ -30,7 +173,7 @@ tri_draw(void)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPushMatrix();
-	glRotatex(FX_5, 0, FX_1, 0);
+	glRotatex(ry, 0, FX_1, 0);
     glVertexPointer(3, GL_FIXED, 0, verts);
     glColorPointer(4, GL_FIXED, 0, colors);
     glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -59,8 +202,8 @@ tri_reshape(int width, int height)
 static void
 tri_init(void)
 {
-    GLfixed grey = Div(intToFix(4), intToFix(10));
     GLfixed fullAlpha = FX_1;
+    GLfixed grey = Div(intToFix(6), intToFix(10));
     glClearColorx(grey, grey, grey, fullAlpha);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -95,12 +238,49 @@ special_key(int special)
    }
 }
 
-void tri_mainLoop(void)
+void mainLoop(void)
 {
-    tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     while (1)
     {
-        tri_draw();
+    	ry -= intToFix(5);
+
+    	if (ry < -intToFix(360))
+    	{
+
+    		ry = 0;
+    		switch ((demo + 1) % 4)
+    		{
+    		case 0:
+    			tri_init();
+    			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+    			break;
+    		case 1:
+    			GLfixed fullAlpha = FX_1;
+    			GLfixed grey = Div(intToFix(4), intToFix(10));
+    			glClearColorx(grey, grey, grey, fullAlpha);
+
+    			tri_draw();
+    			swapBuffers();
+    			tri_draw();
+    			swapBuffers();
+
+    			quad_init();
+    			quad_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+    			break;
+    		}
+    		++demo;
+    	}
+
+    	switch (demo % 4)
+    	{
+    	case 0:
+    		tri_draw();
+    		break;
+    	case 1:
+    		quad_draw();
+    		break;
+    	}
+
         swapBuffers();
     }
 }
@@ -110,9 +290,7 @@ main(int argc, char* argv[]) {
 
     initWindow(special_key);
 
-    tri_init();
-
-    tri_mainLoop();
+    mainLoop();
 
     return 0;
 }
@@ -128,7 +306,7 @@ uint8_t latch = GL_NO_ERROR;
 
 void swapBuffers(void)
 {
-	BMP_drawBitmapData(framebuffer, 0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER, XRES_FRAMEBUFFER);
+	BMP_drawBitmapData(framebuffer, (demo % 4) * 64, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER, XRES_FRAMEBUFFER);
 
 	int error = glGetError();
 	if (error != GL_NO_ERROR)
