@@ -101,7 +101,7 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t *colourChannels,
                           const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-                          const uint16_t *z,
+                          const uint8_t *z,
 #endif
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
@@ -110,7 +110,7 @@ void uGLyInit(void);
 
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint16_t zValue,
+    uint8_t zValue,
 #endif
     uint16_t pointSize);
 
@@ -145,7 +145,7 @@ GLfixed *currentModelViewMatrix(void);
 extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #ifndef DISABLE_DEPTH_BUFFER
-extern uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t depthTestEnabled;
 extern uint8_t depthWritesEnabled;
 #endif

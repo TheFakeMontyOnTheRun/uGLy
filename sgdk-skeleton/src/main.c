@@ -299,7 +299,7 @@ main(int argc, char* argv[]) {
 FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 #endif
 
 uint8_t latch = GL_NO_ERROR;
