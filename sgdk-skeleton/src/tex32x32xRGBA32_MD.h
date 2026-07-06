@@ -2,10 +2,10 @@
 // Created by Daniel Monteiro on 14/04/2026.
 //
 
-#ifndef GLES1CL_TEX_H
-#define GLES1CL_TEX_H
+#ifndef GLES1CL_TEX1_H
+#define GLES1CL_TEX1_H
 
-static const uint32_t tex[1024]={
+static const uint32_t tex1[32*32]={
 0,
 0,
 0,
@@ -1032,4 +1032,4 @@ static const uint32_t tex[1024]={
 0,
 };
 
-#endif //GLES1CL_TEX_H
+#endif //GLES1CL_TEX1_H

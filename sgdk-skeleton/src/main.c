@@ -5,6 +5,7 @@
 #include "../../src/matricesFP.c"
 #include "../../third_party/fpsqrt/fpsqrt.c"
 #include "tex32x32xRGBA32_MD.h"
+#include "tex64x64xRGBA32_IM.h"
 
 #define FX_1 intToFix(1)
 #define FX_5 intToFix(5)
@@ -14,11 +15,124 @@ void swapBuffers(void);
 uint8_t demo = -1;
 static GLfixed rx = 0, ry = -intToFix(360), rz = 0;
 
+GLuint textureID[1];
+
+static void
+quads_draw(void)
+{
+
+    static const GLfixed verts[4][3] = {
+        /*
+         *      0    3
+         *      |\---|
+         *      | \  |
+         *      |  \ |
+         *      1---\2
+         */
+
+    { -intToFix(1),  intToFix(1),  intToFix(0) },
+    { -intToFix(1), -intToFix(1),  intToFix(0) },
+    {  intToFix(1), -intToFix(1),  intToFix(0) },
+    {  intToFix(1),  intToFix(1),  intToFix(0) }
+    };
+
+    uint8_t indices[4] = {0, 1, 2, 3};
+
+    static const GLfixed normals[12] = {
+        intToFix(0), intToFix(0), -intToFix(1),
+        intToFix(0), intToFix(0), -intToFix(1),
+        intToFix(0), intToFix(0), -intToFix(1),
+        intToFix(0), intToFix(0), -intToFix(1)
+    };
+
+    static const GLfixed colors[4][4] = {
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)}
+    };
+
+    static const GLfixed texCoords[8] = {
+        intToFix(0), intToFix(1),
+        intToFix(0), intToFix(0),
+        intToFix(1), intToFix(0),
+        intToFix(1), intToFix(1),
+    };
+
+    glClear(GL_COLOR_BUFFER_BIT
+#ifndef DISABLE_DEPTH_BUFFER
+    | GL_DEPTH_BUFFER_BIT
+#endif
+    );
+
+    glPushMatrix();
+    glRotatex(rx, intToFix(1), 0, 0);
+    glRotatex(ry, 0, intToFix(1), 0);
+    glRotatex(rz, 0, 0, intToFix(1));
+
+    glEnable(GL_TEXTURE_2D);
+
+#ifndef DISABLE_DEPTH_BUFFER
+    glEnable(GL_DEPTH_TEST);
+#endif
+
+    glTexCoordPointer(2, GL_FIXED, 0, texCoords);
+    glVertexPointer(3, GL_FIXED, 0, verts);
+    glColorPointer(4, GL_FIXED, 0, colors);
+    glNormalPointer(GL_FIXED, 0, normals);
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+
+    /* draw triangles */
+    glBindTexture(GL_TEXTURE_2D, textureID[0]);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glPopMatrix();
+	glDisable(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, textureID[1]);
+    glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, indices);
+
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+}
 
 
-struct Bitmap* texture;
+/* new window size or exposure */
+static void
+quads_reshape(int width, int height)
+{
+    const GLfixed ar = Div(intToFix(width), intToFix(height));
 
-GLuint textureID;
+    glViewport(0, 0, (GLint)width, (GLint)height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustumx(-ar, ar, -intToFix(1), intToFix(1), intToFix(5), intToFix(60));
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatex(0, 0, -intToFix(10));
+}
+
+
+static void
+quads_init(void)
+{
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+    glDisable(GL_NORMALIZE);
+
+    const GLfixed grey = Div(intToFix(4), intToFix(10));
+    const GLfixed fullAlpha = intToFix(1);
+    glClearColorx(grey, grey, grey, fullAlpha);
+}
 
 static void
 quad_draw(void)
@@ -72,11 +186,8 @@ quad_draw(void)
 
     glPushMatrix();
     glRotatex(rx, FX_1, 0, 0);
-    glRotatex(ry, 0, FX_1, 0);
-    glRotatex(rz, 0, 0, FX_1);
 
-
-    glEnable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
 
 #ifndef DISABLE_DEPTH_BUFFER
     glEnable(GL_DEPTH_TEST);
@@ -93,7 +204,7 @@ quad_draw(void)
     glEnableClientState(GL_NORMAL_ARRAY);
 
     /* draw triangles */
-    glBindTexture(GL_TEXTURE_2D, textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID[0]);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glPopMatrix();
 }
@@ -135,24 +246,6 @@ quad_init(void)
     const GLfixed grey = Div(intToFix(6), intToFix(10));
     const GLfixed fullAlpha = FX_1;
     glClearColorx(grey, grey, grey, fullAlpha);
-
-    glGenTextures(1, &textureID);
-
-
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    // texture = loadBitmap("res/opengles.png");
-
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB,
-                 32,
-                 32,
-                 0,
-                 GL_RGB,
-                 GL_UNSIGNED_BYTE,
-                 &tex[0]);
-    // free(texture->texels);
-    // free(texture);
 }
 
 
@@ -240,23 +333,46 @@ special_key(int special)
 
 void mainLoop(void)
 {
+	GLfixed fullAlpha = FX_1;
+	GLfixed grey = Div(intToFix(4), intToFix(10));
+	glGenTextures(1, &textureID[0]);
+	glBindTexture(GL_TEXTURE_2D, textureID[0]);
+
+	glTexImage2D(GL_TEXTURE_2D,
+				 0,
+				 GL_RGB,
+				 32,
+				 32,
+				 0,
+				 GL_RGB,
+				 GL_UNSIGNED_BYTE,
+				 &tex1[0]);
+
+
     while (1)
     {
-    	ry -= intToFix(5);
+    	rx -= intToFix(8);
+    	ry -= intToFix(8);
+    	rz -= intToFix(8);
 
     	if (ry < -intToFix(360))
     	{
 
-    		ry = 0;
+    		rx = ry = rz = 0;
     		switch ((demo + 1) % 4)
     		{
     		case 0:
+    			if (demo != -1) {
+    				tri_draw();
+					swapBuffers();
+					tri_draw();
+					swapBuffers();
+    			}
+
     			tri_init();
     			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     			break;
     		case 1:
-    			GLfixed fullAlpha = FX_1;
-    			GLfixed grey = Div(intToFix(4), intToFix(10));
     			glClearColorx(grey, grey, grey, fullAlpha);
 
     			tri_draw();
@@ -266,6 +382,27 @@ void mainLoop(void)
 
     			quad_init();
     			quad_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+    			break;
+    		case 2:
+    			glClearColorx(grey, grey, grey, fullAlpha);
+
+    			quad_draw();
+    			swapBuffers();
+    			quad_draw();
+    			swapBuffers();
+    			quads_init();
+    			quads_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+    			break;
+    		case 3:
+    			glClearColorx(grey, grey, grey, fullAlpha);
+
+    			quads_draw();
+    			swapBuffers();
+    			quads_draw();
+    			swapBuffers();
+
+    			tri_init();
+    			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     			break;
     		}
     		++demo;
@@ -278,6 +415,13 @@ void mainLoop(void)
     		break;
     	case 1:
     		quad_draw();
+    		break;
+    	case 2:
+    		quads_draw();
+    		break;
+    	case 3:
+			glScalex(intToFix(1), (-Div(ry , intToFix(360))) % intToFix(1), intToFix(1));
+    		tri_draw();
     		break;
     	}
 
