@@ -12,7 +12,7 @@
 
 void initWindow( KeyCallback callback);
 void swapBuffers(void);
-uint8_t demo = -1;
+int8_t demo = -1;
 static GLfixed rx = 0, ry = -intToFix(360), rz = 0;
 
 GLuint textureID[1];
@@ -129,9 +129,9 @@ quads_init(void)
     glDisable(GL_LIGHT0);
     glDisable(GL_NORMALIZE);
 
-    const GLfixed grey = Div(intToFix(4), intToFix(10));
-    const GLfixed fullAlpha = intToFix(1);
-    glClearColorx(grey, grey, grey, fullAlpha);
+	const GLfixed grey = Div(intToFix(6), intToFix(10));
+	const GLfixed fullAlpha = FX_1;
+	glClearColorx(grey, grey, grey, fullAlpha);
 }
 
 static void
@@ -362,13 +362,6 @@ void mainLoop(void)
     		switch ((demo + 1) % 4)
     		{
     		case 0:
-    			if (demo != -1) {
-    				tri_draw();
-					swapBuffers();
-					tri_draw();
-					swapBuffers();
-    			}
-
     			tri_init();
     			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     			break;
@@ -390,19 +383,9 @@ void mainLoop(void)
     			swapBuffers();
     			quad_draw();
     			swapBuffers();
+
     			quads_init();
     			quads_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
-    			break;
-    		case 3:
-    			glClearColorx(grey, grey, grey, fullAlpha);
-
-    			quads_draw();
-    			swapBuffers();
-    			quads_draw();
-    			swapBuffers();
-
-    			tri_init();
-    			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
     			break;
     		}
     		++demo;
@@ -418,10 +401,6 @@ void mainLoop(void)
     		break;
     	case 2:
     		quads_draw();
-    		break;
-    	case 3:
-			glScalex(intToFix(1), (-Div(ry , intToFix(360))) % intToFix(1), intToFix(1));
-    		tri_draw();
     		break;
     	}
 
@@ -450,7 +429,7 @@ uint8_t latch = GL_NO_ERROR;
 
 void swapBuffers(void)
 {
-	BMP_drawBitmapData(framebuffer, (demo % 4) * 64, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER, XRES_FRAMEBUFFER);
+	BMP_drawBitmapData(framebuffer, ( ((demo % 4) + 1) * 16) + ( (demo % 4) * 64), 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER, XRES_FRAMEBUFFER);
 
 	int error = glGetError();
 	if (error != GL_NO_ERROR)
