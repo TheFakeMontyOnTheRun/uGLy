@@ -10,12 +10,63 @@
 #define FX_1 intToFix(1)
 #define FX_5 intToFix(5)
 
+uint16_t strlen ( const char * str );
+
 void initWindow( KeyCallback callback);
 void swapBuffers(void);
 int8_t demo = -1;
 static GLfixed rx = 0, ry = -intToFix(360), rz = 0;
 
 GLuint textureID[1];
+
+void typeStringDelay(const char* str, int x, int y, int margin, int delay)
+{
+	int c, d, e;
+	c = x;
+	d = y;
+	e = 0;
+	char buffer[2];
+	buffer[1] = 0;
+	size_t len = strlen(str);
+	for (; e < len; ++c, ++e)
+	{
+		if (c >= margin || c >= 32)
+		{
+			c = x;
+			++d;
+		}
+
+		if (str[e] == '\n')
+		{
+			c = x - 1; /* it will be incremented on the loop */
+			++d;
+			continue;
+		}
+
+		buffer[0] = str[e];
+		BMP_drawText(&buffer[0], c, d);
+		waitMs(delay);
+	}
+}
+
+void typeString(const char* str, int x, int y, int margin)
+{
+	typeStringDelay(str, x, y, margin, 50);
+}
+
+
+void justDrawString(const char* str, int x, int y, int margin)
+{
+	typeStringDelay(str, x, y, margin, 0);
+}
+
+void justDrawStringDblBuf(const char* str, int x, int y, int margin)
+{
+	justDrawString(str, x, y, margin);
+	swapBuffers();
+	justDrawString(str, x, y, margin);
+	swapBuffers();
+}
 
 static void
 quads_draw(void)
@@ -331,8 +382,53 @@ special_key(int special)
    }
 }
 
+void clearTextScreen()
+{
+	for (int c = 8; c < 20; ++c)
+	{
+		BMP_clearText(0, c, 32);
+	}
+}
+
+void intro(void)
+{
+	typeString("Have you even wanted to run OpenGL ES on a SEGA Mega Drive/Genesis?", 0, 8, 32);
+	waitMs(2000);
+	clearTextScreen();
+	swapBuffers();
+
+	typeString("Yeah, neither have I...but hear me out.", 0, 8, 32);
+	waitMs(2000);
+	clearTextScreen();
+	swapBuffers();
+
+
+	typeString("With the recent progress on uGLy (WIP OpenGL ES 1.0 CL implementation),"
+			"this suddenly became possible!", 0, 8, 32);
+	waitMs(2000);
+	clearTextScreen();
+	swapBuffers();
+
+	typeString("Buckle up, this is going to be...", 0, 8, 32);
+	waitMs(1000);
+	typeString("...slow?", 0, 9, 32);
+	waitMs(2000);
+	clearTextScreen();
+	swapBuffers();
+
+	typeString("Welcome to...", 0, 8, 32);
+	waitMs(1000);
+	typeString("68K problems (but a Blit ain't one)!", 0, 9, 32);
+	waitMs(2000);
+	clearTextScreen();
+	swapBuffers();
+}
+
 void mainLoop(void)
 {
+
+	intro();
+
 	GLfixed fullAlpha = FX_1;
 	GLfixed grey = Div(intToFix(4), intToFix(10));
 	glGenTextures(1, &textureID[0]);
@@ -359,11 +455,19 @@ void mainLoop(void)
     	{
 
     		rx = ry = rz = 0;
-    		switch ((demo + 1) % 4)
+    		switch ((demo + 1))
     		{
     		case 0:
     			tri_init();
     			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+
+    			justDrawStringDblBuf("glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);\n"
+    							"glPushMatrix();\n"
+    							"glVertexPointer(3, GL_FIXED, 0, verts);\n"
+    							"glColorPointer(4, GL_FIXED, 0, colors);\n"
+    							"glRotatex(FX_5, 0, FX_1, 0);\n"
+    							"glDrawArrays(GL_TRIANGLES, 0, 3);\n"
+    							"glPopMatrix();\n", 0, 9, 32);
     			break;
     		case 1:
     			glClearColorx(grey, grey, grey, fullAlpha);
@@ -391,7 +495,7 @@ void mainLoop(void)
     		++demo;
     	}
 
-    	switch (demo % 4)
+    	switch (demo)
     	{
     	case 0:
     		tri_draw();
@@ -451,18 +555,6 @@ void swapBuffers(void)
 		VDP_waitVSync();
 		BMP_flip(1);
 	}
-
-	BMP_drawText("glClear(GL_COLOR_BUFFER_BIT |", 0, 9);
-	BMP_drawText("GL_DEPTH_BUFFER_BIT);", 0, 10);
-	BMP_drawText("glPushMatrix();", 0, 11);
-	BMP_drawText("glVertexPointer(3, GL_FIXED, 0,", 0, 12);
-	BMP_drawText("verts);", 0, 13);
-	BMP_drawText("glColorPointer(4, GL_FIXED, 0,", 0, 14);
-	BMP_drawText("colors);", 0, 15);
-	BMP_drawText("glRotatex(FX_5, 0, FX_1, 0);", 0, 16);
-	BMP_drawText("glDrawArrays(GL_TRIANGLES, 0, 3);", 0, 17);
-	BMP_drawText(";", 0, 18);
-	BMP_drawText("glPopMatrix();", 0, 19);
 }
 
 void initWindow( KeyCallback callback)
