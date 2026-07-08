@@ -428,7 +428,7 @@ void mainLoop(void)
 {
 
 	intro();
-
+	XGM_startPlay(music);
 	GLfixed fullAlpha = FX_1;
 	GLfixed grey = Div(intToFix(4), intToFix(10));
 	glGenTextures(1, &textureID[0]);
@@ -587,5 +587,4 @@ void initWindow( KeyCallback callback)
 
 
 	glViewport(0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
-	XGM_startPlay(music);
 }
