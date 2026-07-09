@@ -62,8 +62,16 @@ void justDrawString(const char* str, int x, int y, int margin)
 
 void justDrawStringDblBuf(const char* str, int x, int y, int margin)
 {
+	for (int c = 9; c < 20; ++c)
+	{
+		BMP_clearText(0, c, 32);
+	}
 	justDrawString(str, x, y, margin);
 	swapBuffers();
+	for (int c = 9; c < 20; ++c)
+	{
+		BMP_clearText(0, c, 32);
+	}
 	justDrawString(str, x, y, margin);
 	swapBuffers();
 }
@@ -384,7 +392,7 @@ special_key(int special)
 
 void clearTextScreen()
 {
-	for (int c = 8; c < 20; ++c)
+	for (int c = 9; c < 20; ++c)
 	{
 		BMP_clearText(0, c, 32);
 	}
@@ -413,7 +421,9 @@ void intro(void)
 	waitMs(1000);
 	typeString("...slow?", 0, 10, 32);
 	waitMs(1000);
-	typeString("...Underwhelming?", 0, 11, 32);
+	typeString("...underwhelming?", 0, 11, 32);
+	waitMs(1000);
+	typeString("...glitchy?", 0, 12, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
@@ -436,7 +446,7 @@ void showOutro(void)
 	clearTextScreen();
 	swapBuffers();
 
-	typeString("I know, I know, this sucked badly, but it's just the start. There's a lot of work ahead!", 0, 9, 32);
+	typeString("I know, I know, this sucked badly, but it's just the start. There's a lot of work ahead!\nSlapped together in a week!", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
@@ -492,7 +502,6 @@ void mainLoop(void)
     		case 0:
     			tri_init();
     			tri_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
-
     			justDrawStringDblBuf("glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);\n"
     							"glPushMatrix();\n"
     							"glVertexPointer(3, GL_FIXED, 0, verts);\n"
