@@ -17,7 +17,7 @@ void swapBuffers(void);
 int8_t demo = -1;
 static GLfixed rx = 0, ry = -intToFix(360), rz = 0;
 
-GLuint textureID[1];
+GLuint textureID;
 
 void typeStringDelay(const char* str, int x, int y, int margin, int delay)
 {
@@ -118,47 +118,19 @@ quads_draw(void)
         intToFix(1), intToFix(1),
     };
 
-    glClear(GL_COLOR_BUFFER_BIT
-#ifndef DISABLE_DEPTH_BUFFER
-    | GL_DEPTH_BUFFER_BIT
-#endif
-    );
-
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glBindTexture(GL_TEXTURE_2D, textureID);
     glPushMatrix();
     glRotatex(rx, intToFix(1), 0, 0);
     glRotatex(ry, 0, intToFix(1), 0);
     glRotatex(rz, 0, 0, intToFix(1));
-
     glEnable(GL_TEXTURE_2D);
-
-#ifndef DISABLE_DEPTH_BUFFER
-    glEnable(GL_DEPTH_TEST);
-#endif
-
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);
-    glColorPointer(4, GL_FIXED, 0, colors);
-    glNormalPointer(GL_FIXED, 0, normals);
-
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-
-    /* draw triangles */
-    glBindTexture(GL_TEXTURE_2D, textureID[0]);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
     glPopMatrix();
 	glDisable(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, textureID[1]);
     glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, indices);
-
-    glDisableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_COLOR_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 
@@ -191,6 +163,13 @@ quads_init(void)
 	const GLfixed grey = Div(intToFix(6), intToFix(10));
 	const GLfixed fullAlpha = FX_1;
 	glClearColorx(grey, grey, grey, fullAlpha);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
 }
 
 static void
@@ -235,35 +214,13 @@ quad_draw(void)
         FX_1, intToFix(0),
     };
 
-
-
-    glClear(GL_COLOR_BUFFER_BIT
-#ifndef DISABLE_DEPTH_BUFFER
-    | GL_DEPTH_BUFFER_BIT
-#endif
-    );
-
+    glClear(GL_COLOR_BUFFER_BIT);
     glPushMatrix();
     glRotatex(rx, FX_1, 0, 0);
-
-	glEnable(GL_TEXTURE_2D);
-
-#ifndef DISABLE_DEPTH_BUFFER
-    glEnable(GL_DEPTH_TEST);
-#endif
-
+	glColorPointer(4, GL_FIXED, 0, colors);
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
     glVertexPointer(3, GL_FIXED, 0, verts);
-    glColorPointer(4, GL_FIXED, 0, colors);
     glNormalPointer(GL_FIXED, 0, normals);
-
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_NORMAL_ARRAY);
-
-    /* draw triangles */
-    glBindTexture(GL_TEXTURE_2D, textureID[0]);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glPopMatrix();
 }
@@ -305,6 +262,13 @@ quad_init(void)
     const GLfixed grey = Div(intToFix(6), intToFix(10));
     const GLfixed fullAlpha = FX_1;
     glClearColorx(grey, grey, grey, fullAlpha);
+
+	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glEnable(GL_TEXTURE_2D);
 }
 
 
@@ -473,8 +437,8 @@ void mainLoop(void)
 	XGM_startPlay(music);
 	GLfixed fullAlpha = FX_1;
 	GLfixed grey = Div(intToFix(4), intToFix(10));
-	glGenTextures(1, &textureID[0]);
-	glBindTexture(GL_TEXTURE_2D, textureID[0]);
+	glGenTextures(1, &textureID);
+	glBindTexture(GL_TEXTURE_2D, textureID);
 
 	glTexImage2D(GL_TEXTURE_2D,
 				 0,
@@ -520,6 +484,17 @@ void mainLoop(void)
 
     			quad_init();
     			quad_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+    			justDrawStringDblBuf("glClear(GL_COLOR_BUFFER_BIT);\n"
+    									"glPushMatrix();\n"
+										"glRotatex(FX_1, FX_1, 0, 0);\n"
+										"glTexCoordPointer(2, GL_FIXED, 0, texCoords);\n"
+										"glVertexPointer(3, GL_FIXED, 0, verts);\n"
+										"glColorPointer(4, GL_FIXED, 0, colors);\n"
+										"glNormalPointer(GL_FIXED, 0, normals);", 0, 9, 32);
+    			waitMs(2000);
+    			justDrawStringDblBuf("glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);\n"
+										"glPopMatrix();", 0, 9, 32);
+
     			break;
     		case 2:
     			glClearColorx(grey, grey, grey, fullAlpha);
@@ -531,6 +506,24 @@ void mainLoop(void)
 
     			quads_init();
     			quads_reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+
+
+
+    			justDrawStringDblBuf("glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );\n"
+										"glBindTexture(GL_TEXTURE_2D, textureID);\n"
+										"glPushMatrix();\n"
+										"glRotatex(rx, FX_1, 0, 0);\n"
+										"glRotatex(ry, 0, FX_1, 0);\n"
+										"glRotatex(rz, 0, 0, FX_1);\n"
+										"glEnable(GL_TEXTURE_2D);\n"
+										"glTexCoordPointer(2, GL_FIXED, 0, texCoords);", 0, 9, 32);
+				waitMs(2000);
+    			justDrawStringDblBuf("glTexCoordPointer(2, GL_FIXED, 0, texCoords);\n"
+										"glVertexPointer(3, GL_FIXED, 0, verts);\n"
+										"glDrawArrays(GL_TRIANGLE_FAN, 0, 4);\n"
+										"glPopMatrix();\n"
+										"glDisable(GL_TEXTURE_2D);\n"
+										"glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_BYTE, indices);", 0, 9, 32);
     			break;
     		case 3:
     			glClearColorx(grey, grey, grey, fullAlpha);
