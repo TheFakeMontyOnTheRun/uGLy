@@ -364,7 +364,7 @@ void clearTextScreen()
 
 void intro(void)
 {
-	typeString("Have you ever wanted to run OpenGL ES on a SEGA Mega Drive/Genesis?", 0, 9, 32);
+	typeString("Have you ever wanted to run\nOpenGL ES on a SEGA Mega Drive?", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
@@ -375,13 +375,13 @@ void intro(void)
 	swapBuffers();
 
 
-	typeString("With the recent progress on uGLy (WIP OpenGL ES 1.0 CL implementation), "
-			"this suddenly became possible!", 0, 9, 32);
+	typeString("With the recent progress on\nuGLy (WIP OpenGL ES 1.0 CL\nimplementation), "
+			"this suddenly\nbecame possible!", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
 
-	typeString("Buckle up, this is going to be...", 0, 9, 32);
+	typeString("Buckle up, this is going to be", 0, 9, 32);
 	waitMs(1000);
 	typeString("...slow?", 0, 10, 32);
 	waitMs(1000);
@@ -394,7 +394,7 @@ void intro(void)
 
 	typeString("Welcome to...", 0, 9, 32);
 	waitMs(1000);
-	typeString("68K problems (but a blit ain't one)!", 0, 10, 32);
+	typeString("68K problems (but a blit\nain't one)!", 0, 10, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
@@ -410,18 +410,18 @@ void showOutro(void)
 	clearTextScreen();
 	swapBuffers();
 
-	typeString("I know, I know, this sucked badly, but it's just the start. There's a lot of work ahead!\nSlapped together in a week!", 0, 9, 32);
+	typeString("I know, I know, this sucked\nbadly, but it's just the start. There's a lot of work ahead!\nSlapped together in a week!\nAt least the music rocks!", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
 
-	typeString("Code by MontyOnTheRun, Music by Jeenio", 0, 9, 32);
+	typeString("Code by MontyOnTheRun,\nMusic by Jeenio", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
 
 
-	typeString("Greetz to BelleTiger, Acassis, Jannone, Leiradel and the fine folks at Retromania.pt and Inercia", 0, 9, 32);
+	typeString("Greetz to BelleTiger, Acassis,\nJannone, Leiradel and the fine\nfolks at Retromania.pt and\nInercia", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
