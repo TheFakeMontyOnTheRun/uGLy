@@ -420,8 +420,7 @@ void showOutro(void)
 	clearTextScreen();
 	swapBuffers();
 
-
-	typeString("Greetz to BelleTiger, Acassis,\nJannone, Leiradel and the fine\nfolks at Retromania.pt and\nInercia", 0, 9, 32);
+	typeString("Greetz to BelleTiger, Acassis,\nJannone, Leiradel, TCVM, the\nfine folks at Retromania.pt\nand Inercia", 0, 9, 32);
 	waitMs(2000);
 	clearTextScreen();
 	swapBuffers();
