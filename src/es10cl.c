@@ -1,12 +1,16 @@
 //
 // Created by Daniel Monteiro on 27/02/2026.
 //
-
+#ifndef SGDK
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#else
+typedef long long int64_t;
+typedef unsigned long long uint64_t;
+#endif
 #include <string.h>
 #include <GLES/gl.h>
 
@@ -14,7 +18,7 @@
 #include "internal.h"
 #include "matricesFP.h"
 
-GLfixed sinfp[91] =
+const GLfixed sinfp[91] =
 {
     0,
     1143,
@@ -237,11 +241,14 @@ GLfixed pointSize = intToFix(1);
 #ifndef	DISABLE_DEPTH_BUFFER
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
-uint16_t clearDepth = 0xFFFF;
+uint8_t clearDepth = 0xFF;
 GLfixed zRange;
 #endif
 
-FramebufferPixelFormat clearColor;
+uint8_t clearColorR;
+uint8_t clearColorG;
+uint8_t clearColorB;
+uint8_t clearColorA;
 
 #ifndef DISABLE_STENCIL_BUFFER
 uint8_t clearStencil = 0;
@@ -280,9 +287,11 @@ struct Light lights[8] = {
 
 static void notImplementedYet(const char* funcName)
 {
+#ifndef SGDK
     puts("Not implemented yet");
     printf("Function called: %s\n", funcName);
     assert(0);
+#endif
 }
 
 void uGLyInit(void)
@@ -317,7 +326,7 @@ void uGLyInit(void)
 #ifndef	DISABLE_DEPTH_BUFFER
     depthWritesEnabled = 1;
     depthTestEnabled = 0;
-    clearDepth = 0xFFFF;
+    clearDepth = 0xFF;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
@@ -364,10 +373,17 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
     if ((mask & GL_COLOR_BUFFER_BIT) == GL_COLOR_BUFFER_BIT)
     {
-        int c;
-        for (c = 0; c < (XRES_FRAMEBUFFER * YRES_FRAMEBUFFER); ++c)
+        FramebufferPixelFormat fragment = MAKE_PIXEL(clearColorR, clearColorG, clearColorB, clearColorA);
+
+        for (int y = 0; y < YRES_FRAMEBUFFER; y++)
         {
-            framebuffer[c] = clearColor;
+            FramebufferPixelFormat *ptr = SEEK(framebuffer, 0, y, FRAMEBUFFER_PITCH);
+
+            for (int x = 0; x < XRES_FRAMEBUFFER ; ++x)
+            {
+                EMIT(ptr, x, y, fragment);
+                ADVANCE(ptr, x, y);
+            }
         }
     }
 
@@ -396,7 +412,10 @@ GLAPI void APIENTRY glClear(GLbitfield mask)
 
 GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, GLclampx alpha)
 {
-    clearColor = MAKE_PIXEL(fixToInt(Mul(intToFix(0xFF), red)), fixToInt(Mul(intToFix(0xFF),green)), fixToInt(Mul(intToFix(0xFF),blue)), fixToInt(Mul(intToFix(0xFF),alpha)));
+    clearColorR = fixToInt(Mul(intToFix(0xFF), red));
+    clearColorG = fixToInt(Mul(intToFix(0xFF),green));
+    clearColorB = fixToInt(Mul(intToFix(0xFF),blue));
+    clearColorA = fixToInt(Mul(intToFix(0xFF),alpha));
 }
 
 GLAPI void APIENTRY glClearDepthx(GLclampx depth)
@@ -734,7 +753,7 @@ void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixe
     GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
 
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint16_t zValuesNormalized[3] ={
+    uint8_t zValuesNormalized[3] ={
         fixToInt(Mul(z0, zRange)),
         fixToInt(Mul(z1, zRange)),
         fixToInt(Mul(z2, zRange))
@@ -812,7 +831,7 @@ void processPoints(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed v
     GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
 
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint16_t zValuesNormalized[1] ={
+    uint8_t zValuesNormalized[1] ={
         fixToInt(Mul(z0, zRange))
     };
 #endif
@@ -1612,6 +1631,172 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
         }
         break;
     case GL_TRIANGLE_STRIP:
+        {
+            int c;
+            int index;
+            int finalCount = count - 2;
+            GLfixed triangleVerts[3 * 3];
+            GLfixed triangleNormals[3 * 3];
+            GLfixed triangleUv[3 * 2];
+            GLfixed triangleColours[3 * 4];
+            struct Texture* texture;
+
+            if (textureMapping2DEnabled)
+            {
+                texture = &textures[currentTexture];
+            } else
+            {
+                texture = &dummyTexture;
+            }
+
+            for (c = 0; c < finalCount; ++c)
+            {
+                GLfixed vecs[16];
+                GLfixed transformed[16];
+                GLfixed transformedNormals[16];
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c];
+                } else {
+                    index = ((uint8_t*)indices)[c];
+                }
+
+                triangleVerts[0] = ((GLfixed*)vertexPointer)[3 * index];
+                triangleVerts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                triangleVerts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (textureCoordsEnabled)
+                {
+                    triangleUv[0] = ((GLfixed*)textureCoordPointer)[2 * index];
+                    triangleUv[1] = ((GLfixed*)textureCoordPointer)[2 * index + 1];
+                } else
+                {
+                    triangleUv[0] = ((GLfixed*)dummyTexCoords)[2 * index];
+                    triangleUv[1] = ((GLfixed*)dummyTexCoords)[2 * index + 1];
+                }
+
+                if (colorArrayEnabled)
+                {
+                    triangleColours[0] = ((GLfixed*)colorPointer)[4 * index];
+                    triangleColours[1] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    triangleColours[2] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    triangleColours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    triangleColours[0] = ((GLfixed*)dummyColors)[4 * index];
+                    triangleColours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    triangleColours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    triangleColours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                if (normalsArrayEnabled)
+                {
+                    triangleNormals[0] = ((GLfixed*)normalsPointer)[3 * index];
+                    triangleNormals[1] = ((GLfixed*)normalsPointer)[3 * index + 1];
+                    triangleNormals[2] = ((GLfixed*)normalsPointer)[3 * index + 2];
+                } else
+                {
+                    triangleNormals[0] = ((GLfixed*)dummyNormals)[3 * index];
+                    triangleNormals[1] = ((GLfixed*)dummyNormals)[3 * index + 1];
+                    triangleNormals[2] = ((GLfixed*)dummyNormals)[3 * index + 2];
+                }
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c + 1];
+                } else {
+                    index = ((uint8_t*)indices)[c + 1];
+                }
+
+                triangleVerts[3] = ((GLfixed*)vertexPointer)[3 * index];
+                triangleVerts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                triangleVerts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (textureCoordsEnabled)
+                {
+                    triangleUv[2] = ((GLfixed*)textureCoordPointer)[2 * index];
+                    triangleUv[3] = ((GLfixed*)textureCoordPointer)[2 * index + 1];
+                } else
+                {
+                    triangleUv[2] = ((GLfixed*)dummyTexCoords)[2 * index];
+                    triangleUv[3] = ((GLfixed*)dummyTexCoords)[2 * index + 1];
+                }
+
+                if (colorArrayEnabled)
+                {
+                    triangleColours[4] = ((GLfixed*)colorPointer)[4 * index];
+                    triangleColours[5] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    triangleColours[6] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    triangleColours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    triangleColours[4] = ((GLfixed*)dummyColors)[4 * index];
+                    triangleColours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    triangleColours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    triangleColours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                if (normalsArrayEnabled)
+                {
+                    triangleNormals[3] = ((GLfixed*)normalsPointer)[3 * index];
+                    triangleNormals[4] = ((GLfixed*)normalsPointer)[3 * index + 1];
+                    triangleNormals[5] = ((GLfixed*)normalsPointer)[3 * index + 2];
+                } else
+                {
+                    triangleNormals[3] = ((GLfixed*)dummyNormals)[3 * index];
+                    triangleNormals[4] = ((GLfixed*)dummyNormals)[3 * index + 1];
+                    triangleNormals[5] = ((GLfixed*)dummyNormals)[3 * index + 2];
+                }
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c + 2];
+                } else {
+                    index = ((uint8_t*)indices)[c + 2];
+                }
+
+                triangleVerts[6] = ((GLfixed*)vertexPointer)[3 * index];
+                triangleVerts[7] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                triangleVerts[8] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (textureCoordsEnabled)
+                {
+                    triangleUv[4] = ((GLfixed*)textureCoordPointer)[2 * index];
+                    triangleUv[5] = ((GLfixed*)textureCoordPointer)[2 * index + 1];
+                } else
+                {
+                    triangleUv[4] = ((GLfixed*)dummyTexCoords)[2 * index];
+                    triangleUv[5] = ((GLfixed*)dummyTexCoords)[2 * index + 1];
+                }
+
+                if (colorArrayEnabled)
+                {
+                    triangleColours[8] = ((GLfixed*)colorPointer)[4 * index];
+                    triangleColours[9] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    triangleColours[10] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    triangleColours[11] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    triangleColours[8] = ((GLfixed*)dummyColors)[4 * index];
+                    triangleColours[9] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    triangleColours[10] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    triangleColours[11] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                if (normalsArrayEnabled)
+                {
+                    triangleNormals[6] = ((GLfixed*)normalsPointer)[3 * index];
+                    triangleNormals[7] = ((GLfixed*)normalsPointer)[3 * index + 1];
+                    triangleNormals[8] = ((GLfixed*)normalsPointer)[3 * index + 2];
+                } else
+                {
+                    triangleNormals[6] = ((GLfixed*)dummyNormals)[3 * index];
+                    triangleNormals[7] = ((GLfixed*)dummyNormals)[3 * index + 1];
+                    triangleNormals[8] = ((GLfixed*)dummyNormals)[3 * index + 2];
+                }
+
+                processTriangle(modelViewMatrix, mvp, triangleVerts, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
+            }
+        }
+        break;
     case GL_LINE_STRIP:
     case GL_LINE_LOOP:
     case GL_LINES:
@@ -1890,8 +2075,10 @@ GLAPI void APIENTRY glLoadIdentity(void)
     case GL_TEXTURE:
         notImplementedYet(__func__);
         break;
+#ifndef SGDK
     default:
         assert(0);
+#endif
     }
 }
 
@@ -1962,8 +2149,10 @@ GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
     case GL_TEXTURE:
         notImplementedYet(__func__);
         break;
+#ifndef SGDK
     default:
-        assert(0);
+         assert(0);
+#endif
     }
 }
 

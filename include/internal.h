@@ -4,12 +4,26 @@
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
 #ifndef INTERNAL_H
 #define INTERNAL_H
+
+#ifndef SGDK
+#include <stdint.h>
+#else
+#include <genesis.h>
+#endif
+
 typedef void ( *KeyCallback )(int charkey);
 
+#define XRES_FRAMEBUFFER 240
+#define YRES_FRAMEBUFFER 240
 
 #ifdef BPP24
 typedef uint32_t FramebufferPixelFormat;
 #define MAKE_PIXEL(r, g, b, a) ((r) << 24 | (g) << 16 | (b) << 8 | (a))
+#define EMIT(destination, x_hint, y_hint, fragment) do { (void)(x_hint); (void)(y_hint);*(destination) = (fragment);} while(0)
+#define ADVANCE(fbptr, x_hint, y_hint) do{ (void)(x_hint); (void)(y_hint); ++(fbptr);} while(0)
+#define SEEK(framebuffer_ptr, x_pos, y_pos, pitch) ((framebuffer_ptr) + ((pitch) * (y_pos)) + (x_pos))
+#define FRAMEBUFFER_PITCH (XRES_FRAMEBUFFER)
+
 #else
 #ifdef BPP16
 typedef uint16_t FramebufferPixelFormat;
@@ -24,15 +38,31 @@ static inline uint16_t swap16(uint16_t x) {
 #define MAKE_PIXEL(r,g,b, a) ((((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)) )
 #endif
 
+#define EMIT(destination, x_hint, y_hint, fragment) do { (void)(x_hint); (void)(y_hint);*(destination) = (fragment);} while(0)
+#define ADVANCE(fbptr, x_hint, y_hint) do{ (void)(x_hint); (void)(y_hint); ++(fbptr);} while(0)
+#define SEEK(framebuffer_ptr, x_pos, y_pos, pitch) ((framebuffer_ptr) + ((pitch) * (y_pos)) + (x_pos))
+#define FRAMEBUFFER_PITCH (XRES_FRAMEBUFFER)
+
 #else
 #ifdef BPP8
 typedef uint8_t FramebufferPixelFormat;
 #error "8 BPP TBD"
 #else
+#ifdef BPP4
+typedef uint8_t FramebufferPixelFormat;
+
+#define MAKE_PIXEL(r,g,b, a) ((((r) >> 7) << 3) | (((g) >> 6) << 1) | ((b) >> 7))
+#define EMIT(destination, x_hint, y_hint, fragment) do{ (void)(y_hint); if (((x_hint) & 1) == 0) { *(destination) &=15 ; *(destination) |= ((fragment) << 4); } else { *(destination) &=~15 ; *(destination) |= (fragment);}} while(0)
+#define ADVANCE(fbptr, x_hint, y_hint) do{ (void)(y_hint); if ((x_hint) & 1) {++(fbptr);}} while(0)
+#define SEEK(framebuffer_ptr, x_pos, y_pos, pitch) ((framebuffer_ptr) + ((pitch) * (y_pos)) + ((x_pos) / 2))
+#define FRAMEBUFFER_PITCH (XRES_FRAMEBUFFER)
+
+#else
 #ifdef BPP1
 #error "1 BPP TBD"
 #else
 #error "No bit depth for framebuffer defined"
+#endif
 #endif
 #endif
 #endif
@@ -71,7 +101,7 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t *colourChannels,
                           const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-                          const uint16_t *z,
+                          const uint8_t *z,
 #endif
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
@@ -80,7 +110,7 @@ void uGLyInit(void);
 
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint16_t zValue,
+    uint8_t zValue,
 #endif
     uint16_t pointSize);
 
@@ -103,10 +133,6 @@ GLfixed *currentModelViewMatrix(void);
 #define MIN(v1, v2) (( (v1) < (v2) ) ? (v1) : (v2) )
 #define MAX(v1, v2) (( (v1) > (v2) ) ? (v1) : (v2) )
 
-
-#define XRES_FRAMEBUFFER 240
-#define YRES_FRAMEBUFFER 240
-
 #define TOTAL_TEXTURES_SUPPORTED 8
 #define MAX_TEXTURE_SIZE_LOG2 8
 #define MAX_TEXTURE_SIZE (1 << MAX_TEXTURE_SIZE_LOG2)
@@ -119,7 +145,7 @@ GLfixed *currentModelViewMatrix(void);
 extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #ifndef DISABLE_DEPTH_BUFFER
-extern uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 extern uint8_t depthTestEnabled;
 extern uint8_t depthWritesEnabled;
 #endif

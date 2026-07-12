@@ -1,6 +1,7 @@
 //
 // Created by Daniel Monteiro on 01/03/2026.
 //
+#ifndef SGDK
 #include <math.h>
 #include <stdint.h>
 #include <assert.h>
@@ -8,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 
 typedef int GLfixed;
 
@@ -18,7 +20,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 											const uint8_t *colourChannels,
 											const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-											const uint16_t *z,
+											const uint8_t *z,
 #endif
 											const uint8_t* lightDot,
 											const uint8_t* ambientLight) {
@@ -31,7 +33,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 	GLfixed fDV2;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-	uint16_t currentDepth;
+	uint8_t currentDepth;
 	GLfixed fDZ1;
 	GLfixed fDZ2;
 	GLfixed fZ1;
@@ -183,7 +185,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 			FramebufferPixelFormat *destination;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-			uint16_t *depthDestination;
+			uint8_t *depthDestination;
 			GLfixed fZ;
 			GLfixed fDZLine;
 #endif
@@ -204,8 +206,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 			}
 
 
-			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
-
+			destination = SEEK(framebuffer, iFX0, y, FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 #endif
@@ -295,8 +296,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
 							}
 
-							*destination = MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF);
-
+							EMIT(destination, xPos, y, MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF));
 #ifndef	DISABLE_DEPTH_BUFFER
 							if (depthWritesEnabled)
 							{
@@ -306,8 +306,8 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 
 						}
 					}
+					ADVANCE(destination, xPos, y);
 					++xPos;
-					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
 
@@ -360,7 +360,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 										const uint8_t *colourChannels,
 										const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-										const uint16_t *z,
+										const uint8_t *z,
 #endif
 										const uint8_t* lightDot,
 										const uint8_t* ambientLight) {
@@ -373,7 +373,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 	GLfixed fDV2;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-	uint16_t currentDepth;
+	uint8_t currentDepth;
 	GLfixed fDZ1;
 	GLfixed fDZ2;
 	GLfixed fZ1;
@@ -522,7 +522,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 			FramebufferPixelFormat *destination;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-			uint16_t *depthDestination;
+			uint8_t *depthDestination;
 			GLfixed fZ;
 			GLfixed fDZLine;
 #endif
@@ -543,8 +543,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 			}
 
 
-			destination = &framebuffer[(XRES_FRAMEBUFFER * y) + iFX0];
-
+			destination = SEEK(framebuffer, iFX0, y, FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 #endif
@@ -635,8 +634,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 								fragB += ( texelB * (currentB * currentLight[c]) / 256) / 256;
 							}
 
-							*destination = MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF);
-
+							EMIT(destination, xPos, y, MAKE_PIXEL(MIN(fragR, 255 ), MIN(fragG, 255 ), MIN(fragB, 255 ), 0xFF));
 #ifndef	DISABLE_DEPTH_BUFFER
 							if (depthWritesEnabled)
 							{
@@ -646,8 +644,8 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 						}
 					}
 
+					ADVANCE(destination, xPos, y);
 					++xPos;
-					++destination;
 					texelLineX += texelLineDX;
 					texelLineY += texelLineDY;
 
@@ -701,7 +699,7 @@ drawTexturedTriangle(const int *coords,
 					 const uint8_t *colourChannels,
 					 const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-					 const uint16_t *z,
+					 const uint8_t *z,
 #endif
  					 const uint8_t* lightDot,
 	 				 const uint8_t* ambientLight) {
@@ -709,7 +707,7 @@ drawTexturedTriangle(const int *coords,
     int newCoors[6];
     uint8_t newUV[6];
 	uint8_t newColours[12];
-	uint16_t newZ[3];
+	uint8_t newZ[3];
 	uint8_t newLightDot[24];
 
     int upper = -1;
@@ -847,7 +845,7 @@ drawTexturedTriangle(const int *coords,
 
 static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* colour
 #ifndef	DISABLE_DEPTH_BUFFER
-, uint16_t currentDepth
+, uint8_t currentDepth
 #endif
 )
 {
@@ -856,10 +854,9 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 	FramebufferPixelFormat fragment = MAKE_PIXEL(colour[0], colour[1], colour[2], colour[3]);
 	for (y = 0; y < height; ++y)
 	{
-		FramebufferPixelFormat* fbPtr =  &framebuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
-
+		FramebufferPixelFormat* fbPtr = SEEK(framebuffer, (x0), (y0 + y), FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
-		uint16_t* depthDestination = &zBuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
+		uint8_t* depthDestination = &zBuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
 #endif
 
 		for (x = 0; x < width; ++x)
@@ -868,8 +865,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 			if (!depthTestEnabled || *depthDestination >= currentDepth)
 #endif
 			{
-				*fbPtr = fragment;
-				++fbPtr;
+				EMIT(fbPtr, (x + x0), (y + y0), fragment);
 #ifndef	DISABLE_DEPTH_BUFFER
 				if (depthWritesEnabled)
 				{
@@ -877,13 +873,17 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 				}
 #endif
 			}
+#ifndef	DISABLE_DEPTH_BUFFER
+			++depthDestination;
+#endif
+			ADVANCE(fbPtr, (x + x0), (y + y0));
 		}
 	}
 }
 
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
-uint16_t zValue,
+uint8_t zValue,
 #endif
 uint16_t pointSize)
 {
