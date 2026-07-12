@@ -14,6 +14,7 @@
  * 5 June 2008
  */
 
+#include <stdint.h>
 #define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
@@ -28,9 +29,13 @@
 
 #define fixToFloat(fp) ((fp) / 65536.0f)
 
-#include "internal.h"
 
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
 #include <GLES/gl.h>  /* use OpenGL ES 1.x */
+
+#include "internal.h"
 
 void initWindow( KeyCallback callback);
 void swapBuffers(void);
@@ -55,9 +60,9 @@ draw(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glPushMatrix();
-    glRotatex(view_rotx, intToFix(1), 0, 0);
-    glRotatex(view_roty, 0, intToFix(1), 0);
-    glRotatex(view_rotz, 0, 0, intToFix(1));
+    glRotatex(view_rotx, 1, 0, 0);
+    glRotatex(view_roty, 0, 1, 0);
+    glRotatex(view_rotz, 0, 0, 1);
 
     {
         glVertexPointer(3, GL_FIXED, 0, verts);
@@ -136,9 +141,10 @@ special_key(int special)
    }
 }
 
+
 void mainLoop(void)
 {
-    reshape(XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+    reshape(300, 300);
     while (1)
     {
         draw();
@@ -146,9 +152,10 @@ void mainLoop(void)
     }
 }
 
-int
-main(int argc, char* argv[]) {
 
+int
+main(int argc, char* argv[])
+{
     initWindow(special_key);
 
     init();

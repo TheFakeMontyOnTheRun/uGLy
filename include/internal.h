@@ -13,8 +13,8 @@
 
 typedef void ( *KeyCallback )(int charkey);
 
-#define XRES_FRAMEBUFFER 64
-#define YRES_FRAMEBUFFER 64
+#define XRES_FRAMEBUFFER 240
+#define YRES_FRAMEBUFFER 240
 
 #ifdef BPP24
 typedef uint32_t FramebufferPixelFormat;

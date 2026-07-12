@@ -5,7 +5,6 @@
 #include "../../src/matricesFP.c"
 #include "../../third_party/fpsqrt/fpsqrt.c"
 #include "tex32x32xRGBA32_MD.h"
-#include "tex64x64xRGBA32_IM.h"
 
 #define FX_1 intToFix(1)
 #define FX_5 intToFix(5)
