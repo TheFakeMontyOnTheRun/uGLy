@@ -11,7 +11,7 @@ extern "C" {
 FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
