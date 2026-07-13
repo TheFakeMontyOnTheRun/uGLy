@@ -881,6 +881,40 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 	}
 }
 
+
+void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, FramebufferPixelFormat colour) {
+    int dx = abs(x1 - x0);
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = abs(y1 - y0);
+    int sy = y0 < y1 ? 1 : -1;
+    int err = (dx > dy ? dx : -dy) >> 1;
+    int e2;
+
+    for (;;) {
+
+        if (x0 == x1 && y0 == y1) break;
+
+        if (x0 >= 0 && y0 >= 0 && x0 < 256 && y0 < 192) {
+	    FramebufferPixelFormat* fbPtr = SEEK(framebuffer, (x0), (y0), FRAMEBUFFER_PITCH);
+	    EMIT(fbPtr, (x0), (y0), colour);
+        } else {
+            return;
+        }
+
+        e2 = err;
+        if (e2 > -dx) {
+            err -= dy;
+            x0 += sx;
+        }
+        if (e2 < dy) {
+            err += dx;
+            y0 += sy;
+        }
+    }
+}
+
+
+
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
 uint8_t zValue,
