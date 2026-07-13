@@ -808,7 +808,7 @@ void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixe
                          &lightsDot[0], &ambientColourComponents[0]);
 }
 
-void processPoints(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed vecs[16], GLfixed transformed[16])
+void processPoints(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed vecs[4], GLfixed transformed[4])
 {
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
@@ -926,21 +926,21 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
             for (c = 0; c < firstTrig; ++c)
             {
-                uvPtr += 6;
-                vertexPtr += 9;
-                cPtr += 12;
+                uvPtr += 2 * textureCoordSize;
+                vertexPtr += 3 * vertexSize;
+                cPtr += 4 * colorSize;
                 nPtr += 9;
             }
 
             for (c = 0; c < finalCount; ++c)
             {
-                GLfixed vecs[16];
-                GLfixed transformed[16];
-                GLfixed transformedNormals[16];
+                GLfixed vecs[12];
+                GLfixed transformed[12];
+                GLfixed transformedNormals[12];
 
                 processTriangle(modelViewMatrix, mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
 
-                vertexPtr += 9;
+                vertexPtr += 3 * vertexSize;
 
                 if (normalsArrayEnabled)
                 {
@@ -948,11 +948,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 }
                 if (textureCoordsEnabled)
                 {
-                    uvPtr += 6;
+                    uvPtr += 2 * textureCoordSize;
                 }
                 if (colorArrayEnabled)
                 {
-                    cPtr += 12;
+                    cPtr += 4 * colorSize;
                 }
             }
         }
@@ -976,21 +976,21 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
             for (c = 0; c < first; ++c)
             {
-                vertexPtr += 3;
-                cPtr += 4;
+                vertexPtr += vertexSize;
+                cPtr += colorSize;
             }
 
             for (c = 0; c < finalCount; ++c)
             {
-                GLfixed vecs[16];
-                GLfixed transformed[16];
+                GLfixed vecs[4];
+                GLfixed transformed[4];
 
                 processPoints(mvp, vertexPtr, cPtr, vecs, transformed);
-                vertexPtr += 3;
+                vertexPtr += vertexSize;
 
                 if (colorArrayEnabled)
                 {
-                    cPtr += 4;
+                    cPtr += colorSize;
                 }
             }
         }
@@ -1043,21 +1043,21 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
             for (c = 0; c < firstTrig; ++c)
             {
-                uvPtr += 2;
-                vertexPtr += 3;
-                cPtr += 4;
+                uvPtr += textureCoordSize;
+                vertexPtr += vertexSize;
+                cPtr += colorSize;
                 nPtr += 3;
             }
 
             for (c = 0; c < finalCount; ++c)
             {
-                GLfixed vecs[16];
-                GLfixed transformed[16];
-                GLfixed transformedNormals[16];
+                GLfixed vecs[12];
+                GLfixed transformed[12];
+                GLfixed transformedNormals[12];
 
                 processTriangle(modelViewMatrix, mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
 
-                vertexPtr += 3;
+                vertexPtr += vertexSize;
 
                 if (normalsArrayEnabled)
                 {
@@ -1065,11 +1065,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 }
                 if (textureCoordsEnabled)
                 {
-                    uvPtr += 2;
+                    uvPtr += textureCoordSize;
                 }
                 if (colorArrayEnabled)
                 {
-                    cPtr += 4;
+                    cPtr += colorSize;
                 }
             }
         }
@@ -1134,9 +1134,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
 
             for (c = (first + 1); c < finalCount; ++c)
             {
-                GLfixed vecs[16];
-                GLfixed transformed[16];
-                GLfixed transformedNormals[16];
+                GLfixed vecs[12];
+                GLfixed transformed[12];
+                GLfixed transformedNormals[12];
 
                 triangleVerts[3] = ((GLfixed*)vertexPointer)[3 * c];
                 triangleVerts[4] = ((GLfixed*)vertexPointer)[3 * c + 1];
@@ -1327,9 +1327,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 
             for (c = 1; c < finalCount; ++c)
             {
-                GLfixed vecs[16];
-                GLfixed transformed[16];
-                GLfixed transformedNormals[16];
+                GLfixed vecs[12];
+                GLfixed transformed[12];
+                GLfixed transformedNormals[12];
 
 
                 if (type == GL_UNSIGNED_SHORT) {
@@ -1651,9 +1651,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 
             for (c = 0; c < finalCount; ++c)
             {
-                GLfixed vecs[16];
-                GLfixed transformed[16];
-                GLfixed transformedNormals[16];
+                GLfixed vecs[12];
+                GLfixed transformed[12];
+                GLfixed transformedNormals[12];
 
                 if (type == GL_UNSIGNED_SHORT) {
                     index = ((uint16_t*)indices)[c];
