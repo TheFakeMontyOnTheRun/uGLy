@@ -639,7 +639,67 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
     }
 }
 
-void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[16], GLfixed transformed[16], GLfixed transformedNormals[16])
+void processLine(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed vecs[8], GLfixed transformed[8])
+{
+    vecs[0] = *(vertexPtr + 0);
+    vecs[1] = *(vertexPtr + 1);
+    vecs[2] = *(vertexPtr + 2);
+    vecs[3] = intToFix(1);
+
+    vecs[4] = *(vertexPtr + 3);
+    vecs[5] = *(vertexPtr + 4);
+    vecs[6] = *(vertexPtr + 5);
+    vecs[7] = intToFix(1);
+
+    mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
+    mat4x4_transformVec(&transformed[4], &mvp[0], &vecs[4]);
+
+    if ((transformed[3] == 0) || (transformed[7] == 0))
+    {
+        return;
+    }
+
+    GLfixed oneOverW0 = Div(intToFix(1), transformed[3]);
+    GLfixed oneOverW1 = Div(intToFix(1), transformed[7]);
+
+    GLfixed vertex[6] = {
+        Mul(oneOverW0, transformed[0]), Mul(oneOverW0, transformed[1]),
+        Mul(oneOverW1, transformed[4]), Mul(oneOverW1, transformed[5]),
+    };
+
+    GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
+    GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
+
+#ifndef	DISABLE_DEPTH_BUFFER
+    uint8_t zValuesNormalized[2] ={
+        fixToInt(Mul(z0, zRange)),
+        fixToInt(Mul(z1, zRange))
+    };
+#endif
+
+    int coords[4] = {
+        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[0])),
+        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[1])),
+        viewportX + fixToInt(halfViewportWidthx + Mul( halfViewportWidthx, vertex[2])),
+        viewportY + fixToInt(halfViewportHeightx - Mul( halfViewportHeightx, vertex[3]))
+    };
+    uint8_t coloursArray[8] = {
+
+        fixToInt(Mul( *(cPtr +  0 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  1 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  2 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  3 ), intToFix(0xFF))),
+
+        fixToInt(Mul( *(cPtr +  4 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  5 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  6 ), intToFix(0xFF))),
+        fixToInt(Mul( *(cPtr +  7 ), intToFix(0xFF)))
+    };
+
+    drawLine(coords[0], coords[1], coords[2], coords[3], &coloursArray[0], &zValuesNormalized[0]);
+}
+
+void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[12], GLfixed transformed[12], GLfixed transformedNormals[12])
 {
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
@@ -1223,9 +1283,46 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             }
         }
         break;
+    case GL_LINES:
+        {
+            int c;
+            int finalCount = count / 2;
+            GLfixed *vertexPtr;
+            GLfixed *cPtr;
+            vertexPtr = (GLfixed*)vertexPointer;
+
+            if (colorArrayEnabled)
+            {
+                cPtr = (GLfixed*)colorPointer;
+            } else
+            {
+                cPtr = (GLfixed*)&dummyColors[0];
+            }
+
+            for (c = 0; c < first; ++c)
+            {
+                vertexPtr += vertexSize;
+                cPtr += colorSize;
+            }
+
+            for (c = 0; c < finalCount; ++c)
+            {
+                GLfixed vecs[8];
+                GLfixed transformed[8];
+
+                processLine(modelViewMatrix, mvp, vertexPtr, cPtr, vecs, transformed);
+
+                vertexPtr += 2 * vertexSize;
+
+                if (colorArrayEnabled)
+                {
+                    cPtr += 2 * colorSize;
+                }
+            }
+        }
+        break;
     case GL_LINE_STRIP:
     case GL_LINE_LOOP:
-    case GL_LINES:
         notImplementedYet(__func__);
         break;
     default:

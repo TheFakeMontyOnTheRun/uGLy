@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #endif
+#include "fpsqrt.h"
 
 typedef int GLfixed;
 
@@ -882,7 +883,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 }
 
 
-void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, FramebufferPixelFormat colour) {
+void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, uint8_t* colours, uint8_t *zValues) {
     int dx = abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
     int dy = abs(y1 - y0);
@@ -890,13 +891,57 @@ void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, FramebufferPixel
     int err = (dx > dy ? dx : -dy) >> 1;
     int e2;
 
+	GLfixed r, g, b, a, z, rDX, gDX, bDX, aDX, zDX;
+	r = intToFix(colours[0]);
+	g = intToFix(colours[1]);
+	b = intToFix(colours[2]);
+	a = intToFix(colours[3]);
+	z = intToFix(zValues[0]);
+
+	GLfixed sqX = (x1 - x0);
+	sqX = intToFix(sqX);
+	sqX = Mul(sqX, sqX);
+
+	GLfixed sqY = (y1 - y0);
+	sqY = intToFix(sqY);
+	sqY = Mul(sqY, sqY);
+
+	int sq = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
+	GLfixed len = sqrt_fx16_16_to_fx16_16(intToFix(sq));
+
+	if (len == 0) {
+		return;
+	}
+
+	GLfixed oneOverLen = Div(intToFix(1), len);
+	rDX = Mul(intToFix(colours[4]) - r, oneOverLen);
+	gDX = Mul(intToFix(colours[5]) - g, oneOverLen);
+	bDX = Mul(intToFix(colours[6]) - b, oneOverLen);
+	aDX = Mul(intToFix(colours[7]) - a, oneOverLen);
+	zDX = Mul(intToFix(zValues[1]) - z, oneOverLen);
+
     for (;;) {
 
-        if (x0 == x1 && y0 == y1) break;
+        if (x0 == x1 && y0 == y1) return;
 
         if (x0 >= 0 && y0 >= 0 && x0 < XRES_FRAMEBUFFER && y0 < YRES_FRAMEBUFFER) {
-	    FramebufferPixelFormat* fbPtr = SEEK(framebuffer, (x0), (y0), FRAMEBUFFER_PITCH);
-	    EMIT(fbPtr, (x0), (y0), colour);
+
+#ifndef	DISABLE_DEPTH_BUFFER
+        	uint8_t currentDepth = fixToInt(z);
+        	if (!depthTestEnabled || zBuffer[(y0 * XRES_FRAMEBUFFER) + x0] >= currentDepth)
+#endif
+        	{
+        		FramebufferPixelFormat fragment = MAKE_PIXEL(fixToInt(r), fixToInt(g), fixToInt(b), fixToInt(a));
+        		FramebufferPixelFormat* fbPtr = SEEK(framebuffer, (x0), (y0), FRAMEBUFFER_PITCH);
+        		EMIT(fbPtr, (x0), (y0), fragment);
+
+#ifndef	DISABLE_DEPTH_BUFFER
+        		if (depthWritesEnabled)
+        		{
+        			zBuffer[(y0 * XRES_FRAMEBUFFER) + x0] = currentDepth;
+        		}
+#endif
+        	}
         } else {
             return;
         }
@@ -910,6 +955,12 @@ void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, FramebufferPixel
             err += dx;
             y0 += sy;
         }
+
+    	r += rDX;
+    	g += gDX;
+    	b += bDX;
+    	a += aDX;
+    	z += zDX;
     }
 }
 
