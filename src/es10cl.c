@@ -1323,7 +1323,78 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
         break;
     case GL_LINE_STRIP:
     case GL_LINE_LOOP:
-        notImplementedYet(__func__);
+        {
+            int c;
+            int finalCount = count - 1;
+            GLfixed *vertexPtr;
+            GLfixed *cPtr;
+            vertexPtr = (GLfixed*)vertexPointer;
+
+            if (colorArrayEnabled)
+            {
+                cPtr = (GLfixed*)colorPointer;
+            } else
+            {
+                cPtr = (GLfixed*)&dummyColors[0];
+            }
+
+            for (c = 0; c < first; ++c)
+            {
+                vertexPtr += vertexSize;
+                cPtr += colorSize;
+            }
+
+            for (c = 0; c < finalCount; ++c)
+            {
+                GLfixed vecs[8];
+                GLfixed transformed[8];
+
+                processLine(modelViewMatrix, mvp, vertexPtr, cPtr, vecs, transformed);
+
+                vertexPtr += vertexSize;
+
+                if (colorArrayEnabled)
+                {
+                    cPtr += colorSize;
+                }
+            }
+            if (mode != GL_LINE_STRIP) {
+                GLfixed *verts = alloca(2 * vertexSize * sizeof(GLfixed));
+                GLfixed *colours = alloca(2 * colorSize * sizeof(GLfixed));
+                GLfixed vecs[8];
+                GLfixed transformed[8];
+
+                vertexPtr -= vertexSize;
+
+                if (colorArrayEnabled)
+                {
+                    cPtr -= colorSize;
+                }
+
+                for (c = 0; c < vertexSize; ++c)
+                {
+                    verts[c] = ((GLfixed*)vertexPointer)[c];
+                    if (colorArrayEnabled)
+                    {
+                        colours[c] = ((GLfixed*)colorPointer)[c];
+                    } else
+                    {
+                        colours[c] = dummyColors[0][0];
+                    }
+
+
+                    verts[vertexSize + c] = ((GLfixed*)vertexPointer)[(vertexSize * (count - 1)) + c];
+                    if (colorArrayEnabled)
+                    {
+                        colours[colorSize + c] = ((GLfixed*)colorPointer)[(colorSize * (count - 1)) + c];
+                    } else
+                    {
+                        colours[colorSize + c] = dummyColors[0][0];
+                    }
+                }
+                processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
+            }
+        }
         break;
     default:
         if (currentError == GL_NO_ERROR)
