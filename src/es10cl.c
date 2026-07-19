@@ -1965,10 +1965,152 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
             }
         }
         break;
+    case GL_LINES:
+        {
+            int c;
+            int index;
+            int finalCount = count;
+            GLfixed verts[2 * 3];
+            GLfixed colours[2 * 4];
+
+
+            for (c = 0; c < finalCount; c += 2)
+            {
+                GLfixed vecs[8];
+                GLfixed transformed[8];
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c];
+                } else {
+                    index = ((uint8_t*)indices)[c];
+                }
+
+                verts[0] = ((GLfixed*)vertexPointer)[3 * index];
+                verts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                verts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (colorArrayEnabled)
+                {
+                    colours[0] = ((GLfixed*)colorPointer)[4 * index];
+                    colours[1] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    colours[2] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    colours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    colours[0] = ((GLfixed*)dummyColors)[4 * index];
+                    colours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    colours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    colours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c + 1];
+                } else {
+                    index = ((uint8_t*)indices)[c + 1];
+                }
+
+                verts[3] = ((GLfixed*)vertexPointer)[3 * index];
+                verts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                verts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (colorArrayEnabled)
+                {
+                    colours[4] = ((GLfixed*)colorPointer)[4 * index];
+                    colours[5] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    colours[6] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    colours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    colours[4] = ((GLfixed*)dummyColors)[4 * index];
+                    colours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    colours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    colours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
+            }
+        }
+        break;
     case GL_LINE_STRIP:
     case GL_LINE_LOOP:
-    case GL_LINES:
-        notImplementedYet(__func__);
+                {
+            int c;
+            int index;
+            int finalCount = count - 1;
+            GLfixed verts[2 * 3];
+            GLfixed colours[2 * 4];
+            GLfixed vecs[8];
+            GLfixed transformed[8];
+
+
+            for (c = 0; c < finalCount; ++c)
+            {
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c];
+                } else {
+                    index = ((uint8_t*)indices)[c];
+                }
+
+                verts[0] = ((GLfixed*)vertexPointer)[3 * index];
+                verts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                verts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (colorArrayEnabled)
+                {
+                    colours[0] = ((GLfixed*)colorPointer)[4 * index];
+                    colours[1] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    colours[2] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    colours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    colours[0] = ((GLfixed*)dummyColors)[4 * index];
+                    colours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    colours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    colours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[c + 1];
+                } else {
+                    index = ((uint8_t*)indices)[c + 1];
+                }
+
+                verts[3] = ((GLfixed*)vertexPointer)[3 * index];
+                verts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                verts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                if (colorArrayEnabled)
+                {
+                    colours[4] = ((GLfixed*)colorPointer)[4 * index];
+                    colours[5] = ((GLfixed*)colorPointer)[4 * index + 1];
+                    colours[6] = ((GLfixed*)colorPointer)[4 * index + 2];
+                    colours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
+                } else
+                {
+                    colours[4] = ((GLfixed*)dummyColors)[4 * index];
+                    colours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                    colours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                    colours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                }
+
+                processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
+            }
+            if (mode != GL_LINE_STRIP)
+            {
+                if (type == GL_UNSIGNED_SHORT) {
+                    index = ((uint16_t*)indices)[0];
+                } else {
+                    index = ((uint8_t*)indices)[0];
+                }
+
+                verts[0] = ((GLfixed*)vertexPointer)[3 * index];
+                verts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
+                verts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+
+                processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
+            }
+        }
         break;
     default:
         if (currentError == GL_NO_ERROR)
