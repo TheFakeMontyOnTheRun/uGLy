@@ -13,8 +13,8 @@
 
 typedef void ( *KeyCallback )(int charkey);
 
-#define XRES_FRAMEBUFFER 240
-#define YRES_FRAMEBUFFER 240
+#define XRES_FRAMEBUFFER 320
+#define YRES_FRAMEBUFFER 200
 
 #ifdef BPP24
 typedef uint32_t FramebufferPixelFormat;
@@ -46,7 +46,13 @@ static inline uint16_t swap16(uint16_t x) {
 #else
 #ifdef BPP8
 typedef uint8_t FramebufferPixelFormat;
-#error "8 BPP TBD"
+
+#define MAKE_PIXEL(r,g,b, a) ( ((((r << 2) >> 8)) << 6) | ((((g << 3) >> 8)) << 3) | ((((b << 3) >> 8)) << 0) )
+#define EMIT(destination, x_hint, y_hint, fragment) do { (void)(x_hint); (void)(y_hint);*(destination) = (fragment);} while(0)
+#define ADVANCE(fbptr, x_hint, y_hint) do{ (void)(x_hint); (void)(y_hint); ++(fbptr);} while(0)
+#define SEEK(framebuffer_ptr, x_pos, y_pos, pitch) ((framebuffer_ptr) + ((pitch) * (y_pos)) + (x_pos))
+#define FRAMEBUFFER_PITCH (XRES_FRAMEBUFFER)
+
 #else
 #ifdef BPP4
 typedef uint8_t FramebufferPixelFormat;

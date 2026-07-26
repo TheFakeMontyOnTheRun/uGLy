@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include "tex64x64xRGBA32.h"
 #define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
@@ -40,8 +41,6 @@
 #include "internal.h"
 
 static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
-
-struct Bitmap* texture;
 
 GLuint textureID;
 
@@ -165,19 +164,16 @@ init(void)
 
 
     glBindTexture(GL_TEXTURE_2D, textureID);
-    texture = loadBitmap("res/opengles.png");
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGB,
-                 texture->width,
-                 texture->height,
+                 64,
+                 64,
                  0,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
-                 texture->texels);
-    free(texture->texels);
-    free(texture);
+                 &tex[0]);
 }
 
 static void
@@ -222,6 +218,7 @@ void mainLoop(void)
     {
         draw();
         swapBuffers();
+        view_roty -= intToFix(5);
     }
 }
 

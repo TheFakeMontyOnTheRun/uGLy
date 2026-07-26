@@ -1,0 +1,39 @@
+CC=i386-pc-msdosdjgpp-gcc
+CXX=i386-pc-msdosdjgpp-g++
+STRIP=i386-pc-msdosdjgpp-strip
+LD=i386-pc-msdosdjgpp-ld
+
+LDFLAGS = -lemu -flto
+
+CFLAGS= -O6 -Ofast      \
+    -Ithird_party/fpsqrt        \
+    -Iinclude          \
+    -funroll-loops          \
+    -funroll-all-loops      \
+    -fomit-frame-pointer    \
+    -fno-exceptions         \
+    -ffast-math             \
+    -mtune=i486             \
+    -march=i486             \
+    --pedantic		    \
+    -fpermissive \
+    -Wno-narrowing \
+    -DBPP8
+
+OBJS= src/es11.o \
+	  src/es10cl.o \
+	  src/DOS.o \
+	  src/raster.o \
+	  third_party/fpsqrt/fpsqrt.o \
+	  src/matricesFP.o
+
+tri.exe: $(OBJS) samples/tri.o
+	$(CXX) -otri.exe $(OBJS) samples/tri.o $(LDFLAGS)
+	$(STRIP) tri.exe
+
+all: tri.exe
+
+clean:
+	rm -f src/*.o
+	rm -f third_party/*.o
+	rm -f samples/*.o
