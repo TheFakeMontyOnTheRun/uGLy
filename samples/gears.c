@@ -382,10 +382,6 @@ void mainLoop(void)
     while (1)
     {
         draw();
-
-        view_rotx += Div(intToFix(2), intToFix(10));
-        view_roty += Div(intToFix(3), intToFix(10));
-
         swapBuffers();
     }
 }
