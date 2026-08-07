@@ -8,6 +8,8 @@
 #include <sys/nearptr.h>
 
 #include <stdint.h>
+#include <stdlib.h>
+
 #include "internal.h"
 #include <GLES/gl.h>
 
@@ -27,6 +29,7 @@ KeyCallback keyCallback;
 
 void initWindow( KeyCallback callback)
 {
+    keyCallback = callback;
     __dpmi_regs regs;
 
     // Initialize mouse (INT 33h, AX = 0)
@@ -73,4 +76,26 @@ struct Bitmap* loadBitmap(const char *filename)
 void swapBuffers(void)
 {
     dosmemput(&framebuffer[0], XRES_FRAMEBUFFER * YRES_FRAMEBUFFER, 0xa0000);
+
+    if (kbhit())
+    {
+        char getched = getch();
+        switch (getched)
+        {
+        case 27:
+        case 'q':
+            graphicsShutdown();
+            exit(0);
+            break;
+
+        case 'a':
+        case 'd':
+        case 's':
+        case 'w':
+        case 'z':
+        case 'x':
+            keyCallback(getched);
+            break;
+        }
+    }
 }
