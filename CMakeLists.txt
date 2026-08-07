@@ -80,6 +80,9 @@ add_executable(gears src/sdl2.c samples/gears.c ${SOURCE_FILES} )
 target_include_directories(gears PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
 target_link_libraries(gears LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
 
+add_executable(cube src/sdl2.c samples/cube.c ${SOURCE_FILES} )
+target_include_directories(cube PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(cube LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
 
 add_executable(ugly-test  ${TEST_SOURCE_FILES} ${SOURCE_FILES} )
 
