@@ -48,7 +48,13 @@ static void
 draw(void)
 {
 
-    static const GLfixed verts[8][3] = {
+    struct Vertex
+    {
+        GLfixed coords[3];
+        uint8_t pad[4];
+    };
+
+    static const struct Vertex verts[8] = {
         /*
          *
          *    0 |-- 2
@@ -140,7 +146,7 @@ draw(void)
 #endif
 
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
-    glVertexPointer(3, GL_FIXED, 0, verts);
+    glVertexPointer(3, GL_FIXED, 16, verts);
     glColorPointer(4, GL_FIXED, 0, colors);
     glNormalPointer(GL_FIXED, 0, normals);
 

@@ -699,21 +699,21 @@ void processLine(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* c
     drawLine(coords[0], coords[1], coords[2], coords[3], &coloursArray[0], &zValuesNormalized[0]);
 }
 
-void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[12], GLfixed transformed[12], GLfixed transformedNormals[12])
+void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, int effeticeStride, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[12], GLfixed transformed[12], GLfixed transformedNormals[12])
 {
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
     vecs[2] = *(vertexPtr + 2);
     vecs[3] = intToFix(1);
 
-    vecs[4] = *(vertexPtr + 3);
-    vecs[5] = *(vertexPtr + 4);
-    vecs[6] = *(vertexPtr + 5);
+    vecs[4] = *(vertexPtr + effeticeStride);
+    vecs[5] = *(vertexPtr + effeticeStride + 1);
+    vecs[6] = *(vertexPtr + effeticeStride + 2);
     vecs[7] = intToFix(1);
 
-    vecs[8] = *(vertexPtr + 6);
-    vecs[9] = *(vertexPtr + 7);
-    vecs[10] = *(vertexPtr + 8);
+    vecs[8] = *(vertexPtr + 2 * effeticeStride);
+    vecs[9] = *(vertexPtr + 2 * effeticeStride + 1);
+    vecs[10] = *(vertexPtr + 2 * effeticeStride + 2);
     vecs[11] = intToFix(1);
 
     mat4x4_transformVec(&transformed[0], &mvp[0], &vecs[0]);
@@ -992,13 +992,22 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 nPtr += 9;
             }
 
+            for (c = 0; c < (first % 3); ++c)
+            {
+                uvPtr += textureCoordSize;
+                vertexPtr += vertexSize;
+                cPtr += colorSize;
+                nPtr += 3;
+            }
+
+
             for (c = 0; c < finalCount; ++c)
             {
                 GLfixed vecs[12];
                 GLfixed transformed[12];
                 GLfixed transformedNormals[12];
 
-                processTriangle(modelViewMatrix, mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, vertexPtr, vertexSize, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
 
                 vertexPtr += 3 * vertexSize;
 
@@ -1059,7 +1068,6 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
         {
             int c;
             int finalCount = count - 2;
-            int firstTrig = first;
             GLfixed *vertexPtr;
             GLfixed *uvPtr;
             GLfixed *cPtr;
@@ -1101,7 +1109,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             }
 
 
-            for (c = 0; c < firstTrig; ++c)
+            for (c = 0; c < first; ++c)
             {
                 uvPtr += textureCoordSize;
                 vertexPtr += vertexSize;
@@ -1115,13 +1123,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed transformed[12];
                 GLfixed transformedNormals[12];
 
-                processTriangle(modelViewMatrix, mvp, vertexPtr, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, vertexPtr, vertexSize, uvPtr, cPtr, nPtr, texture, vecs, transformed, transformedNormals);
 
                 vertexPtr += vertexSize;
 
                 if (normalsArrayEnabled)
                 {
-                    nPtr += 3;
+                    nPtr += 3; /* temporary */
                 }
                 if (textureCoordsEnabled)
                 {
@@ -1152,9 +1160,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 texture = &dummyTexture;
             }
 
-            triangleVerts[0] = ((GLfixed*)vertexPointer)[3 * first];
-            triangleVerts[1] = ((GLfixed*)vertexPointer)[3 * first + 1];
-            triangleVerts[2] = ((GLfixed*)vertexPointer)[3 * first + 2];
+            triangleVerts[0] = ((GLfixed*)vertexPointer)[vertexSize * first];
+            triangleVerts[1] = ((GLfixed*)vertexPointer)[vertexSize * first + 1];
+            triangleVerts[2] = ((GLfixed*)vertexPointer)[vertexSize * first + 2];
 
             if (textureCoordsEnabled)
             {
@@ -1198,9 +1206,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 GLfixed transformed[12];
                 GLfixed transformedNormals[12];
 
-                triangleVerts[3] = ((GLfixed*)vertexPointer)[3 * c];
-                triangleVerts[4] = ((GLfixed*)vertexPointer)[3 * c + 1];
-                triangleVerts[5] = ((GLfixed*)vertexPointer)[3 * c + 2];
+                triangleVerts[3] = ((GLfixed*)vertexPointer)[vertexSize * c];
+                triangleVerts[4] = ((GLfixed*)vertexPointer)[vertexSize * c + 1];
+                triangleVerts[5] = ((GLfixed*)vertexPointer)[vertexSize * c + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1239,9 +1247,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 }
 
                 int d = c + 1;
-                triangleVerts[6] = ((GLfixed*)vertexPointer)[3 * d];
-                triangleVerts[7] = ((GLfixed*)vertexPointer)[3 * d + 1];
-                triangleVerts[8] = ((GLfixed*)vertexPointer)[3 * d + 2];
+                triangleVerts[6] = ((GLfixed*)vertexPointer)[vertexSize * d];
+                triangleVerts[7] = ((GLfixed*)vertexPointer)[vertexSize * d + 1];
+                triangleVerts[8] = ((GLfixed*)vertexPointer)[vertexSize * d + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1279,7 +1287,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     triangleNormals[8] = ((GLfixed*)dummyNormals)[3 * d + 2];
                 }
 
-                processTriangle(modelViewMatrix, mvp, triangleVerts, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, triangleVerts, 3, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
             }
         }
         break;
@@ -1453,9 +1461,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 index = ((uint8_t*)indices)[0];
             }
 
-            triangleVerts[0] = ((GLfixed*)vertexPointer)[3 * index];
-            triangleVerts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
-            triangleVerts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+            triangleVerts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
+            triangleVerts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+            triangleVerts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
             if (textureCoordsEnabled)
             {
@@ -1463,8 +1471,8 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 triangleUv[1] = ((GLfixed*)textureCoordPointer)[2 * index + 1];
             } else
             {
-                triangleUv[0] = ((GLfixed*)dummyTexCoords)[2 * index];
-                triangleUv[1] = ((GLfixed*)dummyTexCoords)[2 * index + 1];
+                triangleUv[0] = ((GLfixed*)dummyTexCoords)[0];
+                triangleUv[1] = ((GLfixed*)dummyTexCoords)[1];
             }
 
             if (colorArrayEnabled)
@@ -1475,10 +1483,10 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 triangleColours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
             } else
             {
-                triangleColours[0] = ((GLfixed*)dummyColors)[4 * index];
-                triangleColours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
-                triangleColours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
-                triangleColours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                triangleColours[0] = ((GLfixed*)dummyColors)[0];
+                triangleColours[1] = ((GLfixed*)dummyColors)[1];
+                triangleColours[2] = ((GLfixed*)dummyColors)[2];
+                triangleColours[3] = ((GLfixed*)dummyColors)[3];
             }
 
             if (normalsArrayEnabled)
@@ -1488,9 +1496,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 triangleNormals[2] = ((GLfixed*)normalsPointer)[3 * index + 2];
             } else
             {
-                triangleNormals[0] = ((GLfixed*)dummyNormals)[3 * index];
-                triangleNormals[1] = ((GLfixed*)dummyNormals)[3 * index + 1];
-                triangleNormals[2] = ((GLfixed*)dummyNormals)[3 * index + 2];
+                triangleNormals[0] = ((GLfixed*)dummyNormals)[0];
+                triangleNormals[1] = ((GLfixed*)dummyNormals)[1];
+                triangleNormals[2] = ((GLfixed*)dummyNormals)[2];
             }
 
             for (c = 1; c < finalCount; ++c)
@@ -1507,9 +1515,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 }
 
 
-                triangleVerts[3] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[3] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[4] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[5] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1517,8 +1525,8 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleUv[3] = ((GLfixed*)textureCoordPointer)[2 * index + 1];
                 } else
                 {
-                    triangleUv[2] = ((GLfixed*)dummyTexCoords)[2 * index];
-                    triangleUv[3] = ((GLfixed*)dummyTexCoords)[2 * index + 1];
+                    triangleUv[2] = ((GLfixed*)dummyTexCoords)[0];
+                    triangleUv[3] = ((GLfixed*)dummyTexCoords)[1];
                 }
 
                 if (colorArrayEnabled)
@@ -1529,10 +1537,10 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[4] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    triangleColours[4] = ((GLfixed*)dummyColors)[0];
+                    triangleColours[5] = ((GLfixed*)dummyColors)[1];
+                    triangleColours[6] = ((GLfixed*)dummyColors)[2];
+                    triangleColours[7] = ((GLfixed*)dummyColors)[3];
                 }
 
                 if (normalsArrayEnabled)
@@ -1542,9 +1550,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleNormals[5] = ((GLfixed*)normalsPointer)[3 * index + 2];
                 } else
                 {
-                    triangleNormals[3] = ((GLfixed*)dummyNormals)[3 * index];
-                    triangleNormals[4] = ((GLfixed*)dummyNormals)[3 * index + 1];
-                    triangleNormals[5] = ((GLfixed*)dummyNormals)[3 * index + 2];
+                    triangleNormals[3] = ((GLfixed*)dummyNormals)[0];
+                    triangleNormals[4] = ((GLfixed*)dummyNormals)[1];
+                    triangleNormals[5] = ((GLfixed*)dummyNormals)[2];
                 }
 
                 if (type == GL_UNSIGNED_SHORT) {
@@ -1553,9 +1561,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c + 1];
                 }
 
-                triangleVerts[6] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[7] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[8] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[6] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[7] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[8] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1563,8 +1571,8 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleUv[5] = ((GLfixed*)textureCoordPointer)[2 * index + 1];
                 } else
                 {
-                    triangleUv[4] = ((GLfixed*)dummyTexCoords)[2 * index];
-                    triangleUv[5] = ((GLfixed*)dummyTexCoords)[2 * index + 1];
+                    triangleUv[4] = ((GLfixed*)dummyTexCoords)[0];
+                    triangleUv[5] = ((GLfixed*)dummyTexCoords)[1];
                 }
 
                 if (colorArrayEnabled)
@@ -1575,10 +1583,10 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[11] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[8] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[9] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[10] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[11] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    triangleColours[8] = ((GLfixed*)dummyColors)[0];
+                    triangleColours[9] = ((GLfixed*)dummyColors)[1];
+                    triangleColours[10] = ((GLfixed*)dummyColors)[2];
+                    triangleColours[11] = ((GLfixed*)dummyColors)[3];
                 }
 
                 if (normalsArrayEnabled)
@@ -1588,12 +1596,12 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleNormals[8] = ((GLfixed*)normalsPointer)[3 * index + 2];
                 } else
                 {
-                    triangleNormals[6] = ((GLfixed*)dummyNormals)[3 * index];
-                    triangleNormals[7] = ((GLfixed*)dummyNormals)[3 * index + 1];
-                    triangleNormals[8] = ((GLfixed*)dummyNormals)[3 * index + 2];
+                    triangleNormals[6] = ((GLfixed*)dummyNormals)[0];
+                    triangleNormals[7] = ((GLfixed*)dummyNormals)[1];
+                    triangleNormals[8] = ((GLfixed*)dummyNormals)[2];
                 }
 
-                processTriangle(modelViewMatrix, mvp, triangleVerts, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, triangleVerts, 3, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
             }
         }
         break;
@@ -1630,9 +1638,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c];
                 }
 
-                triangleVerts[0] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1678,9 +1686,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 }
 
 
-                triangleVerts[3] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[3] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[4] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[5] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1724,9 +1732,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c + 2];
                 }
 
-                triangleVerts[6] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[7] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[8] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[6] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[7] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[8] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1764,7 +1772,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleNormals[8] = ((GLfixed*)dummyNormals)[3 * index + 2];
                 }
 
-                processTriangle(modelViewMatrix, mvp, triangleVerts, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, triangleVerts, 3, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
             }
         }
         break;
@@ -1787,7 +1795,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c];
                 }
 
-                GLfixed* vertexPtr = (GLfixed*)vertexPointer + (3 * index);
+                GLfixed* vertexPtr = (GLfixed*)vertexPointer + (vertexSize * index);
 
                 if (colorArrayEnabled)
                 {
@@ -1829,9 +1837,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c];
                 }
 
-                triangleVerts[0] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1875,9 +1883,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c + 1];
                 }
 
-                triangleVerts[3] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[3] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[4] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[5] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1921,9 +1929,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c + 2];
                 }
 
-                triangleVerts[6] = ((GLfixed*)vertexPointer)[3 * index];
-                triangleVerts[7] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                triangleVerts[8] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                triangleVerts[6] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                triangleVerts[7] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                triangleVerts[8] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (textureCoordsEnabled)
                 {
@@ -1961,7 +1969,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleNormals[8] = ((GLfixed*)dummyNormals)[3 * index + 2];
                 }
 
-                processTriangle(modelViewMatrix, mvp, triangleVerts, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
+                processTriangle(modelViewMatrix, mvp, triangleVerts, 3, triangleUv, triangleColours, triangleNormals, texture, vecs, transformed, transformedNormals);
             }
         }
         break;
@@ -1985,9 +1993,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c];
                 }
 
-                verts[0] = ((GLfixed*)vertexPointer)[3 * index];
-                verts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                verts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                verts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                verts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                verts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (colorArrayEnabled)
                 {
@@ -2052,9 +2060,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c];
                 }
 
-                verts[0] = ((GLfixed*)vertexPointer)[3 * index];
-                verts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                verts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                verts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                verts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                verts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (colorArrayEnabled)
                 {
@@ -2076,9 +2084,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[c + 1];
                 }
 
-                verts[3] = ((GLfixed*)vertexPointer)[3 * index];
-                verts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                verts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                verts[3] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                verts[4] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                verts[5] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 if (colorArrayEnabled)
                 {
@@ -2104,9 +2112,9 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     index = ((uint8_t*)indices)[0];
                 }
 
-                verts[0] = ((GLfixed*)vertexPointer)[3 * index];
-                verts[1] = ((GLfixed*)vertexPointer)[3 * index + 1];
-                verts[2] = ((GLfixed*)vertexPointer)[3 * index + 2];
+                verts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
+                verts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
+                verts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
 
                 processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
             }
@@ -2934,8 +2942,15 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
     }
 
     vertexStride = stride;
+    if (stride == 0)
+    {
+        vertexSize = size;
+    } else
+    {
+        vertexSize = stride / sizeof(GLfixed);
+    }
+
     vertexType = type;
-    vertexSize = size;
     vertexPointer = pointer;
 }
 
