@@ -74,6 +74,13 @@ typedef uint8_t FramebufferPixelFormat;
 #endif
 #endif
 
+enum MemoryType {
+    GENERAL_MEMORY,
+    BITMAP_MEMORY,
+    VERTEX_MEMORY,
+    TEXTURE_MEMORY,
+};
+
 struct Bitmap
 {
     uint32_t *texels;

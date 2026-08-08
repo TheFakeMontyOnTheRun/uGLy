@@ -294,6 +294,61 @@ static void notImplementedYet(const char* funcName)
 #endif
 }
 
+
+/**
+ *
+ * @param sizeInBytes
+ * @param type
+ * @param clearAfterAlloc
+ * @return
+ */
+void *
+allocMem(size_t sizeInBytes, enum MemoryType type, uint8_t clearAfterAlloc) {
+    /*
+    For the general allocator, we're not worried about the type of memory. It all comes from the
+    same place.
+     */
+    void *ptr;
+
+    ptr = malloc(sizeInBytes);
+
+    if (clearAfterAlloc) {
+        memset(ptr, 0, sizeInBytes);
+    }
+
+    (void) type;
+
+    return ptr;
+}
+
+/**
+ *
+ * @param ptr
+ */
+void disposeMem(void *ptr) {
+    free(ptr);
+}
+
+/**
+ *
+ * @param dst
+ * @param src
+ * @param sizeInBytes
+ */
+void memCopyToFrom(void *dst, const void *src, size_t sizeInBytes) {
+    memcpy(dst, src, sizeInBytes);
+}
+
+/**
+ *
+ * @param dst
+ * @param val
+ * @param sizeInBytes
+ */
+void memFill(void *dst, uint8_t val, size_t sizeInBytes) {
+    memset(dst, val, sizeInBytes);
+}
+
 void uGLyInit(void)
 {
     currentTexture = 0;
