@@ -15,20 +15,31 @@
 
 
 
-FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+FramebufferPixelFormat *framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t *zBuffer;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
-uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t *stencilBuffer;
 #endif
 
 KeyCallback keyCallback;
 
 void initWindow( KeyCallback callback)
 {
+
+    framebuffer = (FramebufferPixelFormat *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER * sizeof(FramebufferPixelFormat));
+
+#ifndef DISABLE_DEPTH_BUFFER
+    zBuffer = (uint8_t *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+#endif
+
+#ifndef DISABLE_STENCIL_BUFFER
+    stencilBuffer = (uint8_t *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+#endif
+
     keyCallback = callback;
     __dpmi_regs regs;
 

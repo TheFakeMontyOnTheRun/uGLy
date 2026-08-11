@@ -13,8 +13,8 @@
 
 typedef void ( *KeyCallback )(int charkey);
 
-#define XRES_FRAMEBUFFER 320
-#define YRES_FRAMEBUFFER 200
+#define XRES_FRAMEBUFFER 240
+#define YRES_FRAMEBUFFER 160
 
 #ifdef BPP24
 typedef uint32_t FramebufferPixelFormat;
@@ -155,16 +155,16 @@ GLfixed *currentModelViewMatrix(void);
 #define POT(x) ( (x) == 0 ? 0 : (((x) & ((x)-1)) == 0) )
 #define MATRIX_STACK_CAPACITY 16
 
-extern FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern FramebufferPixelFormat *framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-extern uint8_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t *zBuffer;
 extern uint8_t depthTestEnabled;
 extern uint8_t depthWritesEnabled;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
-extern uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+extern uint8_t *stencilBuffer;
 #endif
 
 
