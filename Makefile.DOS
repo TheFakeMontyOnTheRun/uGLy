@@ -35,5 +35,5 @@ all: tri.exe
 
 clean:
 	rm -f src/*.o
-	rm -f third_party/*.o
+	rm -f third_party/fpsqrt/*.o
 	rm -f samples/*.o
