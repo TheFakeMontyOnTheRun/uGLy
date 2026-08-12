@@ -188,6 +188,7 @@ GLsizei vertexStride = 0;
 GLenum vertexType = 0;
 GLint vertexSize = 0;
 const GLvoid* vertexPointer = NULL;
+void *scratchBufferVertex = NULL;
 uint8_t vertexArrayEnabled = GL_FALSE;
 uint8_t smoothShadingModel = GL_FALSE;
 
@@ -226,6 +227,7 @@ GLenum colorType = 0;
 GLint colorSize = 0;
 const GLvoid* colorPointer = NULL;
 uint8_t colorArrayEnabled = GL_FALSE;
+void *scratchBufferColour = NULL;
 
 
 GLsizei normalsStride = 0;
@@ -534,6 +536,9 @@ GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, cons
     colorType = type;
     colorSize = size;
     colorPointer = pointer;
+
+    free(scratchBufferColour);
+    scratchBufferColour = malloc(2 * colorSize * sizeof(GLfixed));    
 }
 
 GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
@@ -1422,8 +1427,8 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 }
             }
             if (mode != GL_LINE_STRIP) {
-                GLfixed *verts = alloca(2 * vertexSize * sizeof(GLfixed));
-                GLfixed *colours = alloca(2 * colorSize * sizeof(GLfixed));
+  	        GLfixed *verts = scratchBufferVertex;
+                GLfixed *colours = scratchBufferColour;
                 GLfixed vecs[8];
                 GLfixed transformed[8];
 
@@ -3007,6 +3012,9 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
 
     vertexType = type;
     vertexPointer = pointer;
+
+    free(scratchBufferVertex);
+    scratchBufferVertex = malloc(2 * vertexSize * sizeof(GLfixed));
 }
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
