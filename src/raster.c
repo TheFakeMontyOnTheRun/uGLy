@@ -273,8 +273,8 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 						if (!depthTestEnabled || *depthDestination >= currentDepth)
 #endif
 						{
-							u = (fixToInt(texelLineX)) % texture->width;
-							v = (fixToInt(texelLineY)) % texture->height;
+							u = (fixToInt(texelLineX)) & (texture->width - 1);
+							v = (fixToInt(texelLineY)) & (texture->height - 1);
 
 							currentR = fixToInt(fR);
 							currentG = fixToInt(fG);
@@ -614,8 +614,8 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 						if (!depthTestEnabled || *depthDestination >= currentDepth)
 #endif
 						{
-							u = (fixToInt(texelLineX)) % texture->width;
-							v = (fixToInt(texelLineY)) % texture->height;
+							u = (fixToInt(texelLineX)) & (texture->width - 1);
+							v = (fixToInt(texelLineY)) & (texture->height - 1	);
 							currentR = fixToInt(fR);
 							currentG = fixToInt(fG);
 							currentB = fixToInt(fB);
