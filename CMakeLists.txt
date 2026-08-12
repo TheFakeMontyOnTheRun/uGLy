@@ -11,8 +11,8 @@ SET(CMAKE_C_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H -DBPP16")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=3 -W -Wall -Wextra -Wno-unused-parameter -DGTEST_LANG_CXX11=0 -DBPP16")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H -ggdb3 -DBPP16")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=3 -W -Wall -Wextra -Wno-unused-parameter -DGTEST_LANG_CXX11=0 -ggdb3 -DBPP16")
 
 if (APPLE)
     add_definitions(-D__GLIBCXX__)
