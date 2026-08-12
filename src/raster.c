@@ -16,6 +16,9 @@ typedef int GLfixed;
 
 #include "internal.h"
 
+#ifdef AGS
+__attribute__((target("arm"), section(".iwram"), noinline))
+#endif
 static void drawTexturedBottomFlatTriangle(const int *coords,
 											const uint8_t *uvCoords,
 											const uint8_t *colourChannels,
@@ -355,7 +358,9 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 	}
 }
 
-
+#ifdef AGS
+__attribute__((target("arm"), section(".iwram"), noinline))
+#endif
 static void drawTexturedTopFlatTriangle(const int *coords,
 										const uint8_t *uvCoords,
 										const uint8_t *colourChannels,
@@ -693,7 +698,9 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 	}
 }
 
-
+#ifdef AGS
+__attribute__((target("arm"), section(".iwram"), noinline))
+#endif
 void
 drawTexturedTriangle(const int *coords,
 					 const uint8_t *uvCoords,
@@ -882,6 +889,9 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 	}
 }
 
+#ifdef AGS
+__attribute__((target("arm"), section(".iwram"), noinline))
+#endif
 
 void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, uint8_t* colours, uint8_t *zValues) {
     int dx = abs(x1 - x0);
@@ -965,6 +975,9 @@ void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, uint8_t* colours
 }
 
 
+#ifdef AGS
+__attribute__((target("arm"), section(".iwram"), noinline))
+#endif
 
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER

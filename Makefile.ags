@@ -34,7 +34,7 @@ CFLAGS	:=	-Wall -Wextra -Ofast -flto  -ffat-lto-objects \
 			-ffast-math -Wno-switch\
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DBPP8
+CFLAGS	+=	$(INCLUDE) -DBPP8 -DAGS
 
 ASFLAGS	:=	$(ARCH)
 LDFLAGS	=	-flto -g $(ARCH) -Wl,-Map,$(notdir $@).map
