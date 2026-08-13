@@ -18,6 +18,7 @@ CFLAGS= -O6 -Ofast      \
     --pedantic		    \
     -fpermissive \
     -Wno-narrowing \
+    -DDOS \
     -DBPP8
 
 OBJS= src/es11.o \
