@@ -274,7 +274,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 					if (xPos >= 0 && xPos < XRES_FRAMEBUFFER) {
 #ifndef	DISABLE_DEPTH_BUFFER
 						currentDepth = fixToInt(fZ);
-						if (!depthTestEnabled || *depthDestination >= currentDepth)
+						if (!depthTestEnabled || *depthDestination > currentDepth)
 #endif
 						{
 							u = (fixToInt(texelLineX)) & (texture->width - 1);
@@ -620,7 +620,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 
 #ifndef	DISABLE_DEPTH_BUFFER
 						currentDepth = fixToInt(fZ);
-						if (!depthTestEnabled || *depthDestination >= currentDepth)
+						if (!depthTestEnabled || *depthDestination > currentDepth)
 #endif
 						{
 							u = (fixToInt(texelLineX)) & (texture->width - 1);

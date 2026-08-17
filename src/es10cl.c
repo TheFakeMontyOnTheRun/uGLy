@@ -244,7 +244,7 @@ GLfixed pointSize = intToFix(1);
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
 uint8_t clearDepth = 0xFF;
-GLfixed zRange;
+GLfixed zRange = intToFix(127);
 #endif
 
 uint8_t clearColorR;
@@ -2311,10 +2311,6 @@ GLAPI void APIENTRY glFrustumx(GLfixed left, GLfixed right, GLfixed bottom, GLfi
     projectionMatrix[10] = -Div((zFar + zNear), ( zFar - zNear ));
     projectionMatrix[11] = -intToFix(1);
     projectionMatrix[14] = -Div(Mul( twoTimesN, zFar), (zFar - zNear));
-
-#ifndef	DISABLE_DEPTH_BUFFER
-    zRange = zFar - zNear;
-#endif
 }
 
 GLuint reserveTexture(void)
