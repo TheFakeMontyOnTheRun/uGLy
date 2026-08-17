@@ -572,7 +572,7 @@ GLAPI void APIENTRY glCullFace(GLenum mode)
 
 GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* texturesIn)
 {
-    GLuint* ptr = texturesIn;
+    const GLuint* ptr = texturesIn;
 
     if (n < 0)
     {
@@ -759,7 +759,7 @@ void processLine(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* c
     drawLine(coords[0], coords[1], coords[2], coords[3], &coloursArray[0], &zValuesNormalized[0]);
 }
 
-void processTriangle(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, int effeticeStride, GLfixed* uvPtr, GLfixed* cPtr, GLfixed* nPtr, struct Texture* texture, GLfixed vecs[12], GLfixed transformed[12], GLfixed transformedNormals[12])
+void processTriangle(GLfixed mv[16], GLfixed mvp[16], const GLfixed* vertexPtr, int effeticeStride, const GLfixed* uvPtr, const GLfixed* cPtr, const GLfixed* nPtr, const struct Texture* texture, GLfixed vecs[12], GLfixed transformed[12], GLfixed transformedNormals[12])
 {
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
@@ -1004,9 +1004,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
             int finalCount = count / 3;
             int firstTrig = first / 3;
             GLfixed *vertexPtr;
-            GLfixed *uvPtr;
-            GLfixed *cPtr;
-            GLfixed *nPtr;
+            const GLfixed *uvPtr;
+            const GLfixed *cPtr;
+            const GLfixed *nPtr;
 	        struct Texture* texture;
 
             vertexPtr = (GLfixed*)vertexPointer;
@@ -1128,10 +1128,10 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
         {
             int c;
             int finalCount = count - 2;
-            GLfixed *vertexPtr;
-            GLfixed *uvPtr;
-            GLfixed *cPtr;
-            GLfixed *nPtr;
+            const GLfixed *vertexPtr;
+            const GLfixed *uvPtr;
+            const GLfixed *cPtr;
+            const GLfixed *nPtr;
             struct Texture* texture;
 
             vertexPtr = (GLfixed*)vertexPointer;

@@ -12,8 +12,6 @@
 #endif
 #include "fpsqrt.h"
 
-typedef int GLfixed;
-
 #include "internal.h"
 
 #ifdef AGS
@@ -893,7 +891,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 __attribute__((target("arm"), section(".iwram"), noinline))
 #endif
 
-void drawLine(uint16_t x0, uint8_t y0, uint16_t x1, uint8_t y1, uint8_t* colours, uint8_t *zValues) {
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours, uint8_t *zValues) {
     int dx = abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
     int dy = abs(y1 - y0);
