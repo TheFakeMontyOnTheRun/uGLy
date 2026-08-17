@@ -113,6 +113,11 @@ const GLfixed sinfp[91] =
     65536,
 };
 
+GLfixed materialColor[3][4] = {
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+};
 
 static const GLfixed dummyColors[6][4] = {
     {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
@@ -1024,7 +1029,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)colorPointer;
             } else
             {
-                cPtr = (GLfixed*)&dummyColors[0];
+                if (lightsEnabled)
+                {
+                    cPtr = (GLfixed*)&materialColor[0];
+                } else
+                {
+                    cPtr = (GLfixed*)&dummyColors[0];
+                }
             }
 
             if (normalsArrayEnabled)
@@ -1100,7 +1111,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)colorPointer;
             } else
             {
-                cPtr = (GLfixed*)&dummyColors[0];
+                if (lightsEnabled)
+                {
+                    cPtr = (GLfixed*)&materialColor[0];
+                } else
+                {
+                    cPtr = (GLfixed*)&dummyColors[0];
+                }
             }
 
             for (c = 0; c < first; ++c)
@@ -1149,7 +1166,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)colorPointer;
             } else
             {
-                cPtr = (GLfixed*)&dummyColors[0];
+                if (lightsEnabled)
+                {
+                    cPtr = (GLfixed*)&materialColor[0];
+                } else
+                {
+                    cPtr = (GLfixed*)&dummyColors[0];
+                }
             }
 
             if (normalsArrayEnabled)
@@ -1242,10 +1265,19 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 triangleColours[3] = ((GLfixed*)colorPointer)[4 * first + 3];
             } else
             {
-                triangleColours[0] = ((GLfixed*)dummyColors)[4 * first];
-                triangleColours[1] = ((GLfixed*)dummyColors)[4 * first + 1];
-                triangleColours[2] = ((GLfixed*)dummyColors)[4 * first + 2];
-                triangleColours[3] = ((GLfixed*)dummyColors)[4 * first + 3];
+                if (lightsEnabled)
+                {
+                    triangleColours[0] = ((GLfixed*)materialColor)[4 * first];
+                    triangleColours[1] = ((GLfixed*)materialColor)[4 * first + 1];
+                    triangleColours[2] = ((GLfixed*)materialColor)[4 * first + 2];
+                    triangleColours[3] = ((GLfixed*)materialColor)[4 * first + 3];
+                } else
+                {
+                    triangleColours[0] = ((GLfixed*)dummyColors)[4 * first];
+                    triangleColours[1] = ((GLfixed*)dummyColors)[4 * first + 1];
+                    triangleColours[2] = ((GLfixed*)dummyColors)[4 * first + 2];
+                    triangleColours[3] = ((GLfixed*)dummyColors)[4 * first + 3];
+                }
             }
 
             if (normalsArrayEnabled)
@@ -1288,10 +1320,19 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     triangleColours[7] = ((GLfixed*)colorPointer)[4 * c + 3];
                 } else
                 {
-                    triangleColours[4] = ((GLfixed*)dummyColors)[4 * c];
-                    triangleColours[5] = ((GLfixed*)dummyColors)[4 * c + 1];
-                    triangleColours[6] = ((GLfixed*)dummyColors)[4 * c + 2];
-                    triangleColours[7] = ((GLfixed*)dummyColors)[4 * c + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[4] = ((GLfixed*)materialColor)[4 * c];
+                        triangleColours[5] = ((GLfixed*)materialColor)[4 * c + 1];
+                        triangleColours[6] = ((GLfixed*)materialColor)[4 * c + 2];
+                        triangleColours[7] = ((GLfixed*)materialColor)[4 * c + 3];
+                    } else
+                    {
+                        triangleColours[4] = ((GLfixed*)dummyColors)[4 * c];
+                        triangleColours[5] = ((GLfixed*)dummyColors)[4 * c + 1];
+                        triangleColours[6] = ((GLfixed*)dummyColors)[4 * c + 2];
+                        triangleColours[7] = ((GLfixed*)dummyColors)[4 * c + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1329,10 +1370,19 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                     triangleColours[11] = ((GLfixed*)colorPointer)[4 * d + 3];
                 } else
                 {
-                    triangleColours[8] = ((GLfixed*)dummyColors)[4 * d];
-                    triangleColours[9] = ((GLfixed*)dummyColors)[4 * d + 1];
-                    triangleColours[10] = ((GLfixed*)dummyColors)[4 * d + 2];
-                    triangleColours[11] = ((GLfixed*)dummyColors)[4 * d + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[8] = ((GLfixed*)materialColor)[4 * d];
+                        triangleColours[9] = ((GLfixed*)materialColor)[4 * d + 1];
+                        triangleColours[10] = ((GLfixed*)materialColor)[4 * d + 2];
+                        triangleColours[11] = ((GLfixed*)materialColor)[4 * d + 3];
+                    } else
+                    {
+                        triangleColours[8] = ((GLfixed*)dummyColors)[4 * d];
+                        triangleColours[9] = ((GLfixed*)dummyColors)[4 * d + 1];
+                        triangleColours[10] = ((GLfixed*)dummyColors)[4 * d + 2];
+                        triangleColours[11] = ((GLfixed*)dummyColors)[4 * d + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1364,7 +1414,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)colorPointer;
             } else
             {
-                cPtr = (GLfixed*)&dummyColors[0];
+                if (lightsEnabled)
+                {
+                    cPtr = (GLfixed*)&materialColor[0];
+                } else
+                {
+                    cPtr = (GLfixed*)&dummyColors[0];
+                }
             }
 
             for (c = 0; c < first; ++c)
@@ -1403,7 +1459,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                 cPtr = (GLfixed*)colorPointer;
             } else
             {
-                cPtr = (GLfixed*)&dummyColors[0];
+                if (lightsEnabled)
+                {
+                    cPtr = (GLfixed*)&materialColor[0];
+                } else
+                {
+                    cPtr = (GLfixed*)&dummyColors[0];
+                }
             }
 
             for (c = 0; c < first; ++c)
@@ -1447,7 +1509,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         colours[c] = ((GLfixed*)colorPointer)[c];
                     } else
                     {
-                        colours[c] = dummyColors[0][0];
+                        if (lightsEnabled)
+                        {
+                            colours[c] = materialColor[0][0];
+                        } else
+                        {
+                            colours[c] = dummyColors[0][0];
+                        }
                     }
 
 
@@ -1457,7 +1525,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count)
                         colours[colorSize + c] = ((GLfixed*)colorPointer)[(colorSize * (count - 1)) + c];
                     } else
                     {
-                        colours[colorSize + c] = dummyColors[0][0];
+                        if (lightsEnabled)
+                        {
+                            colours[colorSize + c] = materialColor[0][0];
+                        } else
+                        {
+                            colours[colorSize + c] = dummyColors[0][0];
+                        }
                     }
                 }
                 processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
@@ -1543,10 +1617,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                 triangleColours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
             } else
             {
-                triangleColours[0] = ((GLfixed*)dummyColors)[0];
-                triangleColours[1] = ((GLfixed*)dummyColors)[1];
-                triangleColours[2] = ((GLfixed*)dummyColors)[2];
-                triangleColours[3] = ((GLfixed*)dummyColors)[3];
+                if (lightsEnabled)
+                {
+                    triangleColours[0] = ((GLfixed*)materialColor)[0];
+                    triangleColours[1] = ((GLfixed*)materialColor)[1];
+                    triangleColours[2] = ((GLfixed*)materialColor)[2];
+                    triangleColours[3] = ((GLfixed*)materialColor)[3];
+                } else
+                {
+                    triangleColours[0] = ((GLfixed*)dummyColors)[0];
+                    triangleColours[1] = ((GLfixed*)dummyColors)[1];
+                    triangleColours[2] = ((GLfixed*)dummyColors)[2];
+                    triangleColours[3] = ((GLfixed*)dummyColors)[3];
+                }
             }
 
             if (normalsArrayEnabled)
@@ -1597,10 +1680,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[4] = ((GLfixed*)dummyColors)[0];
-                    triangleColours[5] = ((GLfixed*)dummyColors)[1];
-                    triangleColours[6] = ((GLfixed*)dummyColors)[2];
-                    triangleColours[7] = ((GLfixed*)dummyColors)[3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[4] = ((GLfixed*)materialColor)[0];
+                        triangleColours[5] = ((GLfixed*)materialColor)[1];
+                        triangleColours[6] = ((GLfixed*)materialColor)[2];
+                        triangleColours[7] = ((GLfixed*)materialColor)[3];
+                    } else
+                    {
+                        triangleColours[4] = ((GLfixed*)dummyColors)[0];
+                        triangleColours[5] = ((GLfixed*)dummyColors)[1];
+                        triangleColours[6] = ((GLfixed*)dummyColors)[2];
+                        triangleColours[7] = ((GLfixed*)dummyColors)[3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1643,10 +1735,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[11] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[8] = ((GLfixed*)dummyColors)[0];
-                    triangleColours[9] = ((GLfixed*)dummyColors)[1];
-                    triangleColours[10] = ((GLfixed*)dummyColors)[2];
-                    triangleColours[11] = ((GLfixed*)dummyColors)[3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[8] = ((GLfixed*)materialColor)[0];
+                        triangleColours[9] = ((GLfixed*)materialColor)[1];
+                        triangleColours[10] = ((GLfixed*)materialColor)[2];
+                        triangleColours[11] = ((GLfixed*)materialColor)[3];
+                    } else
+                    {
+                        triangleColours[8] = ((GLfixed*)dummyColors)[0];
+                        triangleColours[9] = ((GLfixed*)dummyColors)[1];
+                        triangleColours[10] = ((GLfixed*)dummyColors)[2];
+                        triangleColours[11] = ((GLfixed*)dummyColors)[3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1720,10 +1821,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[0] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[0] = ((GLfixed*)materialColor)[4 * index];
+                        triangleColours[1] = ((GLfixed*)materialColor)[4 * index + 1];
+                        triangleColours[2] = ((GLfixed*)materialColor)[4 * index + 2];
+                        triangleColours[3] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        triangleColours[0] = ((GLfixed*)dummyColors)[4 * index];
+                        triangleColours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        triangleColours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        triangleColours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1768,10 +1878,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[4] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[4] = ((GLfixed*)materialColor)[4 * index];
+                        triangleColours[5] = ((GLfixed*)materialColor)[4 * index + 1];
+                        triangleColours[6] = ((GLfixed*)materialColor)[4 * index + 2];
+                        triangleColours[7] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        triangleColours[4] = ((GLfixed*)dummyColors)[4 * index];
+                        triangleColours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        triangleColours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        triangleColours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1814,10 +1933,20 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[11] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[8] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[9] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[10] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[11] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[8] = ((GLfixed*)materialColor)[4 * index];
+                        triangleColours[9] = ((GLfixed*)materialColor)[4 * index + 1];
+                        triangleColours[10] = ((GLfixed*)materialColor)[4 * index + 2];
+                        triangleColours[11] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        triangleColours[8] = ((GLfixed*)dummyColors)[4 * index];
+                        triangleColours[9] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        triangleColours[10] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        triangleColours[11] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
+
                 }
 
                 if (normalsArrayEnabled)
@@ -1842,7 +1971,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
             int index;
             int finalCount = count;
 
-            GLfixed* cPtr = (GLfixed*)&dummyColors[0];
+            GLfixed* cPtr = lightsEnabled ? (GLfixed*) &materialColor[0] : (GLfixed*)&dummyColors[0];
 
             for (c = 0; c < finalCount; ++c)
             {
@@ -1919,10 +2048,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[0] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[0] = ((GLfixed*)materialColor)[4 * index];
+                        triangleColours[1] = ((GLfixed*)materialColor)[4 * index + 1];
+                        triangleColours[2] = ((GLfixed*)materialColor)[4 * index + 2];
+                        triangleColours[3] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        triangleColours[0] = ((GLfixed*)dummyColors)[4 * index];
+                        triangleColours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        triangleColours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        triangleColours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -1965,10 +2103,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[4] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[4] = ((GLfixed*)materialColor)[4 * index];
+                        triangleColours[5] = ((GLfixed*)materialColor)[4 * index + 1];
+                        triangleColours[6] = ((GLfixed*)materialColor)[4 * index + 2];
+                        triangleColours[7] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        triangleColours[4] = ((GLfixed*)dummyColors)[4 * index];
+                        triangleColours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        triangleColours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        triangleColours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -2011,10 +2158,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     triangleColours[11] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    triangleColours[8] = ((GLfixed*)dummyColors)[4 * index];
-                    triangleColours[9] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    triangleColours[10] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    triangleColours[11] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        triangleColours[8] = ((GLfixed*)materialColor)[4 * index];
+                        triangleColours[9] = ((GLfixed*)materialColor)[4 * index + 1];
+                        triangleColours[10] = ((GLfixed*)materialColor)[4 * index + 2];
+                        triangleColours[11] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        triangleColours[8] = ((GLfixed*)dummyColors)[4 * index];
+                        triangleColours[9] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        triangleColours[10] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        triangleColours[11] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (normalsArrayEnabled)
@@ -2065,10 +2221,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     colours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    colours[0] = ((GLfixed*)dummyColors)[4 * index];
-                    colours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    colours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    colours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        colours[0] = ((GLfixed*)materialColor)[4 * index];
+                        colours[1] = ((GLfixed*)materialColor)[4 * index + 1];
+                        colours[2] = ((GLfixed*)materialColor)[4 * index + 2];
+                        colours[3] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        colours[0] = ((GLfixed*)dummyColors)[4 * index];
+                        colours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        colours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        colours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (type == GL_UNSIGNED_SHORT) {
@@ -2089,10 +2254,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     colours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    colours[4] = ((GLfixed*)dummyColors)[4 * index];
-                    colours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    colours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    colours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        colours[4] = ((GLfixed*)materialColor)[4 * index];
+                        colours[5] = ((GLfixed*)materialColor)[4 * index + 1];
+                        colours[6] = ((GLfixed*)materialColor)[4 * index + 2];
+                        colours[7] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        colours[4] = ((GLfixed*)dummyColors)[4 * index];
+                        colours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        colours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        colours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
@@ -2132,10 +2306,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     colours[3] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    colours[0] = ((GLfixed*)dummyColors)[4 * index];
-                    colours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    colours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    colours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        colours[0] = ((GLfixed*)materialColor)[4 * index];
+                        colours[1] = ((GLfixed*)materialColor)[4 * index + 1];
+                        colours[2] = ((GLfixed*)materialColor)[4 * index + 2];
+                        colours[3] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        colours[0] = ((GLfixed*)dummyColors)[4 * index];
+                        colours[1] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        colours[2] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        colours[3] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 if (type == GL_UNSIGNED_SHORT) {
@@ -2156,10 +2339,19 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
                     colours[7] = ((GLfixed*)colorPointer)[4 * index + 3];
                 } else
                 {
-                    colours[4] = ((GLfixed*)dummyColors)[4 * index];
-                    colours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
-                    colours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
-                    colours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    if (lightsEnabled)
+                    {
+                        colours[4] = ((GLfixed*)materialColor)[4 * index];
+                        colours[5] = ((GLfixed*)materialColor)[4 * index + 1];
+                        colours[6] = ((GLfixed*)materialColor)[4 * index + 2];
+                        colours[7] = ((GLfixed*)materialColor)[4 * index + 3];
+                    } else
+                    {
+                        colours[4] = ((GLfixed*)dummyColors)[4 * index];
+                        colours[5] = ((GLfixed*)dummyColors)[4 * index + 1];
+                        colours[6] = ((GLfixed*)dummyColors)[4 * index + 2];
+                        colours[7] = ((GLfixed*)dummyColors)[4 * index + 3];
+                    }
                 }
 
                 processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
@@ -2491,7 +2683,10 @@ GLAPI void APIENTRY glMaterialxv(GLenum face, GLenum pname, const GLfixed* param
 
         return;
     }
-    ///TODO: implement this properly
+
+    memcpy(&materialColor[0][0], params, sizeof(GLfixed) * 4);
+    memcpy(&materialColor[1][0], params, sizeof(GLfixed) * 4);
+    memcpy(&materialColor[2][0], params, sizeof(GLfixed) * 4);
 }
 
 GLAPI void APIENTRY glMatrixMode(GLenum mode)
