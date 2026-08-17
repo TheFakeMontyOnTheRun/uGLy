@@ -177,7 +177,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 
 		limit = iFX1 - iFX0;
 
-		if (limit) {
+		if (abs( fX0 - fX1) >= intToFix(1)) {
 			GLfixed texelLineX;
 			GLfixed texelLineY;
 			GLfixed texelLineDX;
@@ -202,18 +202,18 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 			GLfixed fLight[8];
 			GLfixed fDLightLine[8];
 
-			///TODO: bring in the Div LUT
-			{
-				oneOverLimit = Div(intToFix(1), intToFix(limit));
-			}
-
-
 			destination = SEEK(framebuffer, iFX0, y, FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 #endif
 
 			if (flipped) {
+
+				///TODO: bring in the Div LUT
+				{
+					oneOverLimit = Div(intToFix(1), fX0 - fX1);
+				}
+
 				texelLineDX = Mul((fU1 - fU2), oneOverLimit);
 				texelLineDY = Mul((fV1 - fV2), oneOverLimit);
 				texelLineX = fU2;
@@ -238,6 +238,12 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 				}
 
 			} else {
+
+				///TODO: bring in the Div LUT
+				{
+					oneOverLimit = Div(intToFix(1), fX1 - fX0);
+				}
+
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
 				texelLineX = fU1;
@@ -516,7 +522,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 
 		limit = iFX1 - iFX0;
 
-		if (limit) {
+		if (abs( fX0 - fX1) >= intToFix(1)) {
 			GLfixed texelLineX;
 			GLfixed texelLineY;
 			GLfixed texelLineDX;
@@ -541,18 +547,17 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 			GLfixed fLight[8];
 			GLfixed fDLightLine[8];
 
-			///TODO: bring in the damn Div LUT
-			{
-				oneOverLimit = Div(intToFix(1), intToFix(limit));
-			}
-
-
 			destination = SEEK(framebuffer, iFX0, y, FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
 			depthDestination = &zBuffer[(XRES_FRAMEBUFFER * y) + iFX0];
 #endif
 
 			if (flipped) {
+				///TODO: bring in the Div LUT
+				{
+					oneOverLimit = Div(intToFix(1), fX0 - fX1);
+				}
+
 				texelLineDX = Mul((fU1 - fU2), oneOverLimit);
 				texelLineDY = Mul((fV1 - fV2), oneOverLimit);
 				texelLineX = fU2;
@@ -576,6 +581,12 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 					fDLightLine[c] = Mul( (fLight1[c] - fLight2[c]), oneOverLimit );
 				}
 			} else {
+
+				///TODO: bring in the Div LUT
+				{
+					oneOverLimit = Div(intToFix(1), fX1 - fX0);
+				}
+
 				texelLineDX = Mul((fU2 - fU1), oneOverLimit);
 				texelLineDY = Mul((fV2 - fV1), oneOverLimit);
 				texelLineX = fU1;
