@@ -3193,6 +3193,7 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
     }
 
     vertexStride = stride;
+    int oldVertexSize = vertexSize;
     if (stride == 0)
     {
         vertexSize = size;
@@ -3204,8 +3205,11 @@ GLAPI void APIENTRY glVertexPointer(GLint size, GLenum type, GLsizei stride, con
     vertexType = type;
     vertexPointer = pointer;
 
-    free(scratchBufferVertex);
-    scratchBufferVertex = malloc(2 * vertexSize * sizeof(GLfixed));
+    if (!scratchBufferVertex || vertexSize > oldVertexSize)
+    {
+        free(scratchBufferVertex);
+        scratchBufferVertex = malloc(2 * vertexSize * sizeof(GLfixed));
+    }
 }
 
 GLAPI void APIENTRY glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
