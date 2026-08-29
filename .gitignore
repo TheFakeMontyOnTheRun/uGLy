@@ -62,3 +62,17 @@ ugly-test
 CWSDPMI.SWP
 gears.gba
 gears.sav
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+CMakeFiles/
+CTestTestfile.cmake
+build.ninja
+cmake_install.cmake
+compile_commands.json
+cube
+gears
+quad_lit
+texquads
+tri
+ugly-test
