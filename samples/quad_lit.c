@@ -15,6 +15,7 @@
  */
 
 #include <stdint.h>
+#include "tex64x64xRGBA32.h"
 #define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
@@ -41,69 +42,48 @@
 
 static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
-struct Bitmap* texture;
-
 GLuint textureID;
 
 static void
 draw(void)
 {
 
-    static const GLfixed verts[6][3] = {
+    static const GLfixed verts[4][3] = {
         /*
-         *         1
-         *         ^
-         *        / |
-         *       /  |
-         *      0----2
+         *      0
+         *      |-- 2
+         *      |  /|
+         *      | / |
+         *      |/--|
+         *      1   3
          */
 
 
-    { -intToFix(1), -intToFix(1),  intToFix(0) },
-    {  intToFix(1),  intToFix(1),  intToFix(0) },
-    {  intToFix(1), -intToFix(1),  intToFix(0) },
-
-        /*
-         *      4
-         *      |-- 5
-         *      |  /
-         *      | /
-         *      3
-         */
-
-
-    { -intToFix(1), -intToFix(1),  intToFix(0) },
     { -intToFix(1), intToFix(1),  intToFix(0) },
+    { -intToFix(1), -intToFix(1),  intToFix(0) },
     {  intToFix(1), intToFix(1),  intToFix(0) },
+    {  intToFix(1), -intToFix(1),  intToFix(0) },
     };
 
-    static const GLfixed normals[18] = {
-        -intToFix(1), intToFix(0), intToFix(0),
-        intToFix(1), intToFix(0), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
-        -intToFix(1), intToFix(0), intToFix(0),
-        intToFix(1), intToFix(0), intToFix(0),
-        intToFix(0),  intToFix(1), intToFix(0),
+    static const GLfixed normals[12] = {
+        intToFix(0), intToFix(0), intToFix(1),
+        intToFix(0), intToFix(0), intToFix(1),
+        intToFix(0),  intToFix(0), intToFix(1),
+        intToFix(0),  intToFix(0), intToFix(1),
     };
 
-    static const GLfixed colors[6][4] = {
+    static const GLfixed colors[4][4] = {
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-        {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
         {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
     };
 
-    static const GLfixed texCoords[12] = {
+    static const GLfixed texCoords[8] = {
+        intToFix(0), intToFix(1),
         intToFix(0), intToFix(0),
         intToFix(1), intToFix(1),
         intToFix(1), intToFix(0),
-
-        intToFix(0), intToFix(0),
-        intToFix(0), intToFix(1),
-        intToFix(1), intToFix(1),
     };
 
 
@@ -138,7 +118,7 @@ draw(void)
 
     /* draw triangles */
     glBindTexture(GL_TEXTURE_2D, textureID);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glPopMatrix();
 }
 
@@ -165,7 +145,7 @@ static void
 init(void)
 {
     static const GLfixed ambient[4] = { Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)), intToFix(1) };
-    static const GLfixed pos[4] = { -intToFix(1), -intToFix(1), intToFix(0), 0 };
+    static const GLfixed pos[4] = { intToFix(0), intToFix(0), intToFix(1), 0 };
 
     glLightxv(GL_LIGHT0, GL_POSITION, pos);
 
@@ -184,19 +164,16 @@ init(void)
 
 
     glBindTexture(GL_TEXTURE_2D, textureID);
-    texture = loadBitmap("res/opengles.png");
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGB,
-                 texture->width,
-                 texture->height,
+                 64,
+                 64,
                  0,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
-                 texture->texels);
-    free(texture->texels);
-    free(texture);
+                 &tex[0]);
 }
 
 static void
@@ -241,6 +218,7 @@ void mainLoop(void)
     {
         draw();
         swapBuffers();
+        view_roty -= intToFix(5);
     }
 }
 

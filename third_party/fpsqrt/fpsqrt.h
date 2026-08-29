@@ -42,8 +42,9 @@
   https://groups.google.com/forum/?hl=fr%05aacf5997b615c37&fromgroups#!topic/comp.lang.c/IpwKbw0MAxw/discussion
 */
 
-
+#ifndef SGDK
 #include <stdint.h>
+#endif
 
 /* Fixed point with a 16bit fractional part */
 typedef int32_t fx16_16_t;

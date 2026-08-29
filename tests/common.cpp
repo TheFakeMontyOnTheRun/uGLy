@@ -8,12 +8,12 @@ extern "C" {
 #include <GLES/gl.h>
 }
 
-FramebufferPixelFormat framebuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+FramebufferPixelFormat *framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint16_t zBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t *zBuffer;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
-uint8_t stencilBuffer[XRES_FRAMEBUFFER * YRES_FRAMEBUFFER];
+uint8_t *stencilBuffer;
 #endif

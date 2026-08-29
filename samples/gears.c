@@ -64,7 +64,7 @@ struct gear {
 static GLfixed view_rotx = intToFix(20), view_roty = intToFix(30), view_rotz = 0;
 static struct gear gears[3];
 static GLfixed angle = 0;
-#define FPX_PI (Div(intToFix(31416), intToFix(100000)))
+#define FPX_PI (Div(intToFix(31415), intToFix(10000)))
 /*
  *  Initialize a gear wheel.
  *
@@ -130,7 +130,7 @@ init_gear(struct gear *gear, GLfixed inner_radius, GLfixed outer_radius,
         GLfixed fi = intToFix(i);
         GLfixed fixa0 = Mul(fi, a0);
 
-        GLfixed angle;
+        GLfixed ang;
         GLfixed conversion = Div(intToFix(180), FPX_PI);
 
         GLfixed accDa;
@@ -138,9 +138,9 @@ init_gear(struct gear *gear, GLfixed inner_radius, GLfixed outer_radius,
         accDa = 0;
 
         for (int c = 0; c < 5; ++c) {
-            angle = Mul((fixa0 + accDa), (conversion));
-            vx[c] = cosfpx(angle);
-            vy[c] = sinfpx(angle);
+            ang = Mul((fixa0 + accDa), (conversion));
+            vx[c] = cosfpx(ang);
+            vy[c] = sinfpx(ang);
             accDa += da;
         }
 
@@ -382,10 +382,6 @@ void mainLoop(void)
     while (1)
     {
         draw();
-
-        view_rotx += Div(intToFix(2), intToFix(10));
-        view_roty += Div(intToFix(3), intToFix(10));
-
         swapBuffers();
     }
 }
