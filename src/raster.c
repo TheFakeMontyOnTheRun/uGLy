@@ -943,7 +943,7 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colou
 
         if (x0 == x1 && y0 == y1) return;
 
-        if (x0 >= 0 && y0 >= 0 && x0 < XRES_FRAMEBUFFER && y0 < YRES_FRAMEBUFFER) {
+        if (x0 < XRES_FRAMEBUFFER && y0 < YRES_FRAMEBUFFER) {
 
 #ifndef	DISABLE_DEPTH_BUFFER
         	uint8_t currentDepth = fixToInt(z);

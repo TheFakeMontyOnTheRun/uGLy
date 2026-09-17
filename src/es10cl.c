@@ -396,13 +396,14 @@ void uGLyInit(void)
 #endif
 }
 
-GLAPI void APIENTRY glActiveTexture(GLenum texture)
-{
+GLAPI void APIENTRY glActiveTexture(GLenum texture) {
+	(void)texture;
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glAlphaFuncx(GLenum func, GLclampx ref)
-{
+GLAPI void APIENTRY glAlphaFuncx(GLenum func, GLclampx ref) {
+	(void)func;
+	(void)ref;
     notImplementedYet(__func__);
 }
 
@@ -418,8 +419,9 @@ GLAPI void APIENTRY glBindTexture(GLenum target, GLuint texture)
     }
 }
 
-GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor)
-{
+GLAPI void APIENTRY glBlendFunc(GLenum sfactor, GLenum dfactor) {
+	(void)sfactor;
+	(void)dfactor;
     notImplementedYet(__func__);
 }
 
@@ -480,28 +482,34 @@ GLAPI void APIENTRY glClearColorx(GLclampx red, GLclampx green, GLclampx blue, G
     clearColorA = fixToInt(Mul(intToFix(0xFF),alpha));
 }
 
-GLAPI void APIENTRY glClearDepthx(GLclampx depth)
-{
+GLAPI void APIENTRY glClearDepthx(GLclampx depth) {
+	(void)depth;
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glClearStencil(GLint s)
-{
+GLAPI void APIENTRY glClearStencil(GLint s) {
+	(void)s;
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glClientActiveTexture(GLenum texture)
-{
+GLAPI void APIENTRY glClientActiveTexture(GLenum texture) {
+	(void)texture;
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glColor4x(GLfixed red, GLfixed green, GLfixed blue, GLfixed alpha)
-{
+GLAPI void APIENTRY glColor4x(GLfixed red, GLfixed green, GLfixed blue, GLfixed alpha) {
+	(void)red;
+	(void)green;
+	(void)blue;
+	(void)alpha;
     notImplementedYet(__func__);
 }
 
-GLAPI void APIENTRY glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha)
-{
+GLAPI void APIENTRY glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
+	(void)red;
+	(void)green;
+	(void)blue;
+	(void)alpha;
     notImplementedYet(__func__);
 }
 
@@ -543,35 +551,69 @@ GLAPI void APIENTRY glColorPointer(GLint size, GLenum type, GLsizei stride, cons
     colorPointer = pointer;
 
     free(scratchBufferColour);
-    scratchBufferColour = malloc(2 * colorSize * sizeof(GLfixed));    
+    scratchBufferColour = malloc(2 * colorSize * sizeof(GLfixed));
 }
 
-GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width,
-                                           GLsizei height, GLint border, GLsizei imageSize, const GLvoid* data)
-{
+GLAPI void APIENTRY glCompressedTexImage2D(GLenum target, GLint level, GLenum internalformat,
+                                           GLsizei width, GLsizei height, GLint border,
+                                           GLsizei imageSize, const GLvoid* data) {
+	(void)target;
+	(void)level;
+	(void)internalformat;
+	(void)width;
+	(void)height;
+	(void)border;
+	(void)imageSize;
+	(void)data;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                                               GLsizei height, GLenum format, GLsizei imageSize, const GLvoid* data)
 {
+	(void)target;
+	(void)level;
+	(void)xoffset;
+	(void)yoffset;
+	(void)width;
+	(void)height;
+	(void)format;
+	(void)imageSize;
+	(void)data;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glCopyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width,
                                      GLsizei height, GLint border)
 {
+	(void)target;
+	(void)level;
+	(void)internalformat;
+	(void)x;
+	(void)y;
+	(void)width;
+	(void)height;
+	(void)border;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
                                         GLsizei width, GLsizei height)
 {
+	(void)target;
+	(void)level;
+	(void)xoffset;
+	(void)yoffset;
+	(void)width;
+	(void)height;
+	(void)x;
+	(void)y;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glCullFace(GLenum mode)
 {
+	(void)mode;
     notImplementedYet(__func__);
 }
 
@@ -611,6 +653,7 @@ GLAPI void APIENTRY glDeleteTextures(GLsizei n, const GLuint* texturesIn)
 
 GLAPI void APIENTRY glDepthFunc(GLenum func)
 {
+	(void)func;
     notImplementedYet(__func__);
 }
 
@@ -618,11 +661,15 @@ GLAPI void APIENTRY glDepthMask(GLboolean flag)
 {
 #ifndef	DISABLE_DEPTH_BUFFER
     depthWritesEnabled = flag;
+#else
+	(void)flag;
 #endif
 }
 
 GLAPI void APIENTRY glDepthRangex(GLclampx zNear, GLclampx zFar)
 {
+	(void)zNear;
+	(void)zFar;
     notImplementedYet(__func__);
 }
 
@@ -706,6 +753,8 @@ GLAPI void APIENTRY glDisableClientState(GLenum array)
 
 void processLine(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed vecs[8], GLfixed transformed[8])
 {
+	(void)mv;
+
     vecs[0] = *(vertexPtr + 0);
     vecs[1] = *(vertexPtr + 1);
     vecs[2] = *(vertexPtr + 2);
@@ -2470,16 +2519,21 @@ GLAPI void APIENTRY glFlush(void)
 
 GLAPI void APIENTRY glFogx(GLenum pname, GLfixed param)
 {
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glFogxv(GLenum pname, const GLfixed* params)
 {
+	(void)pname;
+	(void)params;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glFrontFace(GLenum mode)
 {
+	(void)mode;
     notImplementedYet(__func__);
 }
 
@@ -2553,22 +2607,29 @@ GLAPI GLenum APIENTRY glGetError(void)
 
 GLAPI void APIENTRY glGetIntegerv(GLenum pname, GLint* params)
 {
+	(void)pname;
+	(void)params;
     notImplementedYet(__func__);
 }
 
 GLAPI const GLubyte* APIENTRY glGetString(GLenum name)
 {
+	(void)name;
     notImplementedYet(__func__);
     return NULL;
 }
 
 GLAPI void APIENTRY glHint(GLenum target, GLenum mode)
 {
+	(void)target;
+	(void)mode;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glLightModelx(GLenum pname, GLfixed param)
 {
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
@@ -2591,6 +2652,9 @@ GLAPI void APIENTRY glLightModelxv(GLenum pname, const GLfixed* params)
 
 GLAPI void APIENTRY glLightx(GLenum light, GLenum pname, GLfixed param)
 {
+	(void)light;
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
@@ -2625,6 +2689,7 @@ GLAPI void APIENTRY glLightxv(GLenum light, GLenum pname, const GLfixed* params)
 
 GLAPI void APIENTRY glLineWidthx(GLfixed width)
 {
+	(void)width;
     notImplementedYet(__func__);
 }
 
@@ -2650,16 +2715,21 @@ GLAPI void APIENTRY glLoadIdentity(void)
 
 GLAPI void APIENTRY glLoadMatrixx(const GLfixed* m)
 {
+	(void)m;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glLogicOp(GLenum opcode)
 {
+	(void)opcode;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glMaterialx(GLenum face, GLenum pname, GLfixed param)
 {
+	(void)face;
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
@@ -2727,6 +2797,11 @@ GLAPI void APIENTRY glMultMatrixx(const GLfixed* m)
 
 GLAPI void APIENTRY glMultiTexCoord4x(GLenum target, GLfixed s, GLfixed t, GLfixed r, GLfixed q)
 {
+	(void)target;
+	(void)s;
+	(void)t;
+	(void)r;
+	(void)q;
     notImplementedYet(__func__);
 }
 
@@ -2764,11 +2839,19 @@ GLAPI void APIENTRY glNormalPointer(GLenum type, GLsizei stride, const GLvoid* p
 
 GLAPI void APIENTRY glOrthox(GLfixed left, GLfixed right, GLfixed bottom, GLfixed top, GLfixed zNear, GLfixed zFar)
 {
+	(void)left;
+	(void)right;
+	(void)bottom;
+	(void)top;
+	(void)zNear;
+	(void)zFar;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glPixelStorei(GLenum pname, GLint param)
 {
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
@@ -2789,6 +2872,8 @@ GLAPI void APIENTRY glPointSizex(GLfixed size)
 
 GLAPI void APIENTRY glPolygonOffsetx(GLfixed factor, GLfixed units)
 {
+	(void)factor;
+	(void)units;
     notImplementedYet(__func__);
 }
 
@@ -2930,6 +3015,8 @@ GLAPI void APIENTRY glRotatex(GLfixed angle, GLfixed x, GLfixed y, GLfixed z)
 
 GLAPI void APIENTRY glSampleCoveragex(GLclampx value, GLboolean invert)
 {
+	(void)value;
+	(void)invert;
     notImplementedYet(__func__);
 }
 
@@ -2944,6 +3031,10 @@ GLAPI void APIENTRY glScalex(GLfixed x, GLfixed y, GLfixed z)
 
 GLAPI void APIENTRY glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
+	(void)x;
+	(void)y;
+	(void)width;
+	(void)height;
     notImplementedYet(__func__);
 }
 
@@ -2963,16 +3054,23 @@ GLAPI void APIENTRY glShadeModel(GLenum mode)
 
 GLAPI void APIENTRY glStencilFunc(GLenum func, GLint ref, GLuint mask)
 {
+	(void)func;
+	(void)ref;
+	(void)mask;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glStencilMask(GLuint mask)
 {
+	(void)mask;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glStencilOp(GLenum fail, GLenum zfail, GLenum zpass)
 {
+	(void)fail;
+	(void)zfail;
+	(void)zpass;
     notImplementedYet(__func__);
 }
 
@@ -3013,11 +3111,17 @@ GLAPI void APIENTRY glTexCoordPointer(GLint size, GLenum type, GLsizei stride, c
 
 GLAPI void APIENTRY glTexEnvx(GLenum target, GLenum pname, GLfixed param)
 {
+	(void)target;
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glTexEnvxv(GLenum target, GLenum pname, const GLfixed* params)
 {
+	(void)target;
+	(void)pname;
+	(void)params;
     notImplementedYet(__func__);
 }
 
@@ -3104,7 +3208,7 @@ GLAPI void APIENTRY glTexImage2D(GLenum target, GLint level, GLint internalforma
         return;
     }
 
-    if (format != internalformat)
+    if ((GLint)format != internalformat)
     {
         if (currentError == GL_NO_ERROR)
         {
@@ -3142,12 +3246,24 @@ GLAPI void APIENTRY glTexImage2D(GLenum target, GLint level, GLint internalforma
 
 GLAPI void APIENTRY glTexParameterx(GLenum target, GLenum pname, GLfixed param)
 {
+	(void)target;
+	(void)pname;
+	(void)param;
     notImplementedYet(__func__);
 }
 
 GLAPI void APIENTRY glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
                                     GLsizei height, GLenum format, GLenum type, const GLvoid* pixels)
 {
+	(void)target;
+	(void)level;
+	(void)xoffset;
+	(void)yoffset;
+	(void)width;
+	(void)height;
+	(void)format;
+	(void)type;
+	(void)pixels;
     notImplementedYet(__func__);
 }
 
