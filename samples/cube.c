@@ -50,7 +50,7 @@ draw(void)
 
     struct Vertex
     {
-        GLfixed coords[3];
+        GLbyte coords[3];
         uint8_t pad[4];
     };
 
@@ -64,14 +64,14 @@ draw(void)
          *      1   3
          */
 
-    { -intToFix(1),  intToFix(1),   intToFix(1) },
-    { -intToFix(1), -intToFix(1),   intToFix(1) },
-    {  intToFix(1),  intToFix(1),   intToFix(1) },
-    {  intToFix(1), -intToFix(1),   intToFix(1) },
-    { -intToFix(1),  intToFix(1),  -intToFix(1) },
-    { -intToFix(1), -intToFix(1),  -intToFix(1) },
-    {  intToFix(1),  intToFix(1),  -intToFix(1) },
-    {  intToFix(1), -intToFix(1), - intToFix(1) },
+    { -1,  1,   1 },
+    { -1, -1,   1 },
+    {  1,  1,   1 },
+    {  1, -1,   1 },
+    { -1,  1,  -1 },
+    { -1, -1,  -1 },
+    {  1,  1,  -1 },
+    {  1, -1, - 1 },
     };
 
     static const uint8_t indices[36] = {
@@ -146,7 +146,7 @@ draw(void)
 #endif
 
     glTexCoordPointer(2, GL_FIXED, 0, texCoords);
-    glVertexPointer(3, GL_FIXED, 16, verts);
+    glVertexPointer(3, GL_BYTE, sizeof(struct Vertex), verts);
     glColorPointer(4, GL_FIXED, 0, colors);
     glNormalPointer(GL_FIXED, 0, normals);
 
