@@ -22,7 +22,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 											const uint8_t *colourChannels,
 											const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-											const uint8_t *z,
+											const DepthType *z,
 #endif
 											const uint8_t* lightDot,
 											const uint8_t* ambientLight) {
@@ -35,7 +35,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 	GLfixed fDV2;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-	uint8_t currentDepth;
+	DepthType currentDepth;
 	GLfixed fDZ1;
 	GLfixed fDZ2;
 	GLfixed fZ1;
@@ -187,7 +187,7 @@ static void drawTexturedBottomFlatTriangle(const int *coords,
 			FramebufferPixelFormat *destination;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-			uint8_t *depthDestination;
+			DepthType *depthDestination;
 			GLfixed fZ;
 			GLfixed fDZLine;
 #endif
@@ -370,7 +370,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 										const uint8_t *colourChannels,
 										const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-										const uint8_t *z,
+										const DepthType *z,
 #endif
 										const uint8_t* lightDot,
 										const uint8_t* ambientLight) {
@@ -383,7 +383,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 	GLfixed fDV2;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-	uint8_t currentDepth;
+	DepthType currentDepth;
 	GLfixed fDZ1;
 	GLfixed fDZ2;
 	GLfixed fZ1;
@@ -532,7 +532,7 @@ static void drawTexturedTopFlatTriangle(const int *coords,
 			FramebufferPixelFormat *destination;
 
 #ifndef	DISABLE_DEPTH_BUFFER
-			uint8_t *depthDestination;
+			DepthType *depthDestination;
 			GLfixed fZ;
 			GLfixed fDZLine;
 #endif
@@ -716,7 +716,7 @@ drawTexturedTriangle(const int *coords,
 					 const uint8_t *colourChannels,
 					 const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-					 const uint8_t *z,
+					 const DepthType *z,
 #endif
  					 const uint8_t* lightDot,
 	 				 const uint8_t* ambientLight) {
@@ -724,7 +724,7 @@ drawTexturedTriangle(const int *coords,
     int newCoors[6];
     uint8_t newUV[6];
 	uint8_t newColours[12];
-	uint8_t newZ[3];
+	DepthType newZ[3];
 	uint8_t newLightDot[24];
 
     int upper = -1;
@@ -862,7 +862,7 @@ drawTexturedTriangle(const int *coords,
 
 static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* colour
 #ifndef	DISABLE_DEPTH_BUFFER
-, uint8_t currentDepth
+, DepthType currentDepth
 #endif
 )
 {
@@ -873,7 +873,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 	{
 		FramebufferPixelFormat* fbPtr = SEEK(framebuffer, (x0), (y0 + y), FRAMEBUFFER_PITCH);
 #ifndef	DISABLE_DEPTH_BUFFER
-		uint8_t* depthDestination = &zBuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
+		DepthType* depthDestination = &zBuffer[(XRES_FRAMEBUFFER * (y0 + y)) + x0];
 #endif
 
 		for (x = 0; x < width; ++x)
@@ -902,7 +902,7 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 __attribute__((target("arm"), section(".iwram"), noinline))
 #endif
 
-void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours, uint8_t *zValues) {
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours, DepthType *zValues) {
     int dx = abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
     int dy = abs(y1 - y0);
@@ -946,7 +946,7 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colou
         if (x0 < XRES_FRAMEBUFFER && y0 < YRES_FRAMEBUFFER) {
 
 #ifndef	DISABLE_DEPTH_BUFFER
-        	uint8_t currentDepth = fixToInt(z);
+        	DepthType currentDepth = fixToInt(z);
         	if (!depthTestEnabled || zBuffer[(y0 * XRES_FRAMEBUFFER) + x0] >= currentDepth)
 #endif
         	{
@@ -990,7 +990,7 @@ __attribute__((target("arm"), section(".iwram"), noinline))
 
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
-uint8_t zValue,
+DepthType zValue,
 #endif
 uint16_t pointSize)
 {

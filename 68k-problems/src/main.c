@@ -569,7 +569,7 @@ main(int argc, char* argv[]) {
 FramebufferPixelFormat *framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint8_t *zBuffer;
+DepthType *zBuffer;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
@@ -609,13 +609,13 @@ void initWindow( KeyCallback callback)
 	framebuffer = (FramebufferPixelFormat *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER * sizeof(FramebufferPixelFormat));
 
 #ifndef DISABLE_DEPTH_BUFFER
-	zBuffer = (uint8_t *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+	zBuffer = (DepthType *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER * sizeof(DepthType));
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
 	stencilBuffer = (uint8_t *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
 #endif
-  
+
 	VDP_setScreenWidth256();
 	VDP_setHInterrupt(0);
 	VDP_setHilightShadow(0);

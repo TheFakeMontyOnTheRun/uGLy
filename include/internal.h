@@ -12,6 +12,8 @@
 #endif
 
 typedef void ( *KeyCallback )(int charkey);
+typedef uint8_t DepthType;
+#define MAX_DEPTH 127
 
 #ifdef DOS
 #define XRES_FRAMEBUFFER 320
@@ -129,16 +131,16 @@ void drawTexturedTriangle(const int *coords,
                           const uint8_t *colourChannels,
                           const struct Texture *texture,
 #ifndef	DISABLE_DEPTH_BUFFER
-                          const uint8_t *z,
+                          const DepthType *z,
 #endif
                           const uint8_t* lightDot,
                           const uint8_t* ambientLight);
 
 void uGLyInit(void);
-void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours, uint8_t *zValues);
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours, DepthType *zValues);
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint8_t zValue,
+    DepthType zValue,
 #endif
     uint16_t pointSize);
 
@@ -173,7 +175,7 @@ GLfixed *currentModelViewMatrix(void);
 extern FramebufferPixelFormat *framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-extern uint8_t *zBuffer;
+extern DepthType *zBuffer;
 extern uint8_t depthTestEnabled;
 extern uint8_t depthWritesEnabled;
 #endif

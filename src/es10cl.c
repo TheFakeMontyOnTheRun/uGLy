@@ -248,8 +248,8 @@ GLfixed pointSize = intToFix(1);
 #ifndef	DISABLE_DEPTH_BUFFER
 uint8_t depthWritesEnabled = 1;
 uint8_t depthTestEnabled = 0;
-uint8_t clearDepth = 0xFF;
-GLfixed zRange = intToFix(127);
+DepthType clearDepth = -1;
+GLfixed zRange = intToFix(MAX_DEPTH);
 #endif
 
 uint8_t clearColorR;
@@ -388,7 +388,7 @@ void uGLyInit(void)
 #ifndef	DISABLE_DEPTH_BUFFER
     depthWritesEnabled = 1;
     depthTestEnabled = 0;
-    clearDepth = 0xFF;
+    clearDepth = -1;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
@@ -785,7 +785,7 @@ void processLine(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* c
     GLfixed z1 = Mul(transformed[6], oneOverW1) + intToFix(1);
 
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint8_t zValuesNormalized[2] ={
+    DepthType zValuesNormalized[2] ={
         fixToInt(Mul(z0, zRange)),
         fixToInt(Mul(z1, zRange))
     };
@@ -927,7 +927,7 @@ void processTriangle(GLfixed mv[16], GLfixed mvp[16], const GLfixed* vertexPtr, 
     GLfixed z2 = Mul(transformed[10], oneOverW2) + intToFix(1);
 
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint8_t zValuesNormalized[3] ={
+    DepthType zValuesNormalized[3] ={
         fixToInt(Mul(z0, zRange)),
         fixToInt(Mul(z1, zRange)),
         fixToInt(Mul(z2, zRange))
@@ -1005,7 +1005,7 @@ void processPoints(GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* cPtr, GLfixed v
     GLfixed z0 = Mul(transformed[2], oneOverW0) + intToFix(1);
 
 #ifndef	DISABLE_DEPTH_BUFFER
-    uint8_t zValuesNormalized[1] ={
+    DepthType zValuesNormalized[1] ={
         fixToInt(Mul(z0, zRange))
     };
 #endif
