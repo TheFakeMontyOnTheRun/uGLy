@@ -4,16 +4,17 @@
 #include <stdint.h>
 
 extern "C" {
-#include "internal.h"
 #include <GLES/gl.h>
+
+#include "internal.h"
 }
 
-FramebufferPixelFormat *framebuffer;
+FramebufferPixelFormat* framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint8_t *zBuffer;
+uint8_t* zBuffer;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
-uint8_t *stencilBuffer;
+uint8_t* stencilBuffer;
 #endif

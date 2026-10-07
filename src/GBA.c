@@ -1,29 +1,28 @@
-#include "gba_video.h"
-#include "gba_systemcalls.h"
-#include "gba_input.h"
-#include "gba_interrupt.h"
-#include "fade.h"
+#include <GLES/gl.h>
 #include <gba_dma.h>
-
-#include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "fade.h"
+#include "gba_input.h"
+#include "gba_interrupt.h"
+#include "gba_systemcalls.h"
+#include "gba_video.h"
 #include "internal.h"
-#include <GLES/gl.h>
 
 #define VRAM_PAGE_A ((uint8_t*)0x6000000)
 #define VRAM_PAGE_B ((uint8_t*)0x600A000)
 
-FramebufferPixelFormat *framebuffer;
+FramebufferPixelFormat* framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-DepthType *zBuffer;
+DepthType* zBuffer;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
-uint8_t *stencilBuffer;
+uint8_t* stencilBuffer;
 #endif
 
 KeyCallback keyCallback;
@@ -47,8 +46,7 @@ uint8_t getPaletteEntry(const uint32_t origin) {
 	return shade;
 }
 
-void initWindow( KeyCallback callback)
-{
+void initWindow(KeyCallback callback) {
 	keyCallback = callback;
 	int r, g, b;
 	uint16_t palette[256];
@@ -64,18 +62,18 @@ void initWindow( KeyCallback callback)
 	// Allow Interrupts
 	REG_IME = 1;
 
-	SetMode(MODE_4 | BG2_ON);        // screen mode & background to display
+	SetMode(MODE_4 | BG2_ON); // screen mode & background to display
 
-	framebuffer = (FramebufferPixelFormat *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER * sizeof(FramebufferPixelFormat));
+	framebuffer = (FramebufferPixelFormat*)malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER *
+	                                              sizeof(FramebufferPixelFormat));
 
 #ifndef DISABLE_DEPTH_BUFFER
-	zBuffer = (DepthType *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER * sizeof(DepthType));
+	zBuffer = (DepthType*)malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER * sizeof(DepthType));
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
-	stencilBuffer = (uint8_t *) malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
+	stencilBuffer = (uint8_t*)malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
 #endif
-
 
 	memset(palette, 0, sizeof(uint16_t) * 256);
 
@@ -91,19 +89,16 @@ void initWindow( KeyCallback callback)
 
 	FadeToPalette(palette, 60);
 
-    // the viewport must, by default, be configured to the size of the surface
-    glViewport(0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
+	// the viewport must, by default, be configured to the size of the surface
+	glViewport(0, 0, XRES_FRAMEBUFFER, YRES_FRAMEBUFFER);
 }
 
-void graphicsShutdown(void)
-{
-}
+void graphicsShutdown(void) {}
 
-struct Bitmap* loadBitmap(const char *filename)
-{
-    /* TODO: implement this somehow */
+struct Bitmap* loadBitmap(const char* filename) {
+	/* TODO: implement this somehow */
 
-    return NULL;
+	return NULL;
 }
 
 void swapBuffers(void) {
