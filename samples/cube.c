@@ -48,36 +48,67 @@ GLuint textureID;
 
 static void draw(void) {
 
-	static const GLfixed verts[4][3] = {
+	struct Vertex {
+		GLbyte coords[3];
+		uint8_t pad[4];
+	};
+
+	static const struct Vertex verts[8] = {
 	    /*
-	     *      0
-	     *      |-- 2
+	     *
+	     *    0 |-- 2
 	     *      |  /|
 	     *      | / |
 	     *      |/--|
 	     *      1   3
 	     */
 
-	    {-intToFix(1), intToFix(1), intToFix(0)},
-	    {-intToFix(1), -intToFix(1), intToFix(0)},
-	    {intToFix(1), intToFix(1), intToFix(0)},
-	    {intToFix(1), -intToFix(1), intToFix(0)},
+	    {-1, 1, 1},  {-1, -1, 1},  {1, 1, 1},  {1, -1, 1},
+	    {-1, 1, -1}, {-1, -1, -1}, {1, 1, -1}, {1, -1, -1},
 	};
 
-	static const GLfixed normals[12] = {
-	    intToFix(0), intToFix(0), intToFix(1), intToFix(0), intToFix(0), intToFix(1),
-	    intToFix(0), intToFix(0), intToFix(1), intToFix(0), intToFix(0), intToFix(1),
+	static const uint8_t indices[36] = {
+	    0, 1, 2, /* 3 */
+	    1, 2, 3, /* 6 */
+
+	    4, 5, 6, /* 9 */
+	    5, 6, 7, /* 12 */
+
+	    2, 6, 3, /* 15 */
+	    3, 6, 7, /* 18 */
+
+	    0, 4, 1, /* 21 */
+	    1, 4, 5, /* 24 */
+
+	    0, 4, 6, /* 27 */
+	    0, 6, 2, /* 30 */
+
+	    1, 5, 7, /* 33 */
+	    1, 7, 3  /* 36 */
 	};
 
-	static const GLfixed colors[4][4] = {
+	static const GLfixed normals[24] = {
+	    intToFix(0), intToFix(0), intToFix(1),  intToFix(0), intToFix(0), intToFix(1),
+	    intToFix(0), intToFix(0), intToFix(1),  intToFix(0), intToFix(0), intToFix(1),
+
+	    intToFix(0), intToFix(0), -intToFix(1), intToFix(0), intToFix(0), -intToFix(1),
+	    intToFix(0), intToFix(0), -intToFix(1), intToFix(0), intToFix(0), -intToFix(1),
+	};
+
+	static const GLfixed colors[8][4] = {
+	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
+	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	};
 
-	static const GLfixed texCoords[8] = {
-	    intToFix(0), intToFix(1), intToFix(0), intToFix(0),
+	static const GLfixed texCoords[16] = {
+	    intToFix(0), intToFix(1), intToFix(0), intToFix(0), intToFix(1), intToFix(1),
+	    intToFix(1), intToFix(0), intToFix(0), intToFix(1), intToFix(0), intToFix(0),
 	    intToFix(1), intToFix(1), intToFix(1), intToFix(0),
 	};
 
@@ -99,7 +130,7 @@ static void draw(void) {
 #endif
 
 	glTexCoordPointer(2, GL_FIXED, 0, texCoords);
-	glVertexPointer(3, GL_FIXED, 0, verts);
+	glVertexPointer(3, GL_BYTE, sizeof(struct Vertex), verts);
 	glColorPointer(4, GL_FIXED, 0, colors);
 	glNormalPointer(GL_FIXED, 0, normals);
 
@@ -110,7 +141,7 @@ static void draw(void) {
 
 	/* draw triangles */
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
 	glPopMatrix();
 }
 
@@ -191,7 +222,6 @@ void mainLoop(void) {
 	while (1) {
 		draw();
 		swapBuffers();
-		view_roty -= intToFix(5);
 	}
 }
 

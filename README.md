@@ -4,3 +4,5 @@
 Proper conformance will not likely to be achieved.
 
 ![demo](https://github.com/user-attachments/assets/28c48ebd-dcbc-4509-8234-11fd7f0d17e2)
+
+The `68k-problems` has the source code for the demo "68K problems (but a blit ain't one)", submitted to the Impulse 2026 demoparty.
