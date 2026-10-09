@@ -1326,6 +1326,20 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 		return;
 	}
 
+	int8_t raw[48 /* 3 ª 4 * 4 */];
+	int componentSize;
+	switch (vertexType) {
+	case GL_BYTE:
+		componentSize = 1;
+		break;
+	case GL_SHORT:
+		componentSize = 2;
+		break;
+	case GL_FIXED:
+		componentSize = 4;
+		break;
+	}
+
 	/// TODO: better place the mvp matrix computation
 	GLfixed mvp[16];
 	mat4x4_mul(&modelViewMatrix[0], &projectionMatrix[0], &mvp[0]);
@@ -1354,10 +1368,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 			index = ((uint8_t*)indices)[0];
 		}
 
-		int step = vertexStride ? vertexStride / sizeof(GLfixed) : vertexSize;
-		triangleVerts[0] = ((GLfixed*)vertexPointer)[step * index];
-		triangleVerts[1] = ((GLfixed*)vertexPointer)[step * index + 1];
-		triangleVerts[2] = ((GLfixed*)vertexPointer)[step * index + 2];
+		int step = vertexStride ? vertexStride : vertexSize * componentSize;
+		switch (vertexType) {
+		case GL_BYTE: {
+			const int8_t* v = (const int8_t*)raw;
+			memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+			triangleVerts[0] = (GLfixed)v[0] << 16;
+			triangleVerts[1] = (GLfixed)v[1] << 16;
+			triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+		} break;
+		case GL_SHORT: {
+			const int16_t* v = (const int16_t*)raw;
+			memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+			triangleVerts[0] = (GLfixed)v[0] << 16;
+			triangleVerts[1] = (GLfixed)v[1] << 16;
+			triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+		} break;
+		case GL_FIXED: {
+			const GLfixed* v = (const GLfixed*)raw;
+			memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+			triangleVerts[0] = (GLfixed)v[0];
+			triangleVerts[1] = (GLfixed)v[1];
+			triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+		} break;
+		}
 
 		if (textureCoordsEnabled) {
 			triangleUv[0] = ((GLfixed*)textureCoordPointer)[2 * index];
@@ -1407,9 +1441,29 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c];
 			}
 
-			triangleVerts[3] = ((GLfixed*)vertexPointer)[step * index];
-			triangleVerts[4] = ((GLfixed*)vertexPointer)[step * index + 1];
-			triangleVerts[5] = ((GLfixed*)vertexPointer)[step * index + 2];
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[3] = (GLfixed)v[0] << 16;
+				triangleVerts[4] = (GLfixed)v[1] << 16;
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[3] = (GLfixed)v[0] << 16;
+				triangleVerts[4] = (GLfixed)v[1] << 16;
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[3] = (GLfixed)v[0];
+				triangleVerts[4] = (GLfixed)v[1];
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (textureCoordsEnabled) {
 				triangleUv[2] = ((GLfixed*)textureCoordPointer)[2 * index];
@@ -1454,9 +1508,29 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c + 1];
 			}
 
-			triangleVerts[6] = ((GLfixed*)vertexPointer)[step * index];
-			triangleVerts[7] = ((GLfixed*)vertexPointer)[step * index + 1];
-			triangleVerts[8] = ((GLfixed*)vertexPointer)[step * index + 2];
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[6] = (GLfixed)v[0] << 16;
+				triangleVerts[7] = (GLfixed)v[1] << 16;
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[6] = (GLfixed)v[0] << 16;
+				triangleVerts[7] = (GLfixed)v[1] << 16;
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[6] = (GLfixed)v[0];
+				triangleVerts[7] = (GLfixed)v[1];
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (textureCoordsEnabled) {
 				triangleUv[4] = ((GLfixed*)textureCoordPointer)[2 * index];
@@ -1507,22 +1581,8 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 		GLfixed triangleNormals[3 * 3];
 		GLfixed triangleUv[3 * 2];
 		GLfixed triangleColours[3 * 4];
-		int componentSize;
+
 		int step;
-		int8_t raw[48 /* 3 ª 4 * 4 */];
-
-		switch (vertexType) {
-		case GL_BYTE:
-			componentSize = 1;
-			break;
-		case GL_SHORT:
-			componentSize = 2;
-			break;
-		case GL_FIXED:
-			componentSize = 4;
-			break;
-		}
-
 		int index;
 
 		if (textureMapping2DEnabled) {
@@ -1746,7 +1806,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 		int c;
 		int index;
 		int finalCount = count;
-
+		GLfixed pointVert[3];
 		GLfixed* cPtr = lightsEnabled ? (GLfixed*)&materialColor[0] : (GLfixed*)&dummyColors[0];
 
 		for (c = 0; c < finalCount; ++c) {
@@ -1759,13 +1819,36 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c];
 			}
 
-			GLfixed* vertexPtr = (GLfixed*)vertexPointer + (vertexSize * index);
+			int step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				pointVert[0] = (GLfixed)v[0] << 16;
+				pointVert[1] = (GLfixed)v[1] << 16;
+				pointVert[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				pointVert[0] = (GLfixed)v[0] << 16;
+				pointVert[1] = (GLfixed)v[1] << 16;
+				pointVert[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				pointVert[0] = (GLfixed)v[0];
+				pointVert[1] = (GLfixed)v[1];
+				pointVert[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (colorArrayEnabled) {
 				cPtr = (GLfixed*)colorPointer + (2 * index);
 			}
 
-			processPoints(mvp, vertexPtr, cPtr, vecs, transformed);
+			processPoints(mvp, &pointVert[0], cPtr, vecs, transformed);
 		}
 	} break;
 	case GL_TRIANGLE_STRIP: {
@@ -1795,9 +1878,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c];
 			}
 
-			triangleVerts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			triangleVerts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			triangleVerts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			int step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[0] = (GLfixed)v[0] << 16;
+				triangleVerts[1] = (GLfixed)v[1] << 16;
+				triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[0] = (GLfixed)v[0] << 16;
+				triangleVerts[1] = (GLfixed)v[1] << 16;
+				triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[0] = (GLfixed)v[0];
+				triangleVerts[1] = (GLfixed)v[1];
+				triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (textureCoordsEnabled) {
 				triangleUv[0] = ((GLfixed*)textureCoordPointer)[2 * index];
@@ -1842,9 +1946,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c + 1];
 			}
 
-			triangleVerts[3] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			triangleVerts[4] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			triangleVerts[5] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[3] = (GLfixed)v[0] << 16;
+				triangleVerts[4] = (GLfixed)v[1] << 16;
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[3] = (GLfixed)v[0] << 16;
+				triangleVerts[4] = (GLfixed)v[1] << 16;
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[3] = (GLfixed)v[0];
+				triangleVerts[4] = (GLfixed)v[1];
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (textureCoordsEnabled) {
 				triangleUv[2] = ((GLfixed*)textureCoordPointer)[2 * index];
@@ -1889,9 +2014,29 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c + 2];
 			}
 
-			triangleVerts[6] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			triangleVerts[7] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			triangleVerts[8] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[6] = (GLfixed)v[0] << 16;
+				triangleVerts[7] = (GLfixed)v[1] << 16;
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[6] = (GLfixed)v[0] << 16;
+				triangleVerts[7] = (GLfixed)v[1] << 16;
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				triangleVerts[6] = (GLfixed)v[0];
+				triangleVerts[7] = (GLfixed)v[1];
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (textureCoordsEnabled) {
 				triangleUv[4] = ((GLfixed*)textureCoordPointer)[2 * index];
@@ -1951,9 +2096,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c];
 			}
 
-			verts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			verts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			verts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			int step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0] << 16;
+				verts[1] = (GLfixed)v[1] << 16;
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0] << 16;
+				verts[1] = (GLfixed)v[1] << 16;
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0];
+				verts[1] = (GLfixed)v[1];
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (colorArrayEnabled) {
 				colours[0] = ((GLfixed*)colorPointer)[4 * index];
@@ -1980,9 +2146,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c + 1];
 			}
 
-			verts[3] = ((GLfixed*)vertexPointer)[3 * index];
-			verts[4] = ((GLfixed*)vertexPointer)[3 * index + 1];
-			verts[5] = ((GLfixed*)vertexPointer)[3 * index + 2];
+			step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0] << 16;
+				verts[4] = (GLfixed)v[1] << 16;
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0] << 16;
+				verts[4] = (GLfixed)v[1] << 16;
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0];
+				verts[4] = (GLfixed)v[1];
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (colorArrayEnabled) {
 				colours[4] = ((GLfixed*)colorPointer)[4 * index];
@@ -2024,9 +2211,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c];
 			}
 
-			verts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			verts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			verts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			int step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0] << 16;
+				verts[1] = (GLfixed)v[1] << 16;
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0] << 16;
+				verts[1] = (GLfixed)v[1] << 16;
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0];
+				verts[1] = (GLfixed)v[1];
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (colorArrayEnabled) {
 				colours[0] = ((GLfixed*)colorPointer)[4 * index];
@@ -2053,9 +2261,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[c + 1];
 			}
 
-			verts[3] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			verts[4] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			verts[5] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0] << 16;
+				verts[4] = (GLfixed)v[1] << 16;
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0] << 16;
+				verts[4] = (GLfixed)v[1] << 16;
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0];
+				verts[4] = (GLfixed)v[1];
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			if (colorArrayEnabled) {
 				colours[4] = ((GLfixed*)colorPointer)[4 * index];
@@ -2085,9 +2314,30 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				index = ((uint8_t*)indices)[0];
 			}
 
-			verts[0] = ((GLfixed*)vertexPointer)[vertexSize * index];
-			verts[1] = ((GLfixed*)vertexPointer)[vertexSize * index + 1];
-			verts[2] = ((GLfixed*)vertexPointer)[vertexSize * index + 2];
+			int step = vertexStride ? vertexStride : vertexSize * componentSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0] << 16;
+				verts[1] = (GLfixed)v[1] << 16;
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0] << 16;
+				verts[1] = (GLfixed)v[1] << 16;
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[0] = (GLfixed)v[0];
+				verts[1] = (GLfixed)v[1];
+				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
 
 			processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
 		}
