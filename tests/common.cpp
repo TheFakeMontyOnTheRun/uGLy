@@ -12,7 +12,7 @@ extern "C" {
 FramebufferPixelFormat* framebuffer;
 
 #ifndef DISABLE_DEPTH_BUFFER
-uint16_t* zBuffer;
+DepthType* zBuffer;
 #endif
 
 #ifndef DISABLE_STENCIL_BUFFER
