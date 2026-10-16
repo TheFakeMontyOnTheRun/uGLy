@@ -865,6 +865,19 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		return;
 	}
 
+	int componentSize;
+	switch (vertexType) {
+	case GL_BYTE:
+		componentSize = 1;
+		break;
+	case GL_SHORT:
+		componentSize = 2;
+		break;
+	case GL_FIXED:
+		componentSize = 4;
+		break;
+	}
+
 	/// TODO: better place the mvp matrix computation
 	GLfixed mvp[16];
 	mat4x4_mul(&modelViewMatrix[0], &projectionMatrix[0], &mvp[0]);
@@ -874,13 +887,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		int c;
 		int finalCount = count / 3;
 		int firstTrig = first / 3;
-		GLfixed* vertexPtr;
+		uint8_t raw[3 * 4 * 4];
+		GLfixed triangleVerts[3 * 4];
 		const GLfixed* uvPtr;
 		const GLfixed* cPtr;
 		const GLfixed* nPtr;
 		struct Texture* texture;
-
-		vertexPtr = (GLfixed*)vertexPointer;
+		uint8_t *vertexPtr = (uint8_t*)vertexPointer;
 
 		if (textureCoordsEnabled) {
 			uvPtr = (GLfixed*)textureCoordPointer;
@@ -912,14 +925,14 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 
 		for (c = 0; c < firstTrig; ++c) {
 			uvPtr += 2 * textureCoordSize;
-			vertexPtr += 3 * vertexSize;
+			vertexPtr += 3 * componentSize * vertexSize;
 			cPtr += 4 * colorSize;
 			nPtr += 9;
 		}
 
 		for (c = 0; c < (first % 3); ++c) {
 			uvPtr += textureCoordSize;
-			vertexPtr += vertexSize;
+			vertexPtr += componentSize * vertexSize;
 			cPtr += colorSize;
 			nPtr += 3;
 		}
@@ -929,10 +942,52 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 			GLfixed transformed[12];
 			GLfixed transformedNormals[12];
 
-			processTriangle(modelViewMatrix, mvp, vertexPtr, vertexSize, uvPtr, cPtr, nPtr, texture,
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize * 3);
+				triangleVerts[0] = (GLfixed)v[0] << 16;
+				triangleVerts[1] = (GLfixed)v[1] << 16;
+				triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+				triangleVerts[3] = (GLfixed)v[3] << 16;
+				triangleVerts[4] = (GLfixed)v[4] << 16;
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[5] << 16) : 0;
+				triangleVerts[6] = (GLfixed)v[6] << 16;
+				triangleVerts[7] = (GLfixed)v[7] << 16;
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[7] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize * 3);
+				triangleVerts[0] = (GLfixed)v[0] << 16;
+				triangleVerts[1] = (GLfixed)v[1] << 16;
+				triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+				triangleVerts[3] = (GLfixed)v[3] << 16;
+				triangleVerts[4] = (GLfixed)v[4] << 16;
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[5] << 16) : 0;
+				triangleVerts[6] = (GLfixed)v[6] << 16;
+				triangleVerts[7] = (GLfixed)v[7] << 16;
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[8] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize * 3);
+				triangleVerts[0] = (GLfixed)v[0];
+				triangleVerts[1] = (GLfixed)v[1];
+				triangleVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+				triangleVerts[3] = (GLfixed)v[3];
+				triangleVerts[4] = (GLfixed)v[4];
+				triangleVerts[5] = (vertexSize > 2) ? ((GLfixed)v[5]) : 0;
+				triangleVerts[6] = (GLfixed)v[6];
+				triangleVerts[7] = (GLfixed)v[7];
+				triangleVerts[8] = (vertexSize > 2) ? ((GLfixed)v[8]) : 0;
+			} break;
+			}
+
+			processTriangle(modelViewMatrix, mvp, &triangleVerts[0], vertexSize, uvPtr, cPtr, nPtr, texture,
 			                vecs, transformed, transformedNormals);
 
-			vertexPtr += 3 * vertexSize;
+			vertexPtr += 3 * componentSize * vertexSize;
 
 			if (normalsArrayEnabled) {
 				nPtr += 9;

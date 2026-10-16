@@ -44,9 +44,9 @@ static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
 static void draw(void) {
 
-	static const GLfixed verts[3][3] = {{-intToFix(1), -intToFix(1), intToFix(0)},
-	                                    {intToFix(1), -intToFix(1), intToFix(0)},
-	                                    {0, intToFix(1), intToFix(0)}};
+	static const int16_t verts[3][3] = {{-1, -1, 0},
+	                                    {1, -1, 0},
+	                                    {0, 1, 0}};
 	static const GLfixed colors[3][4] = {
 	    {65536, 0, 0, 65536}, {0, 65536, 0, 65536}, {0, 0, 65536, 65536}};
 
@@ -58,7 +58,7 @@ static void draw(void) {
 	glRotatex(view_rotz, 0, 0, 1);
 
 	{
-		glVertexPointer(3, GL_FIXED, 0, verts);
+		glVertexPointer(3, GL_SHORT, 0, verts);
 		glColorPointer(4, GL_FIXED, 0, colors);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
