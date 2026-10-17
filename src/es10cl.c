@@ -1139,13 +1139,13 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		int c = 0;
 		int finalCount = count - 1;
 		struct Texture* texture;
-		uint8_t raw[3 * 4 * 4];
-		GLfixed triangleVerts[3 * 3];
 		GLfixed triangleNormals[3 * 3];
 		GLfixed triangleUv[3 * 2];
 		GLfixed triangleColours[3 * 4];
 		uint8_t* vertexPtr = (uint8_t*)vertexPointer;
 		int step = vertexStride ? vertexStride : vertexSize * componentSize;
+		uint8_t raw[3 * 4 * 4];
+		GLfixed triangleVerts[3 * 3];
 
 		if (textureMapping2DEnabled) {
 			texture = &textures[currentTexture];
@@ -1350,9 +1350,11 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 	case GL_LINES: {
 		int c;
 		int finalCount = count / 2;
-		GLfixed* vertexPtr;
 		GLfixed* cPtr;
-		vertexPtr = (GLfixed*)vertexPointer;
+		uint8_t* vertexPtr = (uint8_t*)vertexPointer;
+		int step = vertexStride ? vertexStride : vertexSize * componentSize;
+		uint8_t raw[2 * 4 * 4];
+		GLfixed lineVerts[2 * 3];
 
 		if (colorArrayEnabled) {
 			cPtr = (GLfixed*)colorPointer;
@@ -1365,7 +1367,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		}
 
 		for (c = 0; c < first; ++c) {
-			vertexPtr += vertexSize;
+			vertexPtr += step;
 			cPtr += colorSize;
 		}
 
@@ -1373,9 +1375,46 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 			GLfixed vecs[8];
 			GLfixed transformed[8];
 
-			processLine(modelViewMatrix, mvp, vertexPtr, cPtr, vecs, transformed);
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0] << 16;
+				lineVerts[1] = (GLfixed)v[1] << 16;
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+				memcpy(raw, (const char*)vertexPtr + step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0] << 16;
+				lineVerts[4] = (GLfixed)v[1] << 16;
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0] << 16;
+				lineVerts[1] = (GLfixed)v[1] << 16;
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
 
-			vertexPtr += 2 * vertexSize;
+				memcpy(raw, (const char*)vertexPtr + step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0] << 16;
+				lineVerts[4] = (GLfixed)v[1] << 16;
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0];
+				lineVerts[1] = (GLfixed)v[1];
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+				memcpy(raw, (const char*)vertexPtr + step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0];
+				lineVerts[4] = (GLfixed)v[1];
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
+
+			processLine(modelViewMatrix, mvp, &lineVerts[0], cPtr, vecs, transformed);
+
+			vertexPtr += 2 * step;
 
 			if (colorArrayEnabled) {
 				cPtr += 2 * colorSize;
@@ -1386,9 +1425,12 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 	case GL_LINE_LOOP: {
 		int c;
 		int finalCount = count - 1;
-		GLfixed* vertexPtr;
 		GLfixed* cPtr;
-		vertexPtr = (GLfixed*)vertexPointer;
+		uint8_t* vertexPtr = (uint8_t*)vertexPointer;
+		int step = vertexStride ? vertexStride : vertexSize * componentSize;
+		uint8_t raw[2 * 4 * 4];
+		GLfixed lineVerts[2 * 3];
+
 
 		if (colorArrayEnabled) {
 			cPtr = (GLfixed*)colorPointer;
@@ -1401,7 +1443,7 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		}
 
 		for (c = 0; c < first; ++c) {
-			vertexPtr += vertexSize;
+			vertexPtr += step;
 			cPtr += colorSize;
 		}
 
@@ -1409,30 +1451,108 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 			GLfixed vecs[8];
 			GLfixed transformed[8];
 
-			processLine(modelViewMatrix, mvp, vertexPtr, cPtr, vecs, transformed);
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0] << 16;
+				lineVerts[1] = (GLfixed)v[1] << 16;
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+				memcpy(raw, (const char*)vertexPtr + step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0] << 16;
+				lineVerts[4] = (GLfixed)v[1] << 16;
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0] << 16;
+				lineVerts[1] = (GLfixed)v[1] << 16;
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
 
-			vertexPtr += vertexSize;
+				memcpy(raw, (const char*)vertexPtr + step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0] << 16;
+				lineVerts[4] = (GLfixed)v[1] << 16;
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0];
+				lineVerts[1] = (GLfixed)v[1];
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+				memcpy(raw, (const char*)vertexPtr + step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0];
+				lineVerts[4] = (GLfixed)v[1];
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
+
+			processLine(modelViewMatrix, mvp, lineVerts, cPtr, vecs, transformed);
+
+			vertexPtr += step;
 
 			if (colorArrayEnabled) {
 				cPtr += colorSize;
 			}
 		}
 		if (mode != GL_LINE_STRIP) {
-			GLfixed* verts = scratchBufferVertex;
-			GLfixed* colours = scratchBufferColour;
+			GLfixed colours[2 * 4];
+			GLfixed transformed[2 * 4];
 			GLfixed vecs[8];
-			GLfixed transformed[8];
 
-			vertexPtr -= vertexSize;
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0] << 16;
+				lineVerts[1] = (GLfixed)v[1] << 16;
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+				memcpy(raw, (const char*)vertexPointer + first * step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0] << 16;
+				lineVerts[4] = (GLfixed)v[1] << 16;
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0] << 16;
+				lineVerts[1] = (GLfixed)v[1] << 16;
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
 
-			if (colorArrayEnabled) {
-				cPtr -= colorSize;
+				memcpy(raw, (const char*)vertexPointer + first * step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0] << 16;
+				lineVerts[4] = (GLfixed)v[1] << 16;
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPtr, vertexSize * componentSize);
+				lineVerts[0] = (GLfixed)v[0];
+				lineVerts[1] = (GLfixed)v[1];
+				lineVerts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+				memcpy(raw, (const char*)vertexPointer + first * step, vertexSize * componentSize);
+				lineVerts[3] = (GLfixed)v[0];
+				lineVerts[4] = (GLfixed)v[1];
+				lineVerts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
 			}
 
-			for (c = 0; c < vertexSize; ++c) {
-				verts[c] = ((GLfixed*)vertexPointer)[c];
+			for (c = 0; c < 4; ++c) {
+
 				if (colorArrayEnabled) {
-					colours[c] = ((GLfixed*)colorPointer)[c];
+					colours[4 + c] = ((GLfixed*)colorPointer)[colorSize * first + c];
+				} else {
+					if (lightsEnabled) {
+						colours[4 + c] = materialColor[0][0];
+					} else {
+						colours[4 + c] = dummyColors[0][0];
+					}
+				}
+
+				if (colorArrayEnabled) {
+					colours[c] =
+					    ((GLfixed*)colorPointer)[(colorSize * (first + count - 1)) + c];
 				} else {
 					if (lightsEnabled) {
 						colours[c] = materialColor[0][0];
@@ -1440,20 +1560,8 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 						colours[c] = dummyColors[0][0];
 					}
 				}
-
-				verts[vertexSize + c] = ((GLfixed*)vertexPointer)[(vertexSize * (count - 1)) + c];
-				if (colorArrayEnabled) {
-					colours[colorSize + c] =
-					    ((GLfixed*)colorPointer)[(colorSize * (count - 1)) + c];
-				} else {
-					if (lightsEnabled) {
-						colours[colorSize + c] = materialColor[0][0];
-					} else {
-						colours[colorSize + c] = dummyColors[0][0];
-					}
-				}
 			}
-			processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
+			processLine(modelViewMatrix, mvp, lineVerts, colours, vecs, transformed);
 		}
 	} break;
 	default:
