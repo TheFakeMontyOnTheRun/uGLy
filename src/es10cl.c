@@ -876,6 +876,8 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 	case GL_FIXED:
 		componentSize = 4;
 		break;
+	default:
+		return;
 	}
 
 	/// TODO: better place the mvp matrix computation
@@ -1597,6 +1599,8 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 	case GL_FIXED:
 		componentSize = 4;
 		break;
+	default:
+		return;
 	}
 
 	/// TODO: better place the mvp matrix computation
