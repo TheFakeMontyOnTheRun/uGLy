@@ -537,6 +537,13 @@ void swapBuffers(void) {
 }
 
 void initWindow(KeyCallback callback) {
+
+	VDP_setScreenWidth256();
+	VDP_setHInterrupt(0);
+	VDP_setHilightShadow(0);
+
+	DMA_setBufferSize(2048);
+
 	framebuffer = (FramebufferPixelFormat*)malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER *
 	                                              sizeof(FramebufferPixelFormat));
 
@@ -547,12 +554,6 @@ void initWindow(KeyCallback callback) {
 #ifndef DISABLE_STENCIL_BUFFER
 	stencilBuffer = (uint8_t*)malloc(XRES_FRAMEBUFFER * YRES_FRAMEBUFFER);
 #endif
-
-	VDP_setScreenWidth256();
-	VDP_setHInterrupt(0);
-	VDP_setHilightShadow(0);
-
-	DMA_setBufferSize(2048);
 
 	/* create virtual 256x160 framebuffer */
 	BMP_init(TRUE, BG_B, PAL0, 1);
