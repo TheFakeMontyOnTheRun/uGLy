@@ -1585,21 +1585,30 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 }
 
 GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices) {
+
+	int8_t raw[48 /* 3 ª 4 * 4 */];
+	int componentSize;
+
 	if (count < 0) {
 		if (currentError == GL_NO_ERROR) {
 			currentError = GL_INVALID_VALUE;
+		}
+		return;
+	}
+
+	if (type != GL_UNSIGNED_BYTE && type != GL_UNSIGNED_SHORT) {
+		if (currentError == GL_NO_ERROR) {
+			currentError = GL_INVALID_ENUM;
 		}
 
 		return;
 	}
 
-	if (!vertexArrayEnabled) {
+	if (!vertexArrayEnabled || count == 0) {
 		/* if this is disabled, what are we even doing here? */
 		return;
 	}
 
-	int8_t raw[48 /* 3 ª 4 * 4 */];
-	int componentSize;
 	switch (vertexType) {
 	case GL_BYTE:
 		componentSize = 1;
@@ -1627,23 +1636,22 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 		GLfixed triangleNormals[3 * 3];
 		GLfixed triangleUv[3 * 2];
 		GLfixed triangleColours[3 * 4];
-
-		if (count < 3) {
-			break;
-		}
-
 		int index;
-
-		if (textureMapping2DEnabled) {
-			texture = &textures[currentTexture];
-		} else {
-			texture = &dummyTexture;
-		}
 
 		if (type == GL_UNSIGNED_SHORT) {
 			index = ((uint16_t*)indices)[0];
 		} else {
 			index = ((uint8_t*)indices)[0];
+		}
+
+		if (count < 3) {
+			break;
+		}
+
+		if (textureMapping2DEnabled) {
+			texture = &textures[currentTexture];
+		} else {
+			texture = &dummyTexture;
 		}
 
 		int step = vertexStride ? vertexStride : vertexSize * componentSize;
@@ -2008,6 +2016,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				triangleNormals[4] = ((GLfixed*)dummyNormals)[3 * index + 1];
 				triangleNormals[5] = ((GLfixed*)dummyNormals)[3 * index + 2];
 			}
+
 
 			if (type == GL_UNSIGNED_SHORT) {
 				index = ((uint16_t*)indices)[c + 2];
@@ -2590,11 +2599,6 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 			processLine(modelViewMatrix, mvp, verts, colours, vecs, transformed);
 		}
 		if (mode != GL_LINE_STRIP) {
-			if (type == GL_UNSIGNED_SHORT) {
-				index = ((uint16_t*)indices)[0];
-			} else {
-				index = ((uint8_t*)indices)[0];
-			}
 
 			int step = vertexStride ? vertexStride : vertexSize * componentSize;
 			switch (vertexType) {
@@ -2618,6 +2622,36 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 				verts[0] = (GLfixed)v[0];
 				verts[1] = (GLfixed)v[1];
 				verts[2] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
+			} break;
+			}
+
+			if (type == GL_UNSIGNED_SHORT) {
+				index = ((uint16_t*)indices)[0];
+			} else {
+				index = ((uint8_t*)indices)[0];
+			}
+
+			switch (vertexType) {
+			case GL_BYTE: {
+				const int8_t* v = (const int8_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0] << 16;
+				verts[4] = (GLfixed)v[1] << 16;
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_SHORT: {
+				const int16_t* v = (const int16_t*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0] << 16;
+				verts[4] = (GLfixed)v[1] << 16;
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2] << 16) : 0;
+			} break;
+			case GL_FIXED: {
+				const GLfixed* v = (const GLfixed*)raw;
+				memcpy(raw, (const char*)vertexPointer + index * step, vertexSize * componentSize);
+				verts[3] = (GLfixed)v[0];
+				verts[4] = (GLfixed)v[1];
+				verts[5] = (vertexSize > 2) ? ((GLfixed)v[2]) : 0;
 			} break;
 			}
 
