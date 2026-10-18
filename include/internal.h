@@ -182,8 +182,11 @@ void drawTexturedTriangle(const int* coords, const uint8_t* uvCoords, const uint
                           const uint8_t* lightDot, const uint8_t* ambientLight);
 
 void uGLyInit(void);
-void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours,
-              DepthType* zValues);
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours
+#ifndef DISABLE_DEPTH_BUFFER
+              ,DepthType* zValues
+#endif
+              );
 void drawPoint(int* coords, uint8_t* colour,
 #ifndef DISABLE_DEPTH_BUFFER
                DepthType zValue,

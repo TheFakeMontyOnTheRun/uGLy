@@ -658,7 +658,11 @@ void processLine(GLfixed mv[16], GLfixed mvp[16], GLfixed* vertexPtr, GLfixed* c
 	    fixToInt(Mul(*(cPtr + 4), intToFix(0xFF))), fixToInt(Mul(*(cPtr + 5), intToFix(0xFF))),
 	    fixToInt(Mul(*(cPtr + 6), intToFix(0xFF))), fixToInt(Mul(*(cPtr + 7), intToFix(0xFF)))};
 
-	drawLine(coords[0], coords[1], coords[2], coords[3], &coloursArray[0], &zValuesNormalized[0]);
+	drawLine(coords[0], coords[1], coords[2], coords[3], &coloursArray[0]
+#ifndef DISABLE_DEPTH_BUFFER
+	         ,&zValuesNormalized[0]
+#endif
+	         );
 }
 
 void processTriangle(GLfixed mv[16], GLfixed mvp[16], const GLfixed* vertexPtr, int effeticeStride,
@@ -927,9 +931,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		}
 
 		for (c = 0; c < firstTrig; ++c) {
-			uvPtr += 2 * textureCoordSize;
+			uvPtr += 3 * textureCoordSize;
 			vertexPtr += 3 * step;
-			cPtr += 4 * colorSize;
+			cPtr += 3 * colorSize;
 			nPtr += 9;
 		}
 
@@ -979,10 +983,10 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 				nPtr += 9;
 			}
 			if (textureCoordsEnabled) {
-				uvPtr += 2 * textureCoordSize;
+				uvPtr += 3 * textureCoordSize;
 			}
 			if (colorArrayEnabled) {
-				cPtr += 4 * colorSize;
+				cPtr += 3 * colorSize;
 			}
 		}
 	} break;
@@ -1148,6 +1152,10 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		int step = vertexStride ? vertexStride : vertexSize * componentSize;
 		uint8_t raw[3 * 4 * 4];
 		GLfixed triangleVerts[3 * 3];
+
+		if (count < 3) {
+			break;
+		}
 
 		if (textureMapping2DEnabled) {
 			texture = &textures[currentTexture];
@@ -1433,6 +1441,9 @@ GLAPI void APIENTRY glDrawArrays(GLenum mode, GLint first, GLsizei count) {
 		uint8_t raw[2 * 4 * 4];
 		GLfixed lineVerts[2 * 3];
 
+		if (count < 2) {
+			break;
+		}
 
 		if (colorArrayEnabled) {
 			cPtr = (GLfixed*)colorPointer;
@@ -1616,6 +1627,10 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 		GLfixed triangleNormals[3 * 3];
 		GLfixed triangleUv[3 * 2];
 		GLfixed triangleColours[3 * 4];
+
+		if (count < 3) {
+			break;
+		}
 
 		int index;
 
@@ -1838,7 +1853,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 	} break;
 	case GL_TRIANGLES: {
 		int c;
-		int finalCount = count;
+		int finalCount = count - count % 3;
 		struct Texture* texture;
 		GLfixed triangleVerts[3 * 3];
 		GLfixed triangleNormals[3 * 3];
@@ -2345,7 +2360,7 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 	case GL_LINES: {
 		int c;
 		int index;
-		int finalCount = count;
+		int finalCount = count - count % 2;
 		GLfixed verts[2 * 3];
 		GLfixed colours[2 * 4];
 
@@ -2465,6 +2480,10 @@ GLAPI void APIENTRY glDrawElements(GLenum mode, GLsizei count, GLenum type, cons
 		GLfixed colours[2 * 4];
 		GLfixed vecs[8];
 		GLfixed transformed[8];
+
+		if (count < 2) {
+			break;
+		}
 
 		for (c = 0; c < finalCount; ++c) {
 

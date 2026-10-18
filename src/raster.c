@@ -863,8 +863,11 @@ static void fillRect(int x0, int y0, uint16_t width, uint16_t height, uint8_t* c
 __attribute__((target("arm"), section(".iwram"), noinline))
 #endif
 
-void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours,
-              DepthType* zValues) {
+void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colours
+#ifndef DISABLE_DEPTH_BUFFER
+              ,DepthType* zValues
+#endif
+              ) {
 	int dx = abs(x1 - x0);
 	int sx = x0 < x1 ? 1 : -1;
 	int dy = abs(y1 - y0);
@@ -872,12 +875,16 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colou
 	int err = (dx > dy ? dx : -dy) >> 1;
 	int e2;
 
-	GLfixed r, g, b, a, z, rDX, gDX, bDX, aDX, zDX;
+	GLfixed r, g, b, a, rDX, gDX, bDX, aDX, zDX;
+
+#ifndef DISABLE_DEPTH_BUFFER
+	GLfixed z = intToFix(zValues[0]);
+#endif
+
 	r = intToFix(colours[0]);
 	g = intToFix(colours[1]);
 	b = intToFix(colours[2]);
 	a = intToFix(colours[3]);
-	z = intToFix(zValues[0]);
 
 	GLfixed sqX = (x1 - x0);
 	sqX = intToFix(sqX);
@@ -899,7 +906,10 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colou
 	gDX = Mul(intToFix(colours[5]) - g, oneOverLen);
 	bDX = Mul(intToFix(colours[6]) - b, oneOverLen);
 	aDX = Mul(intToFix(colours[7]) - a, oneOverLen);
+
+#ifndef DISABLE_DEPTH_BUFFER
 	zDX = Mul(intToFix(zValues[1]) - z, oneOverLen);
+#endif
 
 	for (;;) {
 
@@ -942,7 +952,10 @@ void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t* colou
 		g += gDX;
 		b += bDX;
 		a += aDX;
+
+#ifndef DISABLE_DEPTH_BUFFER
 		z += zDX;
+#endif
 	}
 }
 
