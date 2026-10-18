@@ -1,7 +1,7 @@
 #include "fpsqrt.h"
-
+#ifndef SGDK
 #include <stdio.h>
-
+#endif
 /*
   Computing the square root of an integer or a fixed point integer into a 
   fixed point integer. A fixed point is a 32 bit value with the decimal point

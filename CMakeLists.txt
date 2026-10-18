@@ -11,8 +11,17 @@ SET(CMAKE_C_STANDARD_REQUIRED ON)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H -DBPP16")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=3 -W -Wall -Wextra -Wno-unused-parameter -DGTEST_LANG_CXX11=0 -DBPP16")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_FORTIFY_SOURCE=3 -Wall -Wshadow -Wextra -pedantic -g -DSDL_DISABLE_IMMINTRIN_H -ggdb3 -DBPP16")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_FORTIFY_SOURCE=3 -W -Wall -Wextra -Wno-unused-parameter -DGTEST_LANG_CXX11=0 -ggdb3 -DBPP16")
+# cmake -S . -B build-asan -DUGLY_SANITIZE=ON
+# cmake --build build-asan
+option(UGLY_SANITIZE "Build with AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if (UGLY_SANITIZE)
+    set(SANITIZE_FLAGS "-U_FORTIFY_SOURCE -O1 -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize=shift")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZE_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZE_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
+endif ()
 
 if (APPLE)
     add_definitions(-D__GLIBCXX__)
@@ -80,11 +89,12 @@ add_executable(gears src/sdl2.c samples/gears.c ${SOURCE_FILES} )
 target_include_directories(gears PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
 target_link_libraries(gears LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
 
+add_executable(cube src/sdl2.c samples/cube.c ${SOURCE_FILES} )
+target_include_directories(cube PUBLIC ${SDL2_INCLUDE_DIR} ${SDL2_IMAGE_INCLUDE_DIRS})
+target_link_libraries(cube LINK_PUBLIC ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} m)
 
 add_executable(ugly-test  ${TEST_SOURCE_FILES} ${SOURCE_FILES} )
 
 target_link_libraries(ugly-test PRIVATE Threads::Threads)
 
 add_test(NAME ugly-test COMMAND ugly-test)
-
-
