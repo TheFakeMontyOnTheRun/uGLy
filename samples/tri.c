@@ -1,12 +1,14 @@
 /* File based on
  * https://gitlab.freedesktop.org/mesa/demos/-/blob/main/src/egl/opengles1/tri.c?ref_type=heads
- * Please visit the original to see some proper code ;)
+ * Please visit the original to see some proper code ;
+ * Copyright (C) 2008  Brian Paul   All Rights Reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 /*
- * Copyright (C) 2008  Brian Paul   All Rights Reserved.
+ * Copyright (C) 2026  Daniel Monteiro   All Rights Reserved.
  *
- * SPDX-License-Identifier: MIT
+ * SPDX-License-Identifier: Apache 2.0
  */
 
 /*
