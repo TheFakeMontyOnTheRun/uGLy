@@ -1,24 +1,12 @@
-/* File based on
- * https://gitlab.freedesktop.org/mesa/demos/-/blob/main/src/egl/opengles1/tri.c?ref_type=heads
- * Please visit the original to see some proper code ;)
- */
-
 /*
- * Copyright (C) 2008  Brian Paul   All Rights Reserved.
+ * Copyright (C) 2026  Daniel Monteiro   All Rights Reserved.
  *
- * SPDX-License-Identifier: MIT
- */
-
-/*
- * Draw a triangle with X/EGL and OpenGL ES 1.x
- * Brian Paul
- * 5 June 2008
+ * SPDX-License-Identifier: Apache 2.0
  */
 
 #include <stdint.h>
 
 #include "tex64x64xRGBA32.h"
-#define USE_FIXED_POINT 1
 
 #define kIntegerPart 16
 
@@ -34,19 +22,20 @@
 
 #define floatToFix(f) ((GLfixed)(65536.0f * (f)))
 
-#include <GLES/gl.h> /* use OpenGL ES 1.x */
-#include <assert.h>
+#include <GLES/gl.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "internal.h"
 
-static GLfixed view_rotx = 0, view_roty = 0, view_rotz = 0;
 
+GLfixed cubeRotX = 0;
+GLfixed cubeRotY = 0;
+GLfixed cubeRotZ = 0;
 GLuint textureID;
 
-static void draw(void) {
+void draw(void) {
 
 	struct Vertex {
 		GLbyte coords[3];
@@ -95,7 +84,7 @@ static void draw(void) {
 	    intToFix(0), intToFix(0), -intToFix(1), intToFix(0), intToFix(0), -intToFix(1),
 	};
 
-	static const GLfixed colors[8][4] = {
+	static const GLfixed colours[8][4] = {
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
 	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
@@ -119,9 +108,9 @@ static void draw(void) {
 	);
 
 	glPushMatrix();
-	glRotatex(view_rotx, intToFix(1), 0, 0);
-	glRotatex(view_roty, 0, intToFix(1), 0);
-	glRotatex(view_rotz, 0, 0, intToFix(1));
+	glRotatex(cubeRotX, intToFix(1), 0, 0);
+	glRotatex(cubeRotY, 0, intToFix(1), 0);
+	glRotatex(cubeRotZ, 0, 0, intToFix(1));
 
 	glEnable(GL_TEXTURE_2D);
 
@@ -131,7 +120,7 @@ static void draw(void) {
 
 	glTexCoordPointer(2, GL_FIXED, 0, texCoords);
 	glVertexPointer(3, GL_BYTE, sizeof(struct Vertex), verts);
-	glColorPointer(4, GL_FIXED, 0, colors);
+	glColorPointer(4, GL_FIXED, 0, colours);
 	glNormalPointer(GL_FIXED, 0, normals);
 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -139,14 +128,13 @@ static void draw(void) {
 	glEnableClientState(GL_COLOR_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 
-	/* draw triangles */
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
 	glPopMatrix();
 }
 
-/* new window size or exposure */
-static void reshape(int width, int height) {
+
+void reshape(int width, int height) {
 	const GLfixed ar = Div(intToFix(width), intToFix(height));
 
 	glViewport(0, 0, (GLint)width, (GLint)height);
@@ -160,7 +148,7 @@ static void reshape(int width, int height) {
 	glTranslatex(0, 0, -intToFix(10));
 }
 
-static void init(void) {
+void init(void) {
 	static const GLfixed ambient[4] = {Div(intToFix(1), intToFix(5)), Div(intToFix(1), intToFix(5)),
 	                                   Div(intToFix(1), intToFix(5)), intToFix(1)};
 	static const GLfixed pos[4] = {intToFix(0), intToFix(0), intToFix(1), 0};
@@ -185,31 +173,31 @@ static void init(void) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 64, 64, 0, GL_RGB, GL_UNSIGNED_BYTE, &tex[0]);
 }
 
-static void special_key(int special) {
-	switch (special) {
+void handleKeys(int code) {
+	switch (code) {
 	case 'a':
-		view_roty += intToFix(5);
+		cubeRotY += intToFix(5);
 		break;
 	case 'd':
-		view_roty -= intToFix(5);
+		cubeRotY -= intToFix(5);
 		break;
 	case 'w':
-		view_rotx += intToFix(5);
+		cubeRotX += intToFix(5);
 		break;
 	case 's':
-		view_rotx -= intToFix(5);
+		cubeRotX -= intToFix(5);
 		break;
 	case 'z':
-		view_rotz -= intToFix(5);
+		cubeRotZ -= intToFix(5);
 		break;
 	case 'x':
-		view_rotz += intToFix(5);
+		cubeRotZ += intToFix(5);
 		break;
 
 	case '0':
-		view_rotx = 0;
-		view_roty = 0;
-		view_rotz = 0;
+		cubeRotX = 0;
+		cubeRotY = 0;
+		cubeRotZ = 0;
 		break;
 
 	default:
@@ -229,7 +217,7 @@ int main(int argc, char* argv[]) {
 	(void)argc;
 	(void)argv;
 
-	initWindow(special_key);
+	initWindow(handleKeys);
 
 	init();
 
