@@ -29,6 +29,24 @@ KeyCallback keyCallback;
 
 static void VblankInterrupt(void) {
 	scanKeys();
+
+	u16 keys = keysHeld();
+
+	if ((keys & KEY_LEFT)) {
+		keyCallback('a');
+	}
+
+	if ((keys & KEY_RIGHT)) {
+		keyCallback('d');
+	}
+
+	if ((keys & KEY_UP)) {
+		keyCallback('w');
+	}
+
+	if ((keys & KEY_DOWN)) {
+		keyCallback('s');
+	}
 }
 
 uint8_t getPaletteEntry(const uint32_t origin) {
