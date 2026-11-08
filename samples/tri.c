@@ -1,12 +1,14 @@
 /* File based on
  * https://gitlab.freedesktop.org/mesa/demos/-/blob/main/src/egl/opengles1/tri.c?ref_type=heads
- * Please visit the original to see some proper code ;)
+ * Please visit the original to see some proper code ;
+ * Copyright (C) 2008  Brian Paul   All Rights Reserved.
+ * SPDX-License-Identifier: MIT
  */
 
 /*
- * Copyright (C) 2008  Brian Paul   All Rights Reserved.
+ * Copyright (C) 2026  Daniel Monteiro   All Rights Reserved.
  *
- * SPDX-License-Identifier: MIT
+ * SPDX-License-Identifier: Apache 2.0
  */
 
 /*
@@ -31,10 +33,6 @@
 #define fixToFloat(fp) ((fp) / 65536.0f)
 
 #include <GLES/gl.h> /* use OpenGL ES 1.x */
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-
 #include "internal.h"
 
 void initWindow(KeyCallback callback);
@@ -66,10 +64,6 @@ static void draw(void) {
 
 		/* draw triangle */
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		/* draw some points */
-		// glPointSizex(Div(intToFix(31), intToFix(2)));
-		// glDrawArrays(GL_POINTS, 0, 3);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_COLOR_ARRAY);

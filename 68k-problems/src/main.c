@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2026  Daniel Monteiro   All Rights Reserved.
+ *
+ * SPDX-License-Identifier: Apache 2.0
+ */
+
 #include <genesis.h>
 
 #include "../../src/es10cl.c"

@@ -1,18 +1,14 @@
 /* File based on
  * https://gitlab.freedesktop.org/mesa/demos/-/blob/main/src/egl/opengles1/tri.c?ref_type=heads
- * Please visit the original to see some proper code ;)
- */
-
-/*
+ * Please visit the original to see some proper code ;
  * Copyright (C) 2008  Brian Paul   All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
  */
 
 /*
- * Draw a triangle with X/EGL and OpenGL ES 1.x
- * Brian Paul
- * 5 June 2008
+ * Copyright (C) 2026  Daniel Monteiro   All Rights Reserved.
+ *
+ * SPDX-License-Identifier: Apache 2.0
  */
 
 #include <stdint.h>
@@ -33,9 +29,6 @@
 #define floatToFix(f) ((GLfixed)(65536.0f * (f)))
 
 #include <GLES/gl.h> /* use OpenGL ES 1.x */
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "internal.h"
