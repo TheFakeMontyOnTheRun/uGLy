@@ -23,8 +23,6 @@
 #define floatToFix(f) ((GLfixed)(65536.0f * (f)))
 
 #include <GLES/gl.h>
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "internal.h"
@@ -76,25 +74,6 @@ void draw(void) {
 	    1, 7, 3  /* 36 */
 	};
 
-	static const GLfixed normals[24] = {
-	    intToFix(0), intToFix(0), intToFix(1),  intToFix(0), intToFix(0), intToFix(1),
-	    intToFix(0), intToFix(0), intToFix(1),  intToFix(0), intToFix(0), intToFix(1),
-
-	    intToFix(0), intToFix(0), -intToFix(1), intToFix(0), intToFix(0), -intToFix(1),
-	    intToFix(0), intToFix(0), -intToFix(1), intToFix(0), intToFix(0), -intToFix(1),
-	};
-
-	static const GLfixed colours[8][4] = {
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	    {intToFix(1), intToFix(1), intToFix(1), intToFix(1)},
-	};
-
 	static const GLfixed texCoords[16] = {
 	    intToFix(0), intToFix(1), intToFix(0), intToFix(0), intToFix(1), intToFix(1),
 	    intToFix(1), intToFix(0), intToFix(0), intToFix(1), intToFix(0), intToFix(0),
@@ -120,13 +99,9 @@ void draw(void) {
 
 	glTexCoordPointer(2, GL_FIXED, 0, texCoords);
 	glVertexPointer(3, GL_BYTE, sizeof(struct Vertex), verts);
-	glColorPointer(4, GL_FIXED, 0, colours);
-	glNormalPointer(GL_FIXED, 0, normals);
 
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
 
 	glBindTexture(GL_TEXTURE_2D, textureID);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
@@ -153,14 +128,6 @@ void init(void) {
 	                                   Div(intToFix(1), intToFix(5)), intToFix(1)};
 	static const GLfixed pos[4] = {intToFix(0), intToFix(0), intToFix(1), 0};
 
-	glLightxv(GL_LIGHT0, GL_POSITION, pos);
-
-	glLightModelxv(GL_LIGHT_MODEL_AMBIENT, ambient);
-
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_LIGHTING);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_NORMALIZE);
 
 	const GLfixed grey = Div(intToFix(4), intToFix(10));
 	const GLfixed fullAlpha = intToFix(1);

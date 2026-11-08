@@ -29,9 +29,6 @@
 #define floatToFix(f) ((GLfixed)(65536.0f * (f)))
 
 #include <GLES/gl.h> /* use OpenGL ES 1.x */
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "internal.h"

@@ -33,10 +33,6 @@
 #define fixToFloat(fp) ((fp) / 65536.0f)
 
 #include <GLES/gl.h> /* use OpenGL ES 1.x */
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-
 #include "internal.h"
 
 void initWindow(KeyCallback callback);
@@ -68,10 +64,6 @@ static void draw(void) {
 
 		/* draw triangle */
 		glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		/* draw some points */
-		// glPointSizex(Div(intToFix(31), intToFix(2)));
-		// glDrawArrays(GL_POINTS, 0, 3);
 
 		glDisableClientState(GL_VERTEX_ARRAY);
 		glDisableClientState(GL_COLOR_ARRAY);
